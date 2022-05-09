@@ -1,0 +1,377 @@
+{
+	"contentrating" : "Everyone",
+	"description" : "There are serval configuration that can make beautiful patterns. And I choosed only one as default.\n\nMust-try settings:\n- high Hopf latitude + Clifford rotation auto + atan cap\n- view angle\n- tori go to party\n\n*** Please adjust the lightness scale if your eyes are tired or flashed ***",
+	"file" : "index.html",
+	"general" : 
+	{
+		"properties" : 
+		{
+			"atancap" : 
+			{
+				"condition" : "showmoreset.value",
+				"fraction" : false,
+				"index" : 29,
+				"max" : 10,
+				"min" : 0,
+				"order" : 129,
+				"text" : "atan cap",
+				"type" : "slider",
+				"value" : 0
+			},
+			"canvasportion" : 
+			{
+				"condition" : "showmoreset.value",
+				"fraction" : false,
+				"index" : 30,
+				"max" : 8,
+				"min" : 1,
+				"order" : 130,
+				"text" : "canvas portion",
+				"type" : "slider",
+				"value" : 1
+			},
+			"capouterlight" : 
+			{
+				"condition" : "showlightset.value",
+				"index" : 16,
+				"order" : 116,
+				"text" : "light reduce outer",
+				"type" : "bool",
+				"value" : true
+			},
+			"cliffordrotation45" : 
+			{
+				"condition" : "showhopfset.value",
+				"index" : 22,
+				"order" : 122,
+				"text" : "Clifford rotation 90",
+				"type" : "bool",
+				"value" : false
+			},
+			"cliffordrotationauto" : 
+			{
+				"condition" : "showhopfset.value",
+				"index" : 21,
+				"order" : 121,
+				"text" : "Clifford rotation auto",
+				"type" : "bool",
+				"value" : false
+			},
+			"customimage" : 
+			{
+				"index" : 0,
+				"order" : 100,
+				"text" : "custom image",
+				"type" : "bool",
+				"value" : false
+			},
+			"customimagepath" : 
+			{
+				"index" : 1,
+				"order" : 101,
+				"text" : "custom image path",
+				"type" : "file",
+				"value" : ""
+			},
+			"hopf_lat" : 
+			{
+				"condition" : "showhopfset.value",
+				"fraction" : false,
+				"index" : 18,
+				"max" : 89,
+				"min" : 0,
+				"order" : 118,
+				"text" : "Hopf latitude",
+				"type" : "slider",
+				"value" : 15
+			},
+			"hopflatitudecap" : 
+			{
+				"condition" : "showhopfset.value",
+				"fraction" : false,
+				"index" : 19,
+				"max" : 89,
+				"min" : 1,
+				"order" : 119,
+				"text" : "Hopf lat outer cap",
+				"type" : "slider",
+				"value" : 25
+			},
+			"magfy" : 
+			{
+				"fraction" : false,
+				"index" : 2,
+				"max" : 8,
+				"min" : 2,
+				"order" : 102,
+				"text" : "size",
+				"type" : "slider",
+				"value" : 5
+			},
+			"magloud" : 
+			{
+				"condition" : "showhopfset.value",
+				"fraction" : false,
+				"index" : 20,
+				"max" : 10,
+				"min" : 0,
+				"order" : 120,
+				"text" : "Hopf lat by loudness",
+				"type" : "slider",
+				"value" : 0
+			},
+			"offsetx" : 
+			{
+				"condition" : "showmoreset.value",
+				"fraction" : true,
+				"index" : 24,
+				"max" : 1,
+				"min" : -1,
+				"order" : 124,
+				"precision" : 2,
+				"step" : 0.1,
+				"text" : "offsetX",
+				"type" : "slider",
+				"value" : 0
+			},
+			"offsety" : 
+			{
+				"condition" : "showmoreset.value",
+				"fraction" : true,
+				"index" : 25,
+				"max" : 1,
+				"min" : -1,
+				"order" : 125,
+				"precision" : 2,
+				"step" : 0.1,
+				"text" : "offsetY",
+				"type" : "slider",
+				"value" : 0
+			},
+			"opa_gbs" : 
+			{
+				"condition" : "showlightset.value",
+				"fraction" : true,
+				"index" : 14,
+				"max" : 5,
+				"min" : 0,
+				"order" : 114,
+				"precision" : 2,
+				"step" : 0.1,
+				"text" : "light gain by sound",
+				"type" : "slider",
+				"value" : 1.3
+			},
+			"opa_sc" : 
+			{
+				"condition" : "showlightset.value",
+				"fraction" : true,
+				"index" : 15,
+				"max" : 1,
+				"min" : 0,
+				"order" : 115,
+				"precision" : 2,
+				"step" : 0.1,
+				"text" : "light scale",
+				"type" : "slider",
+				"value" : 1
+			},
+			"opacitydefault" : 
+			{
+				"condition" : "showlightset.value",
+				"fraction" : true,
+				"index" : 13,
+				"max" : 1,
+				"min" : 0,
+				"order" : 113,
+				"precision" : 2,
+				"step" : 0.1,
+				"text" : "lightness initial",
+				"type" : "slider",
+				"value" : 0.3
+			},
+			"pixelated" : 
+			{
+				"condition" : "showmoreset.value",
+				"fraction" : false,
+				"index" : 31,
+				"max" : 5,
+				"min" : 1,
+				"order" : 131,
+				"text" : "pixelated",
+				"type" : "slider",
+				"value" : 1
+			},
+			"rot_is" : 
+			{
+				"condition" : "showspeedset.value",
+				"fraction" : true,
+				"index" : 6,
+				"max" : 25,
+				"min" : 0,
+				"order" : 106,
+				"precision" : 1,
+				"step" : 1,
+				"text" : "spin initial speed",
+				"type" : "slider",
+				"value" : 2
+			},
+			"rot_sg" : 
+			{
+				"condition" : "showspeedset.value",
+				"fraction" : true,
+				"index" : 7,
+				"max" : 10,
+				"min" : 0,
+				"order" : 107,
+				"precision" : 1,
+				"step" : 1,
+				"text" : "spin speed gain by loudness",
+				"type" : "slider",
+				"value" : 5
+			},
+			"schemecolor" : 
+			{
+				"order" : 0,
+				"text" : "ui_browse_properties_scheme_color",
+				"type" : "color",
+				"value" : "0 0 0"
+			},
+			"showhopfset" : 
+			{
+				"index" : 17,
+				"order" : 117,
+				"text" : "****** 𝗦𝗵𝗼𝘄 𝗛𝗼𝗽𝗳 𝗦𝗲𝘁𝘁𝗶𝗻𝗴𝘀 ******",
+				"type" : "bool",
+				"value" : false
+			},
+			"showlightset" : 
+			{
+				"index" : 12,
+				"order" : 112,
+				"text" : "****** 𝗦𝗵𝗼𝘄 𝗟𝗶𝗴𝗵𝘁 𝗦𝗲𝘁𝘁𝗶𝗻𝗴𝘀 ******",
+				"type" : "bool",
+				"value" : false
+			},
+			"showmagset" : 
+			{
+				"index" : 8,
+				"order" : 108,
+				"text" : "****** 𝗦𝗵𝗼𝘄 𝗖𝗶𝗿𝗰𝗹𝗲 𝗦𝗶𝘇𝗲 𝗦𝗲𝘁𝘁𝗶𝗻𝗴𝘀 ******",
+				"type" : "bool",
+				"value" : false
+			},
+			"showmoreset" : 
+			{
+				"index" : 23,
+				"order" : 123,
+				"text" : "****** 𝗦𝗵𝗼𝘄 𝗠𝗼𝗿𝗲 𝗦𝗲𝘁𝘁𝗶𝗻𝗴𝘀 ******",
+				"type" : "bool",
+				"value" : false
+			},
+			"showonlyhalf" : 
+			{
+				"index" : 4,
+				"order" : 104,
+				"text" : "show not only half",
+				"type" : "bool",
+				"value" : false
+			},
+			"showspeedset" : 
+			{
+				"index" : 5,
+				"order" : 105,
+				"text" : "****** 𝗦𝗵𝗼𝘄 𝗦𝗽𝗶𝗻 𝗦𝗲𝘁𝘁𝗶𝗻𝗴𝘀 ******",
+				"type" : "bool",
+				"value" : false
+			},
+			"sm_dec" : 
+			{
+				"condition" : "showmagset.value",
+				"fraction" : false,
+				"index" : 10,
+				"max" : 10,
+				"min" : 0,
+				"order" : 110,
+				"text" : "circle size decay",
+				"type" : "slider",
+				"value" : 0
+			},
+			"sm_fac" : 
+			{
+				"condition" : "showmagset.value",
+				"fraction" : true,
+				"index" : 9,
+				"max" : 2,
+				"min" : 0,
+				"order" : 109,
+				"precision" : 2,
+				"step" : 0.1,
+				"text" : "circle-sound factor",
+				"type" : "slider",
+				"value" : 1.8
+			},
+			"soundmagnitudecap" : 
+			{
+				"condition" : "showmagset.value",
+				"fraction" : true,
+				"index" : 11,
+				"max" : 1,
+				"min" : 0,
+				"order" : 111,
+				"precision" : 2,
+				"step" : 0.1,
+				"text" : "circle size cap",
+				"type" : "slider",
+				"value" : 1
+			},
+			"toricgotoparty" : 
+			{
+				"condition" : "showmoreset.value",
+				"index" : 27,
+				"order" : 127,
+				"text" : "tori go to party",
+				"type" : "bool",
+				"value" : false
+			},
+			"toruscolor" : 
+			{
+				"condition" : "showmoreset.value",
+				"index" : 26,
+				"order" : 126,
+				"text" : "tori color",
+				"type" : "color",
+				"value" : "1 1 1"
+			},
+			"usefour" : 
+			{
+				"index" : 3,
+				"order" : 103,
+				"text" : "use four tori",
+				"type" : "bool",
+				"value" : false
+			},
+			"view" : 
+			{
+				"condition" : "showmoreset.value",
+				"fraction" : false,
+				"index" : 28,
+				"max" : 90,
+				"min" : 0,
+				"order" : 128,
+				"text" : "view angle",
+				"type" : "slider",
+				"value" : 0
+			}
+		},
+		"supportsaudioprocessing" : true
+	},
+	"preview" : "preview.gif",
+	"tags" : [ "Abstract" ],
+	"title" : "Hopf Wind Audio Visualizer (Hopf fibration v2)",
+	"type" : "web",
+	"version" : 4,
+	"visibility" : "public",
+	"workshopid" : "2798645065",
+	"workshopurl" : "steam://url/CommunityFilePage/2798645065"
+}
