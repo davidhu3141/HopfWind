@@ -1,6 +1,14 @@
 import * as THREE from 'three'
+import {
+    ShaderMaterial,
+    UniformsUtils
+} from 'three';
+import { Pass, FullScreenQuad } from './Pass.js';
+import { EffectComposer } from './jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from './jsm/postprocessing/RenderPass.js';
 
 var renderer
+var composer
 var scene
 var camera
 
@@ -24,10 +32,10 @@ var magfy = 6
 var sphere_rot = 0
 var rot_is = 1
 var rot_sg = 1
-var opa_def = 0.3
-var opa_sc = 1
-var opa_gbs = 1.5
-var hopf_lat = 1
+var opa_def = 0.1
+var opa_sc = 0.5
+var opa_gbs = 1.2
+var hopf_lat = 0.3
 var hopf_lc = 1.5
 var sm_dec = 7
 var sm_fac = 1
@@ -307,12 +315,13 @@ function run() {
         position_l.needsUpdate = true
     }
 
-    renderer.render(scene, camera)
+    composer.render(scene, camera)
 }
 
 
 function onWindowResized() {
     renderer.setSize(window.innerWidth / (pixsz * cp), window.innerHeight / (pixsz * cp))
+    composer.setSize(window.innerWidth / (pixsz * cp), window.innerHeight / (pixsz * cp))
     document.body.appendChild(renderer.domElement)
     renderer.domElement.setAttribute("style",
         `width:${window.innerWidth / cp}px;` +
@@ -352,6 +361,15 @@ window.onload = function () {
         ? new THREE.WebGLRenderer({ alpha: true })
         : new THREE.CanvasRenderer()
 
+    composer = new EffectComposer(renderer);
+    const renderPass = new RenderPass(scene, camera);
+    const params = {};
+    const myPass = new MyPass(window.innerWidth, window.innerHeight, params);
+    // const myPass2 = new MyPass2(window.innerWidth, window.innerHeight, params, myPass);
+    composer.addPass(renderPass);
+    composer.addPass(myPass);
+    // composer.addPass(myPass2);
+
     onWindowResized()
 
     window.requestAnimationFrame(run)
@@ -360,3 +378,195 @@ window.onload = function () {
 }
 
 window.onresize = onWindowResized
+
+class MyPass extends Pass {
+
+    constructor(width, height, params) {
+
+        super();
+
+        this.remember = new THREE.WebGLRenderTarget(innerWidth, innerHeight);
+        this.remember2 = new THREE.WebGLRenderTarget(innerWidth, innerHeight);
+        this.count = 0
+
+        const MyPassShader = {
+
+            uniforms: {
+                'tDiffuse': { value: null },
+                'tDiffuse2': { value: null },
+                'width': { value: 1 },
+                'height': { value: 1 }
+            },
+
+            vertexShader: /* glsl */`
+
+                varying vec2 vUV;
+
+                void main() {
+
+                    vUV = uv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+
+                }`,
+
+            fragmentShader: /* glsl */`
+
+                varying vec2 vUV;
+                uniform sampler2D tDiffuse;
+                uniform sampler2D tDiffuse2;
+
+                void main() {
+
+                    gl_FragColor = texture2D( tDiffuse, vUV ) + texture2D( tDiffuse2, vUV ) * 0.8;
+
+                }`
+
+        };
+
+        this.uniforms = UniformsUtils.clone(MyPassShader.uniforms);
+        this.material = new ShaderMaterial({
+            uniforms: this.uniforms,
+            fragmentShader: MyPassShader.fragmentShader,
+            vertexShader: MyPassShader.vertexShader
+        });
+
+        // set params
+        this.uniforms.width.value = width;
+        this.uniforms.height.value = height;
+
+        for (const key in params) {
+
+            if (params.hasOwnProperty(key) && this.uniforms.hasOwnProperty(key)) {
+
+                this.uniforms[key].value = params[key];
+
+            }
+
+        }
+
+        this.fsQuad = new FullScreenQuad(this.material);
+
+    }
+
+    render(renderer, writeBuffer, readBuffer/*, deltaTime, maskActive*/) {
+
+        this.count++
+
+        this.material.uniforms['tDiffuse'].value = readBuffer.texture;
+
+        if (this.count % 2 == 0) {
+            this.material.uniforms['tDiffuse2'].value = this.remember.texture || readBuffer.texture;
+            renderer.setRenderTarget(this.remember2);
+            this.fsQuad.render(renderer);
+        } else {
+            this.material.uniforms['tDiffuse2'].value = this.remember2.texture || readBuffer.texture;
+            renderer.setRenderTarget(this.remember);
+            this.fsQuad.render(renderer);
+        }
+
+        if (this.renderToScreen) {
+
+            renderer.setRenderTarget(null);
+            this.fsQuad.render(renderer);
+
+        } else {
+
+            renderer.setRenderTarget(writeBuffer);
+            if (this.clear) renderer.clear();
+            this.fsQuad.render(renderer);
+        }
+
+    }
+
+    setSize(width, height) {
+
+        this.uniforms.width.value = width;
+        this.uniforms.height.value = height;
+
+    }
+
+}
+
+class MyPass2 extends Pass {
+
+    constructor(width, height, params, toRemember) {
+
+        super();
+
+        this.toRemember = toRemember
+
+        const MyPassShader2 = {
+
+            uniforms: {
+                'tDiffuse': { value: null },
+                'width': { value: 1 },
+                'height': { value: 1 }
+            },
+
+            vertexShader: /* glsl */`
+
+                varying vec2 vUV;
+
+                void main() {
+                    vUV = uv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }`,
+
+            fragmentShader: /* glsl */`
+
+                varying vec2 vUV;
+                uniform sampler2D tDiffuse;
+
+                void main() {
+                    gl_FragColor = texture2D( tDiffuse, vUV );
+                }`
+
+        };
+
+        this.uniforms = UniformsUtils.clone(MyPassShader2.uniforms);
+        this.material = new ShaderMaterial({
+            uniforms: this.uniforms,
+            fragmentShader: MyPassShader2.fragmentShader,
+            vertexShader: MyPassShader2.vertexShader
+        });
+
+        // set params
+        this.uniforms.width.value = width;
+        this.uniforms.height.value = height;
+
+        for (const key in params) {
+            if (params.hasOwnProperty(key) && this.uniforms.hasOwnProperty(key))
+                this.uniforms[key].value = params[key];
+        }
+
+        this.fsQuad = new FullScreenQuad(this.material);
+
+    }
+
+    render(renderer, writeBuffer, readBuffer/*, deltaTime, maskActive*/) {
+
+        this.material.uniforms['tDiffuse'].value = readBuffer.texture;
+        // this.toRemember.remember = readBuffer.texture;
+
+        if (this.renderToScreen) {
+
+            renderer.setRenderTarget(null);
+            this.fsQuad.render(renderer);
+
+        } else {
+
+            renderer.setRenderTarget(writeBuffer);
+            if (this.clear) renderer.clear();
+            this.fsQuad.render(renderer);
+        }
+
+    }
+
+    setSize(width, height) {
+
+        this.uniforms.width.value = width;
+        this.uniforms.height.value = height;
+
+    }
+
+}
