@@ -18,9 +18,9 @@ var audioSamples = Array(128)
 audioSamples.fill(0)
 
 // settings, Scene large sound_mag, small
-var pixsz = 2
+var pixsz = 1
 var cp = 1
-var show_half = true
+var show_half = false
 
 // not for settings
 var viewZ = 30
@@ -42,8 +42,8 @@ var sm_fac = 1
 var sm_cap = 0.3
 var magall = 0
 var magdec = 10
-var magloud = 0
-var viewAngle = 0
+var magloud = 1
+var viewAngle = 0.5
 var useFour = false
 var capouterlight = true
 var atancap = 3
@@ -225,91 +225,20 @@ function run() {
 
     for (var j = 0; j < 128; j++) {
 
-        var i = j % 64
-
         var position_l = object_pool[j].geometry.attributes.position
         var material_l = object_pool[j].material
-        var opa_new = (opa_def + opa_gbs * audioSamples[j]) * opa_sc
-
-        // if (toriparty)
-        // material_l.color = new THREE.Color(`hsl(${(audioSamples[j] * 120 + Math.max(t, lq_angle * 18)) % 360}, 100%, 50%)`);
-        material_l.color = new THREE.Color(`hsl(${(audioSamples[j] * 120 + Math.max(t, lq_angle * 18)) % 270 + 120}, 100%, 50%)`);
-
+        var opa_new = (opa_def + opa_gbs * audioSamples[j]) * opa_sc * 2
         material_l.opacity = opa_new >= material_l.opacity
             ? opa_new : (material_l.opacity * sm_dec + opa_new) / (sm_dec + 1)
 
-        if (capouterlight && j < 64)
-            material_l.opacity /= 2
+        // material_l.color = new THREE.Color(`hsl(${(audioSamples[j] * 120 + Math.max(t, lq_angle * 18)) % 270 + 120}, 100%, 50%)`);
 
-        var lp_new = -(hopf_lat + Math.min(audioSamples[j], sm_cap) * sm_fac + magall)
-        lp = lp_new <= lp
-            ? lp_new
-            : (lp * sm_dec + lp_new) / (sm_dec + 1)
-
-        if (j < 64)
-            lp = Math.max(-hopf_lc, lp)
-
-        var lq
-        if (!useFour) {
-            lq = i / 64 * 6.28 + lq_angle
-        } else {
-            lq = i / 40 * 6.28 + lq_angle
-            if (j >= 32 && j < 96) {
-                lq = -lq
-                lp = lp / 3
-            }
-        }
-
-        if (cliff90) {
-            sphere_rot = Math.PI / 2
-        } else if (cliffauto) {
-            sphere_rot += 0.00003
-        } else {
-            sphere_rot = 0
-        }
-
-        var point_x_tmp = Math.cos(lp) * Math.cos(lq)
-        var point_z = Math.cos(lp) * Math.sin(lq) //y
-        var point_y_tmp = Math.sin(lp) // z
-        var point_x = point_x_tmp * Math.cos(sphere_rot) - point_y_tmp * Math.sin(sphere_rot)
-        var point_y = point_y_tmp * Math.cos(sphere_rot) + point_x_tmp * Math.sin(sphere_rot)
-
-        if (j >= 64) {
-            point_x *= -1
-            point_y *= -1
-            point_z *= -1
-        }
-
-        const alpha = Math.sqrt((1 - point_y) / 2)
-        const beta = Math.sqrt((1 + point_y) / 2)
-        const angleSum = Math.atan2(point_x, -point_z)
-
-        if (atancap == 3) {
-            for (var k = 0; k <= 64; k++) {
-                const theta = 2 * Math.PI * k / 64
-                const phi = angleSum - theta
-                const proj = 0.5 / (1 - alpha * Math.sin(theta)) * magfy
-                position_l.setX(k, -beta * proj * Math.cos(phi))
-                position_l.setY(k, alpha * proj * Math.cos(theta))
-                position_l.setZ(k, -beta * proj * Math.sin(phi))
-            }
-        } else {
-            for (var k = 0; k <= 64; k++) {
-                const theta = 2 * Math.PI * k / 64
-                const phi = angleSum - theta
-                const proj = 0.5 / (1 - alpha * Math.sin(theta)) * magfy
-
-                const finalx = -beta * proj * Math.cos(phi)
-                const finaly = alpha * proj * Math.cos(theta)
-                const finalz = -beta * proj * Math.sin(phi)
-
-                const r = Math.hypot(finalx, finaly, finalz)
-                const newr = atancap * Math.atan(r / atancap)
-
-                position_l.setX(k, finalx * newr / r)
-                position_l.setY(k, finaly * newr / r)
-                position_l.setZ(k, finalz * newr / r)
-            }
+        const phi = 2 * Math.PI * j / 128 + t / 30 * (1 + 0 * 3)
+        for (var k = 0; k <= 64; k++) {
+            const theta = 2 * Math.PI * k / 64
+            position_l.setY(k, -2)
+            position_l.setX(k, (1 + magall * 5) * 4 * Math.cos(phi) + 0.1 * Math.cos(theta) * (1 + 5 * audioSamples[j]))
+            position_l.setZ(k, (1 + magall * 5) * 4 * Math.sin(phi) + 0.1 * Math.sin(theta) * (1 + 5 * audioSamples[j]))
         }
 
         position_l.needsUpdate = true
@@ -418,8 +347,8 @@ class MyPass extends Pass {
                 void main() {
 
                     vec2 vUV2 = vUV;
-                    vUV2[1] -= 0.005;
-                    gl_FragColor = texture2D( tDiffuse, vUV ) + texture2D( tDiffuse2, vUV2 ) * 0.96;
+                    vUV2[1] -= 0.004;
+                    gl_FragColor = texture2D( tDiffuse, vUV ) + texture2D( tDiffuse2, vUV2 ) * 0.97;
 
                 }`
 
