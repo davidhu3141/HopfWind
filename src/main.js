@@ -201,7 +201,7 @@ window.wallpaperPropertyListener = {
 }
 
 function wallpaperAudioListener(audioArray) {
-    audioSamples = audioArray
+    audioSamples = audioArray.map(e => e * e)
 }
 
 var obj_l
@@ -236,9 +236,9 @@ function run() {
         const phi = 2 * Math.PI * j / 128 + t / 30 * (1 + 0 * 3)
         for (var k = 0; k <= 64; k++) {
             const theta = Math.PI * (k / 64 - 0.5)
-            const R = (1 + magall * 5) * 4 * (1 + 5 * audioSamples[j])
-            position_l.setX(k, R * (Math.cos(theta) + Math.cos(phi)))
-            position_l.setZ(k, R * (Math.cos(theta) + Math.sin(phi)))
+            const R = (1 + 0 * 5) * 4 * (1 + 5 * audioSamples[j])
+            position_l.setX(k, R * (Math.cos(theta) * Math.cos(phi + theta * 0)))
+            position_l.setZ(k, R * (Math.cos(theta) * Math.sin(phi + theta * 0)))
             position_l.setY(k, R * Math.sin(theta))
         }
 
@@ -349,7 +349,7 @@ class MyPass extends Pass {
 
                     vec2 vUV2 = vUV;
                     vUV2[1] -= 0.004;
-                    gl_FragColor = texture2D( tDiffuse, vUV ) + texture2D( tDiffuse2, vUV2 ) * 0.97;
+                    gl_FragColor = texture2D( tDiffuse, vUV ) + texture2D( tDiffuse2, vUV2 ) * 0.9;
 
                 }`
 
