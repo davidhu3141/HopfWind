@@ -18,7 +18,7 @@ var audioSamples = Array(128)
 audioSamples.fill(0)
 
 // settings, Scene large sound_mag, small
-var pixsz = 1
+var pixsz = 2
 var cp = 1
 var show_half = true
 
@@ -32,9 +32,9 @@ var magfy = 6
 var sphere_rot = 0
 var rot_is = 1
 var rot_sg = 1
-var opa_def = 0.1
+var opa_def = 0.0
 var opa_sc = 0.5
-var opa_gbs = 1.2
+var opa_gbs = 2.5
 var hopf_lat = 0.3
 var hopf_lc = 1.5
 var sm_dec = 7
@@ -231,9 +231,9 @@ function run() {
         var material_l = object_pool[j].material
         var opa_new = (opa_def + opa_gbs * audioSamples[j]) * opa_sc
 
-        if (toriparty)
-            // material_l.color = new THREE.Color(`hsl(${(audioSamples[j] * 120 + Math.max(t, lq_angle * 18)) % 360}, 100%, 50%)`);
-            material_l.color = new THREE.Color(`hsl(${(audioSamples[j] * 120 + Math.max(t, lq_angle * 18)) % 270 + 120}, 100%, 50%)`);
+        // if (toriparty)
+        // material_l.color = new THREE.Color(`hsl(${(audioSamples[j] * 120 + Math.max(t, lq_angle * 18)) % 360}, 100%, 50%)`);
+        material_l.color = new THREE.Color(`hsl(${(audioSamples[j] * 120 + Math.max(t, lq_angle * 18)) % 270 + 120}, 100%, 50%)`);
 
         material_l.opacity = opa_new >= material_l.opacity
             ? opa_new : (material_l.opacity * sm_dec + opa_new) / (sm_dec + 1)
@@ -417,7 +417,9 @@ class MyPass extends Pass {
 
                 void main() {
 
-                    gl_FragColor = texture2D( tDiffuse, vUV ) + texture2D( tDiffuse2, vUV ) * 0.8;
+                    vec2 vUV2 = vUV;
+                    vUV2[1] -= 0.005;
+                    gl_FragColor = texture2D( tDiffuse, vUV ) + texture2D( tDiffuse2, vUV2 ) * 0.96;
 
                 }`
 
@@ -463,90 +465,6 @@ class MyPass extends Pass {
             renderer.setRenderTarget(this.remember);
             this.fsQuad.render(renderer);
         }
-
-        if (this.renderToScreen) {
-
-            renderer.setRenderTarget(null);
-            this.fsQuad.render(renderer);
-
-        } else {
-
-            renderer.setRenderTarget(writeBuffer);
-            if (this.clear) renderer.clear();
-            this.fsQuad.render(renderer);
-        }
-
-    }
-
-    setSize(width, height) {
-
-        this.uniforms.width.value = width;
-        this.uniforms.height.value = height;
-
-    }
-
-}
-
-class MyPass2 extends Pass {
-
-    constructor(width, height, params, toRemember) {
-
-        super();
-
-        this.toRemember = toRemember
-
-        const MyPassShader2 = {
-
-            uniforms: {
-                'tDiffuse': { value: null },
-                'width': { value: 1 },
-                'height': { value: 1 }
-            },
-
-            vertexShader: /* glsl */`
-
-                varying vec2 vUV;
-
-                void main() {
-                    vUV = uv;
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                }`,
-
-            fragmentShader: /* glsl */`
-
-                varying vec2 vUV;
-                uniform sampler2D tDiffuse;
-
-                void main() {
-                    gl_FragColor = texture2D( tDiffuse, vUV );
-                }`
-
-        };
-
-        this.uniforms = UniformsUtils.clone(MyPassShader2.uniforms);
-        this.material = new ShaderMaterial({
-            uniforms: this.uniforms,
-            fragmentShader: MyPassShader2.fragmentShader,
-            vertexShader: MyPassShader2.vertexShader
-        });
-
-        // set params
-        this.uniforms.width.value = width;
-        this.uniforms.height.value = height;
-
-        for (const key in params) {
-            if (params.hasOwnProperty(key) && this.uniforms.hasOwnProperty(key))
-                this.uniforms[key].value = params[key];
-        }
-
-        this.fsQuad = new FullScreenQuad(this.material);
-
-    }
-
-    render(renderer, writeBuffer, readBuffer/*, deltaTime, maskActive*/) {
-
-        this.material.uniforms['tDiffuse'].value = readBuffer.texture;
-        // this.toRemember.remember = readBuffer.texture;
 
         if (this.renderToScreen) {
 
