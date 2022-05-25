@@ -18,7 +18,7 @@ var audioSamples = Array(128)
 audioSamples.fill(0)
 
 // settings, Scene large sound_mag, small
-var pixsz = 3
+var pixsz = 1
 var cp = 1
 var show_half = false
 
@@ -354,7 +354,7 @@ class MyPass extends Pass {
 
                     vec2 vUV2 = vUV;
                     vUV2[1] -= 0.002;
-                    gl_FragColor = texture2D( tDiffuse, vUV ) + texture2D( tDiffuse2, vUV2 ) * 0.999;
+                    gl_FragColor = texture2D( tDiffuse, vUV ) + texture2D( tDiffuse2, vUV2 );
 
                 }`
 
