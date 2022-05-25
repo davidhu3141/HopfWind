@@ -18,7 +18,7 @@ var audioSamples = Array(128)
 audioSamples.fill(0)
 
 // settings, Scene large sound_mag, small
-var pixsz = 1
+var pixsz = 3
 var cp = 1
 var show_half = false
 
@@ -201,7 +201,7 @@ window.wallpaperPropertyListener = {
 }
 
 function wallpaperAudioListener(audioArray) {
-    audioSamples = audioArray.map(e => Math.pow(e, 1.5))
+    audioSamples = audioArray.map(e => Math.pow(e, 0.8))
     e
 }
 
@@ -224,7 +224,9 @@ function run() {
         ? magall_new
         : (magall * magdec + magall_new) / (magdec + 1)
 
-    for (var j = 0; j < 128; j++) {
+    for (var i = 0; i < 128; i++) {
+
+        var j = i
 
         var position_l = object_pool[j].geometry.attributes.position
         var material_l = object_pool[j].material
@@ -232,16 +234,17 @@ function run() {
         material_l.opacity = opa_new >= material_l.opacity
             ? opa_new : (material_l.opacity * sm_dec + opa_new) / (sm_dec + 1)
 
-        // material_l.color = new THREE.Color(`hsl(${(audioSamples[j] * 120 + Math.max(t, lq_angle * 18)) % 270 + 120}, 100%, 50%)`);
+        material_l.color = new THREE.Color(`hsl(${(audioSamples[j] * 240 + 210) % 360}, 100%, 50%)`);
 
-        const phi = 2 * Math.PI * j / 128 + t / 30 * (1 + 0 * 3)
+        j = i > 64 ? 192 - i : i
+        const phi = 2 * Math.PI * (j / 128 - 0.5)
         for (var k = 0; k <= 64; k++) {
             const theta = 2 * Math.PI * (k / 64 - 0.5)
             const R = (1 + magall * 5) * 4
-            const r = (1 + audioSamples[j])
-            position_l.setX(k, (R + r * Math.cos(theta)) * Math.cos(phi))
-            position_l.setZ(k, (R + r * Math.cos(theta)) * Math.sin(phi))
-            position_l.setY(k, r * Math.sin(theta))
+            const r = (1 + audioSamples[j]) / 20
+            position_l.setX(k, phi * 5)
+            position_l.setZ(k, r * Math.cos(theta))
+            position_l.setY(k, r * Math.sin(theta) - 20)
         }
 
         position_l.needsUpdate = true
@@ -350,8 +353,8 @@ class MyPass extends Pass {
                 void main() {
 
                     vec2 vUV2 = vUV;
-                    vUV2[1] -= 0.004;
-                    gl_FragColor = texture2D( tDiffuse, vUV ) + texture2D( tDiffuse2, vUV2 ) * 0.99;
+                    vUV2[1] -= 0.002;
+                    gl_FragColor = texture2D( tDiffuse, vUV ) + texture2D( tDiffuse2, vUV2 ) * 0.999;
 
                 }`
 
