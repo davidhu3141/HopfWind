@@ -235,10 +235,11 @@ function run() {
 
         const phi = 2 * Math.PI * j / 128 + t / 30 * (1 + 0 * 3)
         for (var k = 0; k <= 64; k++) {
-            const theta = 2 * Math.PI * k / 64
-            position_l.setY(k, -2)
-            position_l.setX(k, (1 + magall * 5) * 4 * Math.cos(phi) + 0.1 * Math.cos(theta) * (1 + 5 * audioSamples[j]))
-            position_l.setZ(k, (1 + magall * 5) * 4 * Math.sin(phi) + 0.1 * Math.sin(theta) * (1 + 5 * audioSamples[j]))
+            const theta = Math.PI * (k / 64 - 0.5)
+            const R = (1 + magall * 5) * 4 * (1 + 5 * audioSamples[j])
+            position_l.setX(k, R * (Math.cos(theta) + Math.cos(phi)))
+            position_l.setZ(k, R * (Math.cos(theta) + Math.sin(phi)))
+            position_l.setY(k, R * Math.sin(theta))
         }
 
         position_l.needsUpdate = true
