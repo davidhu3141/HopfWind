@@ -13,6 +13,7 @@ var scene
 var camera
 
 var object_pool = [];
+var band = null;
 
 var audioSamples = Array(128)
 audioSamples.fill(0)
@@ -43,7 +44,7 @@ var sm_cap = 0.3
 var magall = 0
 var magdec = 10
 var magloud = 1
-var viewAngle = 0.5
+var viewAngle = 0//0.5
 var useFour = false
 var capouterlight = true
 var atancap = 3
@@ -224,32 +225,64 @@ function run() {
         ? magall_new
         : (magall * magdec + magall_new) / (magdec + 1)
 
-    for (var i = 0; i < 128; i++) {
+    var material = band.material;
+    var geometry = band.geometry;
 
-        var j = i
+    // console.log(geometry)
 
-        var position_l = object_pool[j].geometry.attributes.position
-        var material_l = object_pool[j].material
-        var opa_new = (opa_def + opa_gbs * audioSamples[j]) * opa_sc * 2
-        material_l.opacity = opa_new >= material_l.opacity
-            ? opa_new : (material_l.opacity * sm_dec + opa_new) / (sm_dec + 1)
+    // for (var i = 0; i < geometry.attributes.color.array.length; i++) {
+    //     var j = i % 9
+    //     geometry.attributes.color.array[i] = j / 12
+    // }
 
-        material_l.color = new THREE.Color(`hsl(${(audioSamples[j] * 240 + 210) % 360}, 100%, 50%)`);
+    // for (var i = 0; i < 258; i++) {
+    //     var bat = 3
+    //     if (i < 129)
+    //         geometry.attributes.color.array[i * bat + 1] = i / 129
+    //     else
+    //         geometry.attributes.color.array[i * bat + 2] = i / 129 - 1
+    // }
 
-        j = i > 64 ? 192 - i : i
-        const phi = 2 * Math.PI * (j / 128 - 0.5)
-        for (var k = 0; k <= 64; k++) {
-            const theta = 2 * Math.PI * (k / 64 - 0.5)
-            const R = (1 + magall * 5) * 4
-            const r = (1 + audioSamples[j]) / 20
-            position_l.setX(k, phi * 5)
-            position_l.setZ(k, r * Math.cos(theta))
-            position_l.setY(k, r * Math.sin(theta) - 20)
-        }
+    for (var u = 0; u < 128; u++) {
+        var color = new THREE.Color(`hsl(${(audioSamples[u] * 600 + 180) % 360}, 100%, 50%)`);
+        var i = u > 64 ? 192 - u : u
+        var bat = 3
 
-        position_l.needsUpdate = true
+        geometry.attributes.color.array[i * bat] =
+            geometry.attributes.color.array[129 * 3 + i * bat] = color.r
+
+        geometry.attributes.color.array[i * bat + 1] =
+            geometry.attributes.color.array[129 * 3 + i * bat + 1] = color.g
+
+        geometry.attributes.color.array[i * bat + 2] =
+            geometry.attributes.color.array[129 * 3 + i * bat + 2] = color.b
+
+        // geometry.attributes.color.array[773 - (i * bat + j)] = audioSamples[i]
+        // var j = i
+
+        // var position_l = object_pool[j].geometry.attributes.position
+        // var material_l = object_pool[j].material
+        // var opa_new = (opa_def + opa_gbs * audioSamples[j]) * opa_sc * 2
+        // // material_l.opacity = opa_new >= material_l.opacity
+        // //     ? opa_new : (material_l.opacity * sm_dec + opa_new) / (sm_dec + 1)
+        // material_l.opacity = 1
+
+        // material_l.color = new THREE.Color(`hsl(${(audioSamples[j] * 600 + 180) % 360}, 100%, 50%)`);
+
+        // j = i > 64 ? 192 - i : i
+        // const phi = 2 * Math.PI * (j / 128 - 0.5)
+        // for (var k = 0; k <= 64; k++) {
+        //     const theta = 2 * Math.PI * (k / 64 - 0.5)
+        //     const R = (1 + magall * 5) * 4
+        //     const r = (1 + audioSamples[j]) / 20
+        //     position_l.setX(k, phi * 5)
+        //     position_l.setZ(k, r * Math.cos(theta))
+        //     position_l.setY(k, r * Math.sin(theta) - 20)
+        // }
+
+        // position_l.needsUpdate = true
     }
-
+    geometry.attributes.color.needsUpdate = true;
     composer.render(scene, camera)
 }
 
@@ -278,16 +311,25 @@ window.onload = function () {
     scene = new THREE.Scene()
     camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, show_half ? viewZ : viewZ * 2)
 
-    for (var j = 0; j < 128; j++) {
-        var fiberGeo = new THREE.BufferGeometry().setFromPoints(arbitraryPath());
+    // for (var j = 0; j < 128; j++) {
+    //     var fiberGeo = new THREE.BufferGeometry().setFromPoints(arbitraryPath());
 
-        var fiberMaterial = new THREE.LineBasicMaterial({ color: current_color, transparent: true, opacity: 1, depthWrite: false });
+    //     var fiberMaterial = new THREE.LineBasicMaterial({ color: current_color, transparent: true, opacity: 1, depthWrite: false });
 
-        var newFiber = new THREE.Line(fiberGeo, fiberMaterial);
-        scene.add(newFiber);
-        object_pool.push(newFiber);
-    }
+    //     var newFiber = new THREE.Line(fiberGeo, fiberMaterial);
+    //     scene.add(newFiber);
+    //     object_pool.push(newFiber);
+    // }
 
+    let mat = new THREE.MeshBasicMaterial()
+    mat.vertexColors = true
+    let geo = new THREE.PlaneBufferGeometry(20, 0.2, 128, 1)
+    let color = new Float32Array(new Array(129 * 2 * 3).fill(0.05))
+    geo.setAttribute('color', new THREE.BufferAttribute(color, 3))
+    band = new THREE.Mesh(geo, mat)
+    console.log(band)
+
+    scene.add(band)
 
     var light = new THREE.HemisphereLight(0xffffbb, 0x080820, 1)
     scene.add(light)
@@ -354,7 +396,11 @@ class MyPass extends Pass {
 
                     vec2 vUV2 = vUV;
                     vUV2[1] -= 0.002;
-                    gl_FragColor = texture2D( tDiffuse, vUV ) + texture2D( tDiffuse2, vUV2 );
+                    if(vUV[1] < 0.5) {
+                        gl_FragColor = texture2D( tDiffuse, vUV );
+                        return;
+                    }
+                    gl_FragColor = max(texture2D( tDiffuse, vUV ) , texture2D( tDiffuse2, vUV2 ));
 
                 }`
 

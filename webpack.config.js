@@ -7,7 +7,7 @@ module.exports = {
     main: path.resolve(__dirname, 'src', 'main.js')
   },
   output: {
-    path: path.resolve('C:/Program Files (x86)/Steam/steamapps/common/wallpaper_engine/projects/myprojects/index/dist'),
+    path: path.resolve(env == 'here' ? 'dist' : 'C:/Program Files (x86)/Steam/steamapps/common/wallpaper_engine/projects/myprojects/index/dist'),
     filename: 'main.js'
   },
   devtool: env == 'prod' ? false : 'source-map'
