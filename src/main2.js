@@ -1,0 +1,497 @@
+import * as THREE from 'three'
+import {
+    ShaderMaterial,
+    UniformsUtils
+} from 'three';
+import { Pass, FullScreenQuad } from './Pass.js';
+import { EffectComposer } from './jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from './jsm/postprocessing/RenderPass.js';
+
+var renderer
+var composer
+var scene
+var camera
+
+var object_pool = [];
+var band = null;
+
+var audioSamples = Array(128)
+audioSamples.fill(0)
+
+// settings, Scene large sound_mag, small
+var pixsz = 1
+var cp = 1
+var show_half = false
+
+// not for settings
+var viewZ = 30
+var magfy = 6
+
+// ----- advanced -----
+
+// global varibles, Animation
+var sphere_rot = 0
+var rot_is = 1
+var rot_sg = 1
+var opa_def = 0.0
+var opa_sc = 0.5
+var opa_gbs = 2.5
+var hopf_lat = 0.3
+var hopf_lc = 1.5
+var sm_dec = 7
+var sm_fac = 1
+var sm_cap = 0.3
+var magall = 0
+var magdec = 10
+var magloud = 1
+var viewAngle = 0//0.5
+var useFour = false
+var capouterlight = true
+var atancap = 3
+var offX = 0
+var offY = 0
+var cliff90 = false
+var cliffauto = false
+var toriparty = false
+var tempForToricParty = null
+
+var use_user_image = false
+var user_image = ""
+var current_color = new THREE.Color(1, 1, 1)
+
+function arbitraryPath() {
+    var path = new THREE.Path()
+    path.moveTo(0, 0, 0)
+    for (var i = 1; i <= 64; i++)
+        path.lineTo((i % 2) / 100, 0, 0)
+    return path.getPoints()
+}
+
+// A global object that can listen to property changes
+window.wallpaperPropertyListener = {
+    applyUserProperties: function (properties) {
+        if (properties.schemecolor) {
+            var schemeColor = properties.schemecolor.value.split(' ')
+            schemeColor = schemeColor.map(c => Math.ceil(c * 255))
+            properties.schemeColor = schemeColor
+        }
+        /////////////////////////////////////////////////////////
+        if (properties.toruscolor) {
+            var customColor = properties.toruscolor.value.split(' ')
+            current_color = new THREE.Color(customColor[0] * 1, customColor[1] * 1, customColor[2] * 1)
+            object_pool.forEach(e => { e.material.color = current_color })
+        }
+        if (properties.pixelated) {
+            pixsz = properties.pixelated.value
+            onWindowResized()
+        }
+        if (properties.canvasportion) {
+            cp = properties.canvasportion.value
+            onWindowResized()
+        }
+        if (properties.showonlyhalf) {
+            show_half = !properties.showonlyhalf.value
+            onWindowResized()
+        }
+        if (properties.customimage) {
+            use_user_image = properties.customimage.value
+            if (use_user_image && user_image)
+                document.body.setAttribute("style", `background-image: url("file:///${user_image}")`)
+            else
+                document.body.setAttribute("style", '')
+        }
+        if (properties.customimagepath) {
+            user_image = properties.customimagepath.value
+            if (use_user_image)
+                document.body.setAttribute("style", `background-image: url("file:///${user_image}")`)
+        }
+        /////////////////////////////////////////////////////////
+        if (properties.rot_is) {
+            rot_is = properties.rot_is.value
+        }
+        if (properties.rot_sg) {
+            rot_sg = properties.rot_sg.value
+        }
+        /////////////////////////////////////////////////////////
+        if (properties.opa_sc) {
+            opa_sc = properties.opa_sc.value
+        }
+        if (properties.opacitydefault) {
+            opa_def = Math.pow(properties.opacitydefault.value, 2)
+        }
+        if (properties.opa_gbs) {
+            opa_gbs = properties.opa_gbs.value
+        }
+        /////////////////////////////////////////////////////////
+        if (properties.hopf_lat) {
+            hopf_lat = properties.hopf_lat.value / 180 * Math.PI
+        }
+        if (properties.hopflatitudecap) {
+            hopf_lc = properties.hopflatitudecap.value / 180 * Math.PI
+        }
+        /////////////////////////////////////////////////////////
+        if (properties.sm_fac) {
+            sm_fac = properties.sm_fac.value
+        }
+        if (properties.sm_dec) {
+            sm_dec = properties.sm_dec.value * 10
+        }
+        if (properties.soundmagnitudecap) {
+            sm_cap = properties.soundmagnitudecap.value
+        }
+        /////////////////////////////////////////////////////////
+        if (properties.magloud) {
+            magloud = properties.magloud.value
+        }
+        if (properties.magfy) {
+            magfy = properties.magfy.value
+        }
+        if (properties.view) {
+            viewAngle = properties.view.value / 180 * Math.PI
+            onWindowResized()
+        }
+        if (properties.capouterlight) {
+            capouterlight = properties.capouterlight.value
+        }
+        if (properties.usefour) {
+            useFour = properties.usefour.value
+        }
+        if (properties.atancap) {
+            atancap = properties.atancap.value + 3
+        }
+        if (properties.offsetx) {
+            offX = properties.offsetx.value
+            onWindowResized()
+        }
+        if (properties.offsety) {
+            offY = properties.offsety.value
+            onWindowResized()
+        }
+        if (properties.cliffordrotation45) {
+            cliff90 = properties.cliffordrotation45.value
+        }
+        if (properties.cliffordrotationauto) {
+            cliffauto = properties.cliffordrotationauto.value
+        }
+        if (properties.toricgotoparty) {
+            toriparty = properties.toricgotoparty.value
+            if (!toriparty) {
+                object_pool.forEach(e => { e.material.color = current_color })
+                if (tempForToricParty) {
+                    capouterlight = tempForToricParty.capouterlight || false
+                    opa_sc = tempForToricParty.opa_sc || 1
+                    opa_def = tempForToricParty.opa_def || 0.3
+                    opa_gbs = tempForToricParty.opa_gbs || 0.5
+                    tempForToricParty = null
+                }
+            } else {
+                tempForToricParty = {
+                    capouterlight: capouterlight,
+                    opa_def: opa_def,
+                    opa_sc: opa_sc,
+                    opa_gbs: opa_gbs
+                }
+                capouterlight = true
+                opa_sc = 1
+                opa_def = 0
+                opa_gbs = 5
+            }
+        }
+
+    }
+}
+
+function wallpaperAudioListener(audioArray) {
+    audioSamples = audioArray.map(e => Math.pow(e, 0.8))
+    e
+}
+
+var obj_l
+var obj_r
+
+var lq_angle = 0
+var lp = 0
+var t = 0
+
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+// ...
+
+const analyser = audioCtx.createAnalyser();
+analyser.fftSize = 2048;
+
+const bufferLength = analyser.frequencyBinCount;
+const dataArray = new Uint8Array(bufferLength);
+analyser.getByteTimeDomainData(dataArray);
+
+// Connect the source to be analysed
+source.connect(analyser);
+
+// Get a canvas defined with ID "oscilloscope"
+const canvas = document.getElementById("oscilloscope");
+const canvasCtx = canvas.getContext("2d");
+
+// draw an oscilloscope of the current audio source
+
+function draw() {
+
+    requestAnimationFrame(draw);
+
+    analyser.getByteTimeDomainData(dataArray);
+
+    canvasCtx.fillStyle = "rgb(200, 200, 200)";
+    canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+    canvasCtx.lineWidth = 2;
+    canvasCtx.strokeStyle = "rgb(0, 0, 0)";
+
+    canvasCtx.beginPath();
+
+    const sliceWidth = canvas.width * 1.0 / bufferLength;
+    let x = 0;
+
+    for (let i = 0; i < bufferLength; i++) {
+
+        const v = dataArray[i] / 128.0;
+        const y = v * canvas.height / 2;
+
+        if (i === 0) {
+            canvasCtx.moveTo(x, y);
+        } else {
+            canvasCtx.lineTo(x, y);
+        }
+
+        x += sliceWidth;
+    }
+
+    canvasCtx.lineTo(canvas.width, canvas.height / 2);
+    canvasCtx.stroke();
+}
+
+draw();
+
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+
+function run() {
+
+    window.requestAnimationFrame(run)
+
+    var sum = audioSamples.reduce((a, b) => a + b) / 128
+    lq_angle += 0.0012 * rot_is + sum / 6 * rot_sg
+    t += 0.5
+    var magall_new = sum * magloud / 2
+    magall = magall_new >= magall
+        ? magall_new
+        : (magall * magdec + magall_new) / (magdec + 1)
+
+    var material = band.material;
+    var geometry = band.geometry;
+
+    for (var u = 0; u < 128; u++) {
+        var color = new THREE.Color(`hsl(${(audioSamples[u] * 600 + 180) % 360}, 100%, 50%)`);
+        var i = u > 64 ? 192 - u : u
+        var bat = 3
+
+        geometry.attributes.color.array[i * bat] =
+            geometry.attributes.color.array[129 * 3 + i * bat] = color.r
+
+        geometry.attributes.color.array[i * bat + 1] =
+            geometry.attributes.color.array[129 * 3 + i * bat + 1] = color.g
+
+        geometry.attributes.color.array[i * bat + 2] =
+            geometry.attributes.color.array[129 * 3 + i * bat + 2] = color.b
+
+    }
+    geometry.attributes.color.needsUpdate = true;
+    composer.render(scene, camera)
+}
+
+
+function onWindowResized() {
+    renderer.setSize(window.innerWidth / (pixsz * cp), window.innerHeight / (pixsz * cp))
+    composer.setSize(window.innerWidth / (pixsz * cp), window.innerHeight / (pixsz * cp))
+    document.body.appendChild(renderer.domElement)
+    renderer.domElement.setAttribute("style",
+        `width:${window.innerWidth / cp}px;` +
+        `height:${window.innerHeight / cp}px;` +
+        `left:${window.innerWidth * (1 - 1 / cp + offX) / 2}px;` +
+        `top:${window.innerHeight * (1 - 1 / cp + offY) / 2}px;`
+    )
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.position.z = viewZ * Math.cos(viewAngle)
+    camera.position.y = viewZ * Math.sin(viewAngle)
+    camera.far = show_half ? viewZ : viewZ * 2
+    camera.fov = 60 / cp
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
+    camera.updateProjectionMatrix()
+}
+
+window.onload = function () {
+
+    scene = new THREE.Scene()
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, show_half ? viewZ : viewZ * 2)
+
+    // for (var j = 0; j < 128; j++) {
+    //     var fiberGeo = new THREE.BufferGeometry().setFromPoints(arbitraryPath());
+
+    //     var fiberMaterial = new THREE.LineBasicMaterial({ color: current_color, transparent: true, opacity: 1, depthWrite: false });
+
+    //     var newFiber = new THREE.Line(fiberGeo, fiberMaterial);
+    //     scene.add(newFiber);
+    //     object_pool.push(newFiber);
+    // }
+
+    let mat = new THREE.MeshBasicMaterial()
+    mat.vertexColors = true
+    let geo = new THREE.PlaneBufferGeometry(20, 0.2, 128, 1)
+    let color = new Float32Array(new Array(129 * 2 * 3).fill(0.05))
+    geo.setAttribute('color', new THREE.BufferAttribute(color, 3))
+    band = new THREE.Mesh(geo, mat)
+    console.log(band)
+
+    scene.add(band)
+
+    var light = new THREE.HemisphereLight(0xffffbb, 0x080820, 1)
+    scene.add(light)
+
+    renderer = window.WebGLRenderingContext
+        ? new THREE.WebGLRenderer({ alpha: true })
+        : new THREE.CanvasRenderer()
+
+    composer = new EffectComposer(renderer);
+    const renderPass = new RenderPass(scene, camera);
+    const params = {};
+    const myPass = new MyPass(window.innerWidth, window.innerHeight, params);
+    // const myPass2 = new MyPass2(window.innerWidth, window.innerHeight, params, myPass);
+    composer.addPass(renderPass);
+    composer.addPass(myPass);
+    // composer.addPass(myPass2);
+
+    onWindowResized()
+
+    window.requestAnimationFrame(run)
+    window.wallpaperRegisterAudioListener(wallpaperAudioListener)
+    onWindowResized()
+}
+
+window.onresize = onWindowResized
+
+class MyPass extends Pass {
+
+    constructor(width, height, params) {
+
+        super();
+
+        this.remember = new THREE.WebGLRenderTarget(innerWidth, innerHeight);
+        this.remember2 = new THREE.WebGLRenderTarget(innerWidth, innerHeight);
+        this.count = 0
+
+        const MyPassShader = {
+
+            uniforms: {
+                'tDiffuse': { value: null },
+                'tDiffuse2': { value: null },
+                'width': { value: 1 },
+                'height': { value: 1 }
+            },
+
+            vertexShader: /* glsl */`
+
+                varying vec2 vUV;
+
+                void main() {
+
+                    vUV = uv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+
+                }`,
+
+            fragmentShader: /* glsl */`
+
+                varying vec2 vUV;
+                uniform sampler2D tDiffuse;
+                uniform sampler2D tDiffuse2;
+
+                void main() {
+
+                    vec2 vUV2 = vUV;
+                    vUV2[1] -= 0.002;
+                    if(vUV[1] < 0.5) {
+                        gl_FragColor = texture2D( tDiffuse, vUV );
+                        return;
+                    }
+                    gl_FragColor = max(texture2D( tDiffuse, vUV ) , texture2D( tDiffuse2, vUV2 ));
+
+                }`
+
+        };
+
+        this.uniforms = UniformsUtils.clone(MyPassShader.uniforms);
+        this.material = new ShaderMaterial({
+            uniforms: this.uniforms,
+            fragmentShader: MyPassShader.fragmentShader,
+            vertexShader: MyPassShader.vertexShader
+        });
+
+        // set params
+        this.uniforms.width.value = width;
+        this.uniforms.height.value = height;
+
+        for (const key in params) {
+
+            if (params.hasOwnProperty(key) && this.uniforms.hasOwnProperty(key)) {
+
+                this.uniforms[key].value = params[key];
+
+            }
+
+        }
+
+        this.fsQuad = new FullScreenQuad(this.material);
+
+    }
+
+    render(renderer, writeBuffer, readBuffer/*, deltaTime, maskActive*/) {
+
+        this.count++
+
+        this.material.uniforms['tDiffuse'].value = readBuffer.texture;
+
+        if (this.count % 2 == 0) {
+            this.material.uniforms['tDiffuse2'].value = this.remember.texture || readBuffer.texture;
+            renderer.setRenderTarget(this.remember2);
+            this.fsQuad.render(renderer);
+        } else {
+            this.material.uniforms['tDiffuse2'].value = this.remember2.texture || readBuffer.texture;
+            renderer.setRenderTarget(this.remember);
+            this.fsQuad.render(renderer);
+        }
+
+        if (this.renderToScreen) {
+
+            renderer.setRenderTarget(null);
+            this.fsQuad.render(renderer);
+
+        } else {
+
+            renderer.setRenderTarget(writeBuffer);
+            if (this.clear) renderer.clear();
+            this.fsQuad.render(renderer);
+        }
+
+    }
+
+    setSize(width, height) {
+
+        this.uniforms.width.value = width;
+        this.uniforms.height.value = height;
+
+    }
+
+}
