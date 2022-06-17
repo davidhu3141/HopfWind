@@ -3,9 +3,9 @@ import {
     ShaderMaterial,
     UniformsUtils
 } from 'three';
-import { Pass, FullScreenQuad } from './Pass.js';
-import { EffectComposer } from './jsm/postprocessing/EffectComposer.js';
-import { RenderPass } from './jsm/postprocessing/RenderPass.js';
+// import { Pass, FullScreenQuad } from './Pass.js';
+// import { EffectComposer } from './jsm/postprocessing/EffectComposer.js';
+// import { RenderPass } from './jsm/postprocessing/RenderPass.js';
 
 var renderer
 var composer
@@ -201,8 +201,17 @@ window.wallpaperPropertyListener = {
 }
 
 function wallpaperAudioListener(audioArray) {
-    audioSamples = audioArray.map(e => Math.pow(e, 0.8))
-    e
+    // audioSamples = audioArray.map(e => Math.pow(e, 0.8))
+    for (var i = 0; i < 50; i++) {
+        let index = parseInt(Math.random() * 64)
+        let index2 = parseInt(Math.random() * 64)
+        let amount = Math.random() / 3
+        audioSamples[index] = (audioSamples[index] + amount) % 1
+        audioSamples[index2] = (audioSamples[index] - amount + 1) % 1
+    }
+    for (var i = 64; i < 128; i++) {
+        audioSamples[i] = audioSamples[127 - i]
+    }
 }
 
 var obj_l
@@ -250,13 +259,13 @@ function run() {
         position_l.needsUpdate = true
     }
 
-    composer.render(scene, camera)
+    renderer.render(scene, camera)
 }
 
 
 function onWindowResized() {
     renderer.setSize(window.innerWidth / (pixsz * cp), window.innerHeight / (pixsz * cp))
-    composer.setSize(window.innerWidth / (pixsz * cp), window.innerHeight / (pixsz * cp))
+    // composer.setSize(window.innerWidth / (pixsz * cp), window.innerHeight / (pixsz * cp))
     document.body.appendChild(renderer.domElement)
     renderer.domElement.setAttribute("style",
         `width:${window.innerWidth / cp}px;` +
@@ -296,130 +305,12 @@ window.onload = function () {
         ? new THREE.WebGLRenderer({ alpha: true })
         : new THREE.CanvasRenderer()
 
-    composer = new EffectComposer(renderer);
-    const renderPass = new RenderPass(scene, camera);
-    const params = {};
-    const myPass = new MyPass(window.innerWidth, window.innerHeight, params);
-    // const myPass2 = new MyPass2(window.innerWidth, window.innerHeight, params, myPass);
-    composer.addPass(renderPass);
-    composer.addPass(myPass);
-    // composer.addPass(myPass2);
-
     onWindowResized()
 
     window.requestAnimationFrame(run)
-    window.wallpaperRegisterAudioListener(wallpaperAudioListener)
+    // window.wallpaperRegisterAudioListener(wallpaperAudioListener)
+    setInterval(wallpaperAudioListener, 100)
     onWindowResized()
 }
 
 window.onresize = onWindowResized
-
-class MyPass extends Pass {
-
-    constructor(width, height, params) {
-
-        super();
-
-        this.remember = new THREE.WebGLRenderTarget(innerWidth, innerHeight);
-        this.remember2 = new THREE.WebGLRenderTarget(innerWidth, innerHeight);
-        this.count = 0
-
-        const MyPassShader = {
-
-            uniforms: {
-                'tDiffuse': { value: null },
-                'tDiffuse2': { value: null },
-                'width': { value: 1 },
-                'height': { value: 1 }
-            },
-
-            vertexShader: /* glsl */`
-
-                varying vec2 vUV;
-
-                void main() {
-
-                    vUV = uv;
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-
-                }`,
-
-            fragmentShader: /* glsl */`
-
-                varying vec2 vUV;
-                uniform sampler2D tDiffuse;
-                uniform sampler2D tDiffuse2;
-
-                void main() {
-
-                    vec2 vUV2 = vUV;
-                    vUV2[1] -= 0.002;
-                    gl_FragColor = texture2D( tDiffuse, vUV ) + texture2D( tDiffuse2, vUV2 );
-
-                }`
-
-        };
-
-        this.uniforms = UniformsUtils.clone(MyPassShader.uniforms);
-        this.material = new ShaderMaterial({
-            uniforms: this.uniforms,
-            fragmentShader: MyPassShader.fragmentShader,
-            vertexShader: MyPassShader.vertexShader
-        });
-
-        // set params
-        this.uniforms.width.value = width;
-        this.uniforms.height.value = height;
-
-        for (const key in params) {
-
-            if (params.hasOwnProperty(key) && this.uniforms.hasOwnProperty(key)) {
-
-                this.uniforms[key].value = params[key];
-
-            }
-
-        }
-
-        this.fsQuad = new FullScreenQuad(this.material);
-
-    }
-
-    render(renderer, writeBuffer, readBuffer/*, deltaTime, maskActive*/) {
-
-        this.count++
-
-        this.material.uniforms['tDiffuse'].value = readBuffer.texture;
-
-        if (this.count % 2 == 0) {
-            this.material.uniforms['tDiffuse2'].value = this.remember.texture || readBuffer.texture;
-            renderer.setRenderTarget(this.remember2);
-            this.fsQuad.render(renderer);
-        } else {
-            this.material.uniforms['tDiffuse2'].value = this.remember2.texture || readBuffer.texture;
-            renderer.setRenderTarget(this.remember);
-            this.fsQuad.render(renderer);
-        }
-
-        if (this.renderToScreen) {
-
-            renderer.setRenderTarget(null);
-            this.fsQuad.render(renderer);
-
-        } else {
-
-            renderer.setRenderTarget(writeBuffer);
-            if (this.clear) renderer.clear();
-            this.fsQuad.render(renderer);
-        }
-
-    }
-
-    setSize(width, height) {
-
-        this.uniforms.width.value = width;
-        this.uniforms.height.value = height;
-
-    }
-
-}
