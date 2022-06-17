@@ -22,12 +22,12 @@ var magfy = 6
 
 // global varibles, Animation
 var sphere_rot = 0
-var rot_is = 1
-var rot_sg = 1
+var rot_is = 0.5
+var rot_sg = 0.5
 var opa_def = 0.3
 var opa_sc = 1
 var opa_gbs = 1.5
-var hopf_lat = 1
+var hopf_lat = 0.2
 var hopf_lc = 1.5
 var sm_dec = 7
 var sm_fac = 1
@@ -193,7 +193,17 @@ window.wallpaperPropertyListener = {
 }
 
 function wallpaperAudioListener(audioArray) {
-    audioSamples = audioArray
+    // audioSamples = audioArray.map(e => Math.pow(e, 0.8))
+    for (var i = 0; i < 50; i++) {
+        let index = parseInt(Math.random() * 64)
+        let index2 = parseInt(Math.random() * 64)
+        let amount = Math.random() / 3
+        audioSamples[index] = (audioSamples[index] + amount) % 0.5
+        audioSamples[index2] = (audioSamples[index] - amount + 0.5) % 0.5
+    }
+    for (var i = 64; i < 128; i++) {
+        audioSamples[i] = audioSamples[127 - i]
+    }
 }
 
 var obj_l
@@ -355,7 +365,8 @@ window.onload = function () {
     onWindowResized()
 
     window.requestAnimationFrame(run)
-    window.wallpaperRegisterAudioListener(wallpaperAudioListener)
+    setInterval(wallpaperAudioListener, 100)
+    // window.wallpaperRegisterAudioListener(wallpaperAudioListener)
     onWindowResized()
 }
 
