@@ -10,13 +10,10 @@ export { SpecGradient }
 class SpecGradient extends Visualizer {
 
     // settings, Scene large sound_mag, small
-    pixsz = 1
-    cp = 1
-    show_half = false
+
 
     // not for settings
-    viewZ = 30
-    magfy = 6
+
 
     // ----- advanced -----
 
@@ -46,20 +43,11 @@ class SpecGradient extends Visualizer {
     toriparty = false
     tempForToricParty = null
 
-    use_user_image = false
-    user_image = ""
     current_color = new THREE.Color(1, 1, 1)
 
-    renderer
     composer
-    scene
-    camera
 
-    object_pool = [];
     band = null;
-
-    obj_l
-    obj_r
 
     lq_angle = 0
     lp = 0
