@@ -1,44 +1,42 @@
 
-import { SpecGradient } from 'vis/HopfWind.js'
+import { MockWPE } from 'class/MockWPE.js'
+import { SpecGradient } from 'vis/SpecGradient.js'
 
-var audioSamples = Array(128)
-audioSamples.fill(0)
+// -------------------------------------
 
-var vis = new HopfWind(window)
+var vis = new SpecGradient()
+var frameLapsed = 0
+var audioSamples = Array(128).fill(0)
+
+// -------------------------------------
 
 function isWPE() {
     return !(window.wallpaperRegisterAudioListener == undefined);
 }
 
-// Setting UI, for WPE
-window.wallpaperPropertyListener = {
-    applyUserProperties: vis.applySettingForWPE
-}
-
 function wallpaperAudioListener(audioArray) {
-    audioSamples = audioArray.map(e => Math.pow(e, 0.8))
+    audioSamples = audioArray
 }
 
 function run() {
-    vis.render()
-}
-
-window.onload = function () {
-
-    if (!isWPE()) {
-        let gui = new dat.GUI();
-        let settings = vis.settings;
-        let settingKeys = vis.settingKeys;
-        settingKeys.forEach(k => {
-            gui.add(settings, k);
-        })
-    }
-
     window.requestAnimationFrame(run)
+    vis.render(frameLapsed++, audioSamples)
 }
 
-window.onresize = () => {
-    vis.windowResized(window.innerWidth, window.innerHeight)
+// -------------------------------------
+
+let environment = isWPE() ? window : MockWPE
+environment.wallpaperRegisterAudioListener(wallpaperAudioListener)
+environment.wallpaperPropertyListener = {
+    applyUserProperties: vis.applySettingForWPE
 }
+
+window.addEventListener('load', () => {
+    window.requestAnimationFrame(run)
+})
+
+window.addEventListener('resize', () => {
+    vis.windowResized(window.innerWidth, window.innerHeight)
+})
 
 

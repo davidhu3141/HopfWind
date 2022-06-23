@@ -19,13 +19,26 @@ class Visualizer {
     use_user_image = false
     user_image = ""
 
+    // settings
+    settings = {}
+    settingKeys = {}
 
     constructor() {
-        this.settings = {}
-        this.settingKeys = {}
     }
 
-    applySettingForWPE(properties) { }
+    // ---------------- for overriding
+
+    applySettingForWPE(properties) {
+        console.log("Should override " + applySettingForWPE)
+    }
+
+    render() {
+        console.log("Should override " + applySettingForWPE)
+    }
+
+    windowResized() { }
+
+    // ---------------- no need to override
 
     getRenderer() {
         return this.renderer
