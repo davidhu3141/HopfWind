@@ -11,43 +11,57 @@ class MockWPE {
     static analyser
     static audioElement
     static track
-    static bufferLength
-    static dataArray
+
+    static fftSize = 2048
+    static bufferLength = this.fftSize / 2
+    static finalBinCount = 128
+    static buffer = new Uint8Array(this.bufferLength).fill(0);
+    static finalBin = new Array(this.finalBinCount)
 
     static init() {
 
         AudioContext = window.AudioContext || window.webkitAudioContext;
-        audioContext = new AudioContext();
-        analyser = audioContext.createAnalyser();
+        this.audioContext = new AudioContext();
+        this.analyser = this.audioContext.createAnalyser();
+        this.analyser.fftSize = this.fftSize;
     }
 
     static setAudioFile() {
-        audioElement = document.querySelector('audio');
-        track = audioContext.createMediaElementSource(audioElement);
-        bufferLength = analyser.frequencyBinCount;
-        dataArray = new Uint8Array(bufferLength);
 
-        track.connect(analyser);
-        analyser.connect(audioContext.destination)
-
-        analyser.fftSize = 2048;
-        var bufferLength = analyser.frequencyBinCount;
-        var dataArray = new Uint8Array(bufferLength);
+        this.audioElement = document.querySelector('audio');
+        this.track = this.audioContext.createMediaElementSource(this.audioElement);
+        this.track.connect(this.analyser);
+        this.analyser.connect(this.audioContext.destination)
     }
 
     static registerAudioListener(listener) {
+
         setInterval(() => {
-            listener(analyser.getByteTimeDomainData(dataArray))
+
+            this.analyser.getByteTimeDomainData(this.buffer)
+            const k = this.finalBinCount / 2
+
+            for (let i = 0; i < k; i++) {
+                const j = i * 8
+                this.finalBin[i] = (
+                    this.buffer[j] + this.buffer[j + 1] + this.buffer[j + 2] + this.buffer[j + 3]
+                    + this.buffer[j + 4] + this.buffer[j + 5] + this.buffer[j + 6] + this.buffer[j + 7]) / 2048
+            }
+            for (let i = k; i < this.finalBinCount; i++) {
+                const j = (i - k) * 8
+                this.finalBin[i] = (
+                    this.buffer[j] + this.buffer[j + 1] + this.buffer[j + 2] + this.buffer[j + 3]
+                    + this.buffer[j + 4] + this.buffer[j + 5] + this.buffer[j + 6] + this.buffer[j + 7]) / 2048
+            }
+            listener(this.finalBin)
+
         }, 50)
     }
 
-    static setupGUI() {
+    static setupGUI(settings, settingKeys) {
+
         let gui = new dat.GUI();
-        let settings = vis.settings;
-        let settingKeys = vis.settingKeys;
-        settingKeys.forEach(k => {
-            gui.add(settings, k);
-        })
+        settingKeys.forEach(e => { gui.add(settings, e); })
     }
 
 }

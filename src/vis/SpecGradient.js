@@ -1,23 +1,15 @@
 
 import * as THREE from 'three'
-import { Pass, FullScreenQuad } from './Pass.js';
-import { EffectComposer } from './jsm/postprocessing/EffectComposer.js';
-import { RenderPass } from './jsm/postprocessing/RenderPass.js';
+import { Pass, FullScreenQuad } from '../class/Pass.js';
+import { EffectComposer } from '../jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from '../jsm/postprocessing/RenderPass.js';
 
-import { Visualizer } from '../Visualizer.js'
+import { Visualizer } from '../class/Visualizer.js'
+
 export { SpecGradient }
 
 class SpecGradient extends Visualizer {
 
-    // settings, Scene large sound_mag, small
-
-
-    // not for settings
-
-
-    // ----- advanced -----
-
-    // global varibles, Animation
     sphere_rot = 0
     rot_is = 1
     rot_sg = 1
@@ -36,8 +28,6 @@ class SpecGradient extends Visualizer {
     useFour = false
     capouterlight = true
     atancap = 3
-    offX = 0
-    offY = 0
     cliff90 = false
     cliffauto = false
     toriparty = false
@@ -57,202 +47,48 @@ class SpecGradient extends Visualizer {
 
         super()
 
-        scene = new THREE.Scene()
-        camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, show_half ? viewZ : viewZ * 2)
-
         let mat = new THREE.MeshBasicMaterial()
         mat.vertexColors = true
         let geo = new THREE.PlaneBufferGeometry(20, 0.2, 128, 1)
         let color = new Float32Array(new Array(129 * 2 * 3).fill(0.05))
         geo.setAttribute('color', new THREE.BufferAttribute(color, 3))
-        band = new THREE.Mesh(geo, mat)
-        console.log(band)
+        this.band = new THREE.Mesh(geo, mat)
+        console.log(this.band)
 
-        scene.add(band)
+        this.scene.add(this.band)
 
         var light = new THREE.HemisphereLight(0xffffbb, 0x080820, 1)
-        scene.add(light)
+        this.scene.add(light)
 
-        renderer = window.WebGLRenderingContext
-            ? new THREE.WebGLRenderer({ alpha: true })
-            : new THREE.CanvasRenderer()
-
-        composer = new EffectComposer(renderer);
-        const renderPass = new RenderPass(scene, camera);
+        this.composer = new EffectComposer(this.renderer);
+        const renderPass = new RenderPass(this.scene, this.camera);
         const params = {};
         const myPass = new MyPass(window.innerWidth, window.innerHeight, params);
         // const myPass2 = new MyPass2(window.innerWidth, window.innerHeight, params, myPass);
-        composer.addPass(renderPass);
-        composer.addPass(myPass);
+        this.composer.addPass(renderPass);
+        this.composer.addPass(myPass);
         // composer.addPass(myPass2);
-
-        onWindowResized()
-
-        window.requestAnimationFrame(run)
-        window.wallpaperRegisterAudioListener(wallpaperAudioListener)
-        onWindowResized()
-
     }
 
     applySettingForWPE(properties) {
-        if (properties.schemecolor) {
-            var schemeColor = properties.schemecolor.value.split(' ')
-            schemeColor = schemeColor.map(c => Math.ceil(c * 255))
-            properties.schemeColor = schemeColor
-        }
-        /////////////////////////////////////////////////////////
-        if (properties.toruscolor) {
-            var customColor = properties.toruscolor.value.split(' ')
-            current_color = new THREE.Color(customColor[0] * 1, customColor[1] * 1, customColor[2] * 1)
-            object_pool.forEach(e => { e.material.color = current_color })
-        }
-        if (properties.pixelated) {
-            pixsz = properties.pixelated.value
-            onWindowResized()
-        }
-        if (properties.canvasportion) {
-            cp = properties.canvasportion.value
-            onWindowResized()
-        }
-        if (properties.showonlyhalf) {
-            show_half = !properties.showonlyhalf.value
-            onWindowResized()
-        }
-        if (properties.customimage) {
-            use_user_image = properties.customimage.value
-            if (use_user_image && user_image)
-                document.body.setAttribute("style", `background-image: url("file:///${user_image}")`)
-            else
-                document.body.setAttribute("style", '')
-        }
-        if (properties.customimagepath) {
-            user_image = properties.customimagepath.value
-            if (use_user_image)
-                document.body.setAttribute("style", `background-image: url("file:///${user_image}")`)
-        }
-        /////////////////////////////////////////////////////////
-        if (properties.rot_is) {
-            rot_is = properties.rot_is.value
-        }
-        if (properties.rot_sg) {
-            rot_sg = properties.rot_sg.value
-        }
-        /////////////////////////////////////////////////////////
-        if (properties.opa_sc) {
-            opa_sc = properties.opa_sc.value
-        }
-        if (properties.opacitydefault) {
-            opa_def = Math.pow(properties.opacitydefault.value, 2)
-        }
-        if (properties.opa_gbs) {
-            opa_gbs = properties.opa_gbs.value
-        }
-        /////////////////////////////////////////////////////////
-        if (properties.hopf_lat) {
-            hopf_lat = properties.hopf_lat.value / 180 * Math.PI
-        }
-        if (properties.hopflatitudecap) {
-            hopf_lc = properties.hopflatitudecap.value / 180 * Math.PI
-        }
-        /////////////////////////////////////////////////////////
-        if (properties.sm_fac) {
-            sm_fac = properties.sm_fac.value
-        }
-        if (properties.sm_dec) {
-            sm_dec = properties.sm_dec.value * 10
-        }
-        if (properties.soundmagnitudecap) {
-            sm_cap = properties.soundmagnitudecap.value
-        }
-        /////////////////////////////////////////////////////////
-        if (properties.magloud) {
-            magloud = properties.magloud.value
-        }
-        if (properties.magfy) {
-            magfy = properties.magfy.value
-        }
-        if (properties.view) {
-            viewAngle = properties.view.value / 180 * Math.PI
-            onWindowResized()
-        }
-        if (properties.capouterlight) {
-            capouterlight = properties.capouterlight.value
-        }
-        if (properties.usefour) {
-            useFour = properties.usefour.value
-        }
-        if (properties.atancap) {
-            atancap = properties.atancap.value + 3
-        }
-        if (properties.offsetx) {
-            offX = properties.offsetx.value
-            onWindowResized()
-        }
-        if (properties.offsety) {
-            offY = properties.offsety.value
-            onWindowResized()
-        }
-        if (properties.cliffordrotation45) {
-            cliff90 = properties.cliffordrotation45.value
-        }
-        if (properties.cliffordrotationauto) {
-            cliffauto = properties.cliffordrotationauto.value
-        }
-        if (properties.toricgotoparty) {
-            toriparty = properties.toricgotoparty.value
-            if (!toriparty) {
-                object_pool.forEach(e => { e.material.color = current_color })
-                if (tempForToricParty) {
-                    capouterlight = tempForToricParty.capouterlight || false
-                    opa_sc = tempForToricParty.opa_sc || 1
-                    opa_def = tempForToricParty.opa_def || 0.3
-                    opa_gbs = tempForToricParty.opa_gbs || 0.5
-                    tempForToricParty = null
-                }
-            } else {
-                tempForToricParty = {
-                    capouterlight: capouterlight,
-                    opa_def: opa_def,
-                    opa_sc: opa_sc,
-                    opa_gbs: opa_gbs
-                }
-                capouterlight = true
-                opa_sc = 1
-                opa_def = 0
-                opa_gbs = 5
-            }
-        }
+
     }
 
     windowResized(innerWidth, innerHeight) {
-        renderer.setSize(innerWidth / (pixsz * cp), innerHeight / (pixsz * cp))
-        composer.setSize(innerWidth / (pixsz * cp), innerHeight / (pixsz * cp))
-        document.body.appendChild(renderer.domElement)
-        renderer.domElement.setAttribute("style",
-            `width:${innerWidth / cp}px;` +
-            `height:${innerHeight / cp}px;` +
-            `left:${innerWidth * (1 - 1 / cp + offX) / 2}px;` +
-            `top:${innerHeight * (1 - 1 / cp + offY) / 2}px;`
-        )
-        camera.aspect = innerWidth / innerHeight
-        camera.position.z = viewZ * Math.cos(viewAngle)
-        camera.position.y = viewZ * Math.sin(viewAngle)
-        camera.far = show_half ? viewZ : viewZ * 2
-        camera.fov = 60 / cp
-        camera.lookAt(new THREE.Vector3(0, 0, 0));
-        camera.updateProjectionMatrix()
+        super.windowResized(innerWidth, innerHeight)
+        this.composer.setSize(innerWidth / (this.pixsz * this.canvasPortion), innerHeight / (this.pixsz * this.canvasPortion))
     }
 
-    render() {
+    render(time, audioSamples) {
         var sum = audioSamples.reduce((a, b) => a + b) / 128
-        lq_angle += 0.0012 * rot_is + sum / 6 * rot_sg
-        t += 0.5
-        var magall_new = sum * magloud / 2
-        magall = magall_new >= magall
+        this.lq_angle += 0.0012 * this.rot_is + sum / 6 * this.rot_sg
+        this.t += 0.5
+        var magall_new = sum * this.magloud / 2
+        this.magall = magall_new >= this.magall
             ? magall_new
-            : (magall * magdec + magall_new) / (magdec + 1)
+            : (this.magall * this.magdec + this.magall_new) / (this.magdec + 1)
 
-        var geometry = band.geometry;
+        var geometry = this.band.geometry;
 
 
         for (var u = 0; u < 128; u++) {
@@ -271,7 +107,7 @@ class SpecGradient extends Visualizer {
 
         }
         geometry.attributes.color.needsUpdate = true;
-        composer.render(scene, camera)
+        this.composer.render(this.scene, this.camera)
     }
 
 }
@@ -326,8 +162,8 @@ class MyPass extends Pass {
 
         };
 
-        this.uniforms = UniformsUtils.clone(MyPassShader.uniforms);
-        this.material = new ShaderMaterial({
+        this.uniforms = THREE.UniformsUtils.clone(MyPassShader.uniforms);
+        this.material = new THREE.ShaderMaterial({
             uniforms: this.uniforms,
             fragmentShader: MyPassShader.fragmentShader,
             vertexShader: MyPassShader.vertexShader

@@ -1,6 +1,6 @@
 const path = require('path');
 
-var env = '' //'prod'
+var env = 'here' //'prod'
 
 module.exports = {
   entry: {
