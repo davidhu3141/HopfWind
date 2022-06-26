@@ -14,7 +14,7 @@ class Visualizer {
     viewZ = 30
     magfy = 6
     pixsz = 1
-    canvasPortion = 1
+    canvasPortion = 2
     show_half = false
     offX = 0
     offY = 0
@@ -55,7 +55,7 @@ class Visualizer {
         this.renderer.setSize(
             innerWidth / (this.pixsz * this.canvasPortion),
             innerHeight / (this.pixsz * this.canvasPortion))
-        document.body.appendChild(this.renderer.domElement)
+        document.querySelector("#canvasLoader").appendChild(this.renderer.domElement)
         this.renderer.domElement.setAttribute("style",
             `width:${innerWidth / this.canvasPortion}px;` +
             `height:${innerHeight / this.canvasPortion}px;` +

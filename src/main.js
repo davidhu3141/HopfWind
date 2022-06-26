@@ -28,16 +28,21 @@ if (isWPE) {
 } else {
     MockWPE.init()
     MockWPE.registerAudioListener(wallpaperAudioListener)
-    MockWPE.setupGUI(vis.settings, vis.settingKeys)
+    // MockWPE.setupGUI(vis.settings, vis.settingKeys)
 }
 
 window.addEventListener('load', () => {
     vis.windowResized(window.innerWidth, window.innerHeight)
     window.requestAnimationFrame(run)
+
+    document.querySelector("#fileinput")
+        .addEventListener("change", fileSelected);
 })
 
 window.addEventListener('resize', () => {
     vis.windowResized(window.innerWidth, window.innerHeight)
 })
 
-
+function fileSelected(files) {
+    alert(this.files[0])
+}
