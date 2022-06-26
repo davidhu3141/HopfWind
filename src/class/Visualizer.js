@@ -31,7 +31,9 @@ class Visualizer {
     constructor() {
 
         this.scene = new THREE.Scene()
-        this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, this.show_half ? this.viewZ : this.viewZ * 2)
+        this.camera = new THREE.PerspectiveCamera(60,
+            window.innerWidth / window.innerHeight, 1,
+            this.show_half ? this.viewZ : this.viewZ * 2)
         this.renderer = window.WebGLRenderingContext
             ? new THREE.WebGLRenderer({ alpha: true })
             : new THREE.CanvasRenderer()
@@ -50,7 +52,9 @@ class Visualizer {
 
     windowResized(innerWidth, innerHeight) {
 
-        this.renderer.setSize(innerWidth / (this.pixsz * this.canvasPortion), innerHeight / (this.pixsz * this.canvasPortion))
+        this.renderer.setSize(
+            innerWidth / (this.pixsz * this.canvasPortion),
+            innerHeight / (this.pixsz * this.canvasPortion))
         document.body.appendChild(this.renderer.domElement)
         this.renderer.domElement.setAttribute("style",
             `width:${innerWidth / this.canvasPortion}px;` +
@@ -65,16 +69,6 @@ class Visualizer {
         this.camera.fov = 60 / this.canvasPortion
         this.camera.lookAt(new THREE.Vector3(0, 0, 0));
         this.camera.updateProjectionMatrix()
-    }
-
-    // ---------------- no need to override
-
-    getRenderer() {
-        return this.renderer
-    }
-
-    getRendererDomElement() {
-        return this.getRenderer().domElement;
     }
 
 }

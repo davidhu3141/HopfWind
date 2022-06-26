@@ -10,42 +10,15 @@ export { SpecGradient }
 
 class SpecGradient extends Visualizer {
 
-    sphere_rot = 0
-    rot_is = 1
-    rot_sg = 1
-    opa_def = 0.0
-    opa_sc = 0.5
-    opa_gbs = 2.5
-    hopf_lat = 0.3
-    hopf_lc = 1.5
-    sm_dec = 7
-    sm_fac = 1
-    sm_cap = 0.3
-    magall = 0
-    magdec = 10
-    magloud = 1
-    viewAngle = 0//0.5
-    useFour = false
-    capouterlight = true
-    atancap = 3
-    cliff90 = false
-    cliffauto = false
-    toriparty = false
-    tempForToricParty = null
-
-    current_color = new THREE.Color(1, 1, 1)
-
     composer
-
     band = null;
-
-    lq_angle = 0
-    lp = 0
-    t = 0
 
     constructor() {
 
         super()
+
+        this.settings = {}
+        this.settingKeys = {}
 
         let mat = new THREE.MeshBasicMaterial()
         mat.vertexColors = true
@@ -80,16 +53,8 @@ class SpecGradient extends Visualizer {
     }
 
     render(time, audioSamples) {
-        var sum = audioSamples.reduce((a, b) => a + b) / 128
-        this.lq_angle += 0.0012 * this.rot_is + sum / 6 * this.rot_sg
-        this.t += 0.5
-        var magall_new = sum * this.magloud / 2
-        this.magall = magall_new >= this.magall
-            ? magall_new
-            : (this.magall * this.magdec + this.magall_new) / (this.magdec + 1)
 
         var geometry = this.band.geometry;
-
 
         for (var u = 0; u < 128; u++) {
             var color = new THREE.Color(`hsl(${(audioSamples[u] * 600 + 180) % 360}, 100%, 50%)`);

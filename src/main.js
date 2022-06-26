@@ -28,7 +28,7 @@ if (isWPE) {
 } else {
     MockWPE.init()
     MockWPE.registerAudioListener(wallpaperAudioListener)
-    // MockWPE.setupGUI(vis.settings, vis.settingKeys)
+    MockWPE.setupGUI(vis.settings, vis.settingKeys)
 }
 
 window.addEventListener('load', () => {
