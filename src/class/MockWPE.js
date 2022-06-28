@@ -41,22 +41,28 @@ class MockWPE {
         setInterval(() => {
 
             this.analyser.getByteFrequencyData(this.buffer)
-            const k = this.finalBinCount / 2
 
-            for (let i = 0; i < k; i++) {
-                const j = i * 8
-                this.finalBin[i] = 1 / 2048 * (this.buffer[j] + this.buffer[j + 1]
-                    + this.buffer[j + 2] + this.buffer[j + 3]
-                    + this.buffer[j + 4] + this.buffer[j + 5]
-                    + this.buffer[j + 6] + this.buffer[j + 7])
+            // const k = this.finalBinCount / 2
+            // for (let i = 0; i < k; i++) {
+            //     const j = i * 8
+            //     this.finalBin[i] = (this.buffer[j] + this.buffer[j + 1] + this.buffer[j + 2] + this.buffer[j + 3]
+            //         + this.buffer[j + 4] + this.buffer[j + 5] + this.buffer[j + 6] + this.buffer[j + 7]) / 2048
+            // }
+            // for (let i = k; i < this.finalBinCount; i++) {
+            //     this.finalBin[i] = this.finalBin[i - k]
+            // }
+
+            // for (let i = 0; i < this.finalBinCount; i++) {
+            //     const j = i * 8
+            //     this.finalBin[i] = (this.buffer[j] + this.buffer[j + 1] + this.buffer[j + 2] + this.buffer[j + 3]
+            //         + this.buffer[j + 4] + this.buffer[j + 5] + this.buffer[j + 6] + this.buffer[j + 7]) / 2048
+            // }
+
+            for (let i = 0; i < this.finalBinCount; i++) {
+                const j = i * 2
+                this.finalBin[i] = (this.buffer[i] + this.buffer[i + 1]) / 256 / 2
             }
-            for (let i = k; i < this.finalBinCount; i++) {
-                const j = (i - k) * 8
-                this.finalBin[i] = 1 / 2048 * (this.buffer[j] + this.buffer[j + 1]
-                    + this.buffer[j + 2] + this.buffer[j + 3]
-                    + this.buffer[j + 4] + this.buffer[j + 5]
-                    + this.buffer[j + 6] + this.buffer[j + 7])
-            }
+
             listener(this.finalBin)
 
         }, 50)

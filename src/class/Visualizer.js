@@ -14,7 +14,7 @@ class Visualizer {
     viewZ = 30
     magfy = 6
     pixsz = 1
-    canvasPortion = 2
+    canvasPortion = 1.2
     show_half = false
     offX = 0
     offY = 0

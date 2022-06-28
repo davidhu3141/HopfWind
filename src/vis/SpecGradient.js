@@ -57,8 +57,8 @@ class SpecGradient extends Visualizer {
         var geometry = this.band.geometry;
 
         for (var u = 0; u < 128; u++) {
-            var color = new THREE.Color(`hsl(${(audioSamples[u] * 100 + 180) % 360}, 100%, 50%)`);
-            var i = u > 64 ? 192 - u : u
+            var color = new THREE.Color(`hsl(${(audioSamples[u] * 250 + 90) % 360}, 100%, 50%)`);
+            var i = u//u > 64 ? 192 - u : u
             var bat = 3
 
             geometry.attributes.color.array[i * bat] =
