@@ -9,7 +9,6 @@ class MockWPE {
     // intended to be private
     static audioContext
     static analyser
-    static audioElement
     static track
 
     static fftSize = 2048
@@ -20,38 +19,43 @@ class MockWPE {
 
     static init() {
 
+
+    }
+
+    static setAudioFile(audioElement) {
+
         AudioContext = window.AudioContext || window.webkitAudioContext;
         this.audioContext = new AudioContext();
         this.analyser = this.audioContext.createAnalyser();
         this.analyser.fftSize = this.fftSize;
-    }
 
-    static setAudioFile() {
-
-        this.audioElement = document.querySelector('audio');
-        this.track = this.audioContext.createMediaElementSource(this.audioElement);
+        this.track = this.audioContext.createMediaElementSource(audioElement);
         this.track.connect(this.analyser);
         this.analyser.connect(this.audioContext.destination)
+
+        audioElement.play()
     }
 
     static registerAudioListener(listener) {
 
         setInterval(() => {
 
-            this.analyser.getByteTimeDomainData(this.buffer)
+            this.analyser.getByteFrequencyData(this.buffer)
             const k = this.finalBinCount / 2
 
             for (let i = 0; i < k; i++) {
                 const j = i * 8
-                this.finalBin[i] = (
-                    this.buffer[j] + this.buffer[j + 1] + this.buffer[j + 2] + this.buffer[j + 3]
-                    + this.buffer[j + 4] + this.buffer[j + 5] + this.buffer[j + 6] + this.buffer[j + 7]) / 2048
+                this.finalBin[i] = 1 / 2048 * (this.buffer[j] + this.buffer[j + 1]
+                    + this.buffer[j + 2] + this.buffer[j + 3]
+                    + this.buffer[j + 4] + this.buffer[j + 5]
+                    + this.buffer[j + 6] + this.buffer[j + 7])
             }
             for (let i = k; i < this.finalBinCount; i++) {
                 const j = (i - k) * 8
-                this.finalBin[i] = (
-                    this.buffer[j] + this.buffer[j + 1] + this.buffer[j + 2] + this.buffer[j + 3]
-                    + this.buffer[j + 4] + this.buffer[j + 5] + this.buffer[j + 6] + this.buffer[j + 7]) / 2048
+                this.finalBin[i] = 1 / 2048 * (this.buffer[j] + this.buffer[j + 1]
+                    + this.buffer[j + 2] + this.buffer[j + 3]
+                    + this.buffer[j + 4] + this.buffer[j + 5]
+                    + this.buffer[j + 6] + this.buffer[j + 7])
             }
             listener(this.finalBin)
 
