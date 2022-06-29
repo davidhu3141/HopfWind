@@ -12,18 +12,20 @@ class SpecGradient extends Visualizer {
 
     composer
     band = null;
+    sampleSize
+    sampleSizePlus
 
-    constructor() {
+    constructor(sampleSize) {
 
         super()
 
-        this.settings = {}
-        this.settingKeys = {}
+        this.sampleSize = sampleSize
+        this.sampleSizePlus = sampleSize + 1
 
         let mat = new THREE.MeshBasicMaterial()
         mat.vertexColors = true
-        let geo = new THREE.PlaneBufferGeometry(20, 0.2, 128, 1)
-        let color = new Float32Array(new Array(129 * 2 * 3).fill(0.05))
+        let geo = new THREE.PlaneBufferGeometry(20, 0.2, this.sampleSize, 1)
+        let color = new Float32Array(new Array(this.sampleSizePlus * 2 * 3).fill(0.05))
         geo.setAttribute('color', new THREE.BufferAttribute(color, 3))
         this.band = new THREE.Mesh(geo, mat)
         console.log(this.band)
@@ -37,10 +39,9 @@ class SpecGradient extends Visualizer {
         const renderPass = new RenderPass(this.scene, this.camera);
         const params = {};
         const myPass = new MyPass(window.innerWidth, window.innerHeight, params);
-        // const myPass2 = new MyPass2(window.innerWidth, window.innerHeight, params, myPass);
+
         this.composer.addPass(renderPass);
         this.composer.addPass(myPass);
-        // composer.addPass(myPass2);
     }
 
     applySettingForWPE(properties) {
@@ -56,19 +57,19 @@ class SpecGradient extends Visualizer {
 
         var geometry = this.band.geometry;
 
-        for (var u = 0; u < 128; u++) {
+        for (var u = 0; u < this.sampleSize; u++) {
             var color = new THREE.Color(`hsl(${(audioSamples[u] * 250 + 90) % 360}, 100%, 50%)`);
             var i = u//u > 64 ? 192 - u : u
             var bat = 3
 
             geometry.attributes.color.array[i * bat] =
-                geometry.attributes.color.array[129 * 3 + i * bat] = color.r
+                geometry.attributes.color.array[this.sampleSizePlus * 3 + i * bat] = color.r
 
             geometry.attributes.color.array[i * bat + 1] =
-                geometry.attributes.color.array[129 * 3 + i * bat + 1] = color.g
+                geometry.attributes.color.array[this.sampleSizePlus * 3 + i * bat + 1] = color.g
 
             geometry.attributes.color.array[i * bat + 2] =
-                geometry.attributes.color.array[129 * 3 + i * bat + 2] = color.b
+                geometry.attributes.color.array[this.sampleSizePlus * 3 + i * bat + 2] = color.b
 
         }
         geometry.attributes.color.needsUpdate = true;

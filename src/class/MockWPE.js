@@ -5,67 +5,67 @@ class MockWPE {
 
     // public
     static audioFile
+    static audioListener
 
     // intended to be private
     static audioContext
     static analyser
+    static gainNode
     static track
 
-    static fftSize = 2048
-    static bufferLength = this.fftSize / 2
+    static bufferLength = 1024
+    static buffer = new Uint8Array(this.bufferLength).fill(0)
+
     static finalBinCount = 128
-    static buffer = new Uint8Array(this.bufferLength).fill(0);
-    static finalBin = new Array(this.finalBinCount)
+    static finalBin;
 
     static init() {
 
 
     }
 
+    static registerAudioListener(listener, finalBinCount) {
+        this.audioListener = listener
+        this.finalBinCount = finalBinCount
+        this.finalBin = new Array(this.finalBinCount).fill(0);
+    }
+
     static setAudioFile(audioElement) {
 
         AudioContext = window.AudioContext || window.webkitAudioContext;
         this.audioContext = new AudioContext();
+
         this.analyser = this.audioContext.createAnalyser();
-        this.analyser.fftSize = this.fftSize;
+        this.analyser.fftSize = 2048;
+
+        this.gainNode = this.audioContext.createGain();
+        this.gainNode.gain.value = 0.05;
 
         this.track = this.audioContext.createMediaElementSource(audioElement);
-        this.track.connect(this.analyser);
+        this.track.connect(this.gainNode)
+        this.gainNode.connect(this.analyser)
         this.analyser.connect(this.audioContext.destination)
-
-        audioElement.play()
-    }
-
-    static registerAudioListener(listener) {
 
         setInterval(() => {
 
             this.analyser.getByteFrequencyData(this.buffer)
 
-            // const k = this.finalBinCount / 2
-            // for (let i = 0; i < k; i++) {
-            //     const j = i * 8
-            //     this.finalBin[i] = (this.buffer[j] + this.buffer[j + 1] + this.buffer[j + 2] + this.buffer[j + 3]
-            //         + this.buffer[j + 4] + this.buffer[j + 5] + this.buffer[j + 6] + this.buffer[j + 7]) / 2048
-            // }
-            // for (let i = k; i < this.finalBinCount; i++) {
-            //     this.finalBin[i] = this.finalBin[i - k]
-            // }
-
-            // for (let i = 0; i < this.finalBinCount; i++) {
-            //     const j = i * 8
-            //     this.finalBin[i] = (this.buffer[j] + this.buffer[j + 1] + this.buffer[j + 2] + this.buffer[j + 3]
-            //         + this.buffer[j + 4] + this.buffer[j + 5] + this.buffer[j + 6] + this.buffer[j + 7]) / 2048
-            // }
-
+            const step = this.bufferLength / this.finalBinCount
             for (let i = 0; i < this.finalBinCount; i++) {
-                const j = i * 2
-                this.finalBin[i] = (this.buffer[i] + this.buffer[i + 1]) / 256 / 2
+                // const j = i * step
+                // this.finalBin[i] = 0
+                // for (let k = 0; k < step; k++) {
+                //     this.finalBin[i] += this.buffer[j + k]
+                // }
+                // this.finalBin[i] = this.finalBin[i] / step / 256
+                this.finalBin[i] = this.buffer[i] / 256
             }
 
-            listener(this.finalBin)
+            this.audioListener(this.finalBin)
 
         }, 50)
+
+        audioElement.play()
     }
 
     static setupGUI(settings, settingKeys) {

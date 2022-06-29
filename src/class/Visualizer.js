@@ -37,7 +37,6 @@ class Visualizer {
         this.renderer = window.WebGLRenderingContext
             ? new THREE.WebGLRenderer({ alpha: true })
             : new THREE.CanvasRenderer()
-
     }
 
     // ---------------- for overriding

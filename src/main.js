@@ -4,10 +4,11 @@ import { SpecGradient } from './vis/SpecGradient.js'
 
 // -------------------------------------
 
-var vis = new SpecGradient()
 var frameLapsed = 0
-var audioSamples = Array(128).fill(0)
-const isWPE = !!(window.wallpaperRegisterAudioListener)
+var isWPE = !!(window.wallpaperRegisterAudioListener)
+var sampleSize = isWPE ? 128 : 1024
+var audioSamples = Array(sampleSize).fill(0)
+var vis = new SpecGradient(sampleSize)
 
 // -------------------------------------
 
@@ -27,7 +28,7 @@ if (isWPE) {
     window.wallpaperPropertyListener = { applyUserProperties: vis.applySettingForWPE }
 } else {
     MockWPE.init()
-    MockWPE.registerAudioListener(wallpaperAudioListener)
+    MockWPE.registerAudioListener(wallpaperAudioListener, sampleSize)
     // MockWPE.setupGUI(vis.settings, vis.settingKeys)
 }
 
