@@ -58,7 +58,7 @@ class SpecGradient extends Visualizer {
         var geometry = this.band.geometry;
 
         for (var u = 0; u < this.sampleSize; u++) {
-            var color = new THREE.Color(`hsl(${(audioSamples[u] * 250 + 90) % 360}, 100%, 50%)`);
+            var color = new THREE.Color(this.colorFunction(audioSamples[u]));
             var i = u//u > 64 ? 192 - u : u
             var bat = 3
 
@@ -74,6 +74,10 @@ class SpecGradient extends Visualizer {
         }
         geometry.attributes.color.needsUpdate = true;
         this.composer.render(this.scene, this.camera)
+    }
+
+    colorFunction(val) {
+        return `hsl(${(val * 400 + 90) % 360}, 100%, 50%)`
     }
 
 }
