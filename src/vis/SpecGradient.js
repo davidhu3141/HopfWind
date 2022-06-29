@@ -24,7 +24,7 @@ class SpecGradient extends Visualizer {
 
         let mat = new THREE.MeshBasicMaterial()
         mat.vertexColors = true
-        let geo = new THREE.PlaneBufferGeometry(20, 0.2, this.sampleSize, 1)
+        let geo = new THREE.PlaneBufferGeometry(40, 40, this.sampleSize, 1)
         let color = new Float32Array(new Array(this.sampleSizePlus * 2 * 3).fill(0.05))
         geo.setAttribute('color', new THREE.BufferAttribute(color, 3))
         this.band = new THREE.Mesh(geo, mat)
@@ -121,13 +121,13 @@ class MyPass extends Pass {
                 void main() {
 
                     vec2 vUV2 = vUV;
-                    vUV2[1] -= 0.002;
-                    if(vUV[1] < 0.5) {
+                    vUV2[1] -= 0.001;
+                    if(vUV[1] < 0.01) {
                         gl_FragColor = texture2D( tDiffuse, vUV );
                         return;
                     }
-                    gl_FragColor = max(texture2D( tDiffuse, vUV ) , texture2D( tDiffuse2, vUV2 ));
-
+                    //gl_FragColor = max(texture2D( tDiffuse, vUV ) , texture2D( tDiffuse2, vUV2 ));
+                    gl_FragColor = texture2D( tDiffuse2, vUV2 );
                 }`
 
         };

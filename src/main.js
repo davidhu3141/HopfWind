@@ -7,7 +7,7 @@ import { SpecGradientGray } from './vis/SpecGradientGray.js'
 
 var frameLapsed = 0
 var isWPE = !!(window.wallpaperRegisterAudioListener)
-var sampleSize = isWPE ? 128 : 1024
+var sampleSize = isWPE ? 128 : 512
 var audioSamples = Array(sampleSize).fill(0)
 // var vis = new SpecGradient(sampleSize)
 var vis = new SpecGradientGray(sampleSize)

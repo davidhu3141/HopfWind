@@ -39,7 +39,7 @@ class MockWPE {
         this.analyser.fftSize = 2048;
 
         this.gainNode = this.audioContext.createGain();
-        this.gainNode.gain.value = 0.05;
+        this.gainNode.gain.value = 0.15;
 
         this.track = this.audioContext.createMediaElementSource(audioElement);
         this.track.connect(this.gainNode)
@@ -60,6 +60,8 @@ class MockWPE {
                 // this.finalBin[i] = this.finalBin[i] / step / 256
                 this.finalBin[i] = this.buffer[i] / 256
             }
+
+            console.log(this.finalBin[80])
 
             this.audioListener(this.finalBin)
 
