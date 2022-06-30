@@ -61,8 +61,6 @@ class MockWPE {
                 this.finalBin[i] = this.buffer[i] / 256
             }
 
-            console.log(this.finalBin[80])
-
             this.audioListener(this.finalBin)
 
         }, 50)

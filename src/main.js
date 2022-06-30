@@ -40,6 +40,8 @@ window.addEventListener('load', () => {
 
     document.querySelector("#fileinput")
         .addEventListener("change", fileSelected);
+
+    document.body.setAttribute("style", `background-image: url("dist/bg.png")`)
 })
 
 window.addEventListener('resize', () => {
