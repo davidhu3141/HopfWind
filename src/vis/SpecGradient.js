@@ -77,7 +77,7 @@ class SpecGradient extends Visualizer {
     }
 
     colorFunction(val) {
-        return `hsl(${(val * 400 + 90) % 360}, 100%, 50%)`
+        return `hsl(${parseInt(val * 400 + 90) % 360}, 100%, ${100 - parseInt(val * 50)}%)`
     }
 
 }
