@@ -2,6 +2,8 @@
 import { MockWPE } from './class/MockWPE.js'
 import { SpecGradient } from './vis/SpecGradient.js'
 import { SpecGradientGray } from './vis/SpecGradientGray.js'
+import { SpecEntity } from './vis/SpecEntity.js'
+import { HopfWind } from './vis/HopfWind.js'
 
 // -------------------------------------
 
@@ -9,8 +11,10 @@ var frameLapsed = 0
 var isWPE = !!(window.wallpaperRegisterAudioListener)
 var sampleSize = isWPE ? 128 : 512
 var audioSamples = Array(sampleSize).fill(0)
-var vis = new SpecGradient(sampleSize)
+// var vis = new SpecGradient(sampleSize)
 // var vis = new SpecGradientGray(sampleSize)
+// var vis = new HopfWind(sampleSize)
+var vis = new SpecEntity(sampleSize)
 
 // -------------------------------------
 
@@ -40,6 +44,8 @@ window.addEventListener('load', () => {
 
     document.querySelector("#fileinput")
         .addEventListener("change", fileSelected);
+
+    document.body.setAttribute("style", `background-image: url("dist/bg.png")`)
 })
 
 window.addEventListener('resize', () => {
@@ -47,6 +53,5 @@ window.addEventListener('resize', () => {
 })
 
 function fileSelected(files) {
-    // console.log(this.files[0])
     MockWPE.setAudioFile(new Audio(URL.createObjectURL(this.files[0])))
 }
