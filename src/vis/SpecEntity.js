@@ -6,14 +6,15 @@ import { RenderPass } from '../jsm/postprocessing/RenderPass.js';
 
 import { Visualizer } from '../class/Visualizer.js'
 
-export { SpecGradient }
+export { SpecEntity }
 
-class SpecGradient extends Visualizer {
+class SpecEntity extends Visualizer {
 
     composer
-    band = null;
     sampleSize
     sampleSizePlus
+
+    obj_pool = []
 
     constructor(sampleSize) {
 
@@ -22,14 +23,16 @@ class SpecGradient extends Visualizer {
         this.sampleSize = sampleSize
         this.sampleSizePlus = sampleSize + 1
 
-        let mat = new THREE.MeshBasicMaterial()
-        mat.vertexColors = true
-        let geo = new THREE.PlaneBufferGeometry(40, 40, this.sampleSize, 1)
-        let color = new Float32Array(new Array(this.sampleSizePlus * 2 * 3).fill(0.05))
-        geo.setAttribute('color', new THREE.BufferAttribute(color, 3))
-        this.band = new THREE.Mesh(geo, mat)
-
-        this.scene.add(this.band)
+        for (var i = 0; i < this.sampleSize; i++) {
+            let geo = new THREE.PlaneBufferGeometry(0.05, 0.5, this.sampleSize, 1)
+            let mat = new THREE.MeshBasicMaterial()
+            let square = new THREE.Mesh(geo, mat)
+            mat.transparent = true
+            square.matrix.setPosition(40 * i / this.sampleSize - 20, 0, 0)
+            square.matrixAutoUpdate = false
+            this.scene.add(square)
+            this.obj_pool.push(square)
+        }
 
         var light = new THREE.HemisphereLight(0xffffbb, 0x080820, 1)
         this.scene.add(light)
@@ -54,24 +57,11 @@ class SpecGradient extends Visualizer {
 
     render(time, audioSamples) {
 
-        var geometry = this.band.geometry;
-
         for (var u = 0; u < this.sampleSize; u++) {
-            var color = new THREE.Color(this.colorFunction(audioSamples[u]));
-            var i = u//u > 64 ? 192 - u : u
-            var bat = 3
-
-            geometry.attributes.color.array[i * bat] =
-                geometry.attributes.color.array[this.sampleSizePlus * 3 + i * bat] = color.r
-
-            geometry.attributes.color.array[i * bat + 1] =
-                geometry.attributes.color.array[this.sampleSizePlus * 3 + i * bat + 1] = color.g
-
-            geometry.attributes.color.array[i * bat + 2] =
-                geometry.attributes.color.array[this.sampleSizePlus * 3 + i * bat + 2] = color.b
-
+            this.obj_pool[u].material.color = new THREE.Color(this.colorFunction(audioSamples[u]));
+            this.obj_pool[u].material.opacity = audioSamples[u]
+            this.obj_pool[u].material.needsUpdate = true
         }
-        geometry.attributes.color.needsUpdate = true;
         this.composer.render(this.scene, this.camera)
     }
 
@@ -121,7 +111,7 @@ class MyPass extends Pass {
 
                     vec2 vUV2 = vUV;
                     vUV2[1] -= 0.001;
-                    if(vUV[1] < 0.01) {
+                    if(vUV[1] < 0.5) {
                         gl_FragColor = texture2D( tDiffuse, vUV );
                         return;
                     }

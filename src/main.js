@@ -2,6 +2,7 @@
 import { MockWPE } from './class/MockWPE.js'
 import { SpecGradient } from './vis/SpecGradient.js'
 import { SpecGradientGray } from './vis/SpecGradientGray.js'
+import { SpecEntity } from './vis/SpecEntity.js'
 import { HopfWind } from './vis/HopfWind.js'
 
 // -------------------------------------
@@ -12,7 +13,8 @@ var sampleSize = isWPE ? 128 : 512
 var audioSamples = Array(sampleSize).fill(0)
 // var vis = new SpecGradient(sampleSize)
 // var vis = new SpecGradientGray(sampleSize)
-var vis = new HopfWind(sampleSize)
+// var vis = new HopfWind(sampleSize)
+var vis = new SpecEntity(sampleSize)
 
 // -------------------------------------
 
