@@ -14,10 +14,10 @@ class Visualizer {
     viewZ = 30
     magfy = 6
     pixsz = 1
-    canvasPortion = 4
-    show_half = false
-    offX = 0.7
-    offY = 0.7
+    canvasPortion = 1.2
+    show_half = true
+    offX = 0
+    offY = 0
     viewAngle = 0
 
     // desktop 
