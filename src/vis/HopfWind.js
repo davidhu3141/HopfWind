@@ -52,7 +52,7 @@ class HopfWind extends Visualizer {
         const sm_dec = 7
         const sm_fac = 1
         const sm_cap = 0.3
-        const magloud = 0
+        const magloud = 1
         const magfy = 6
         const sum = audioSamples.reduce((a, b) => a + b) / this.sampleSize
         const magall = sum * magloud / 2

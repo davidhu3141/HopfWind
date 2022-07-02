@@ -4,6 +4,7 @@ import { SpecGradient } from './vis/SpecGradient.js'
 import { SpecGradientGray } from './vis/SpecGradientGray.js'
 import { SpecEntity } from './vis/SpecEntity.js'
 import { HopfWind } from './vis/HopfWind.js'
+import { WindTorus } from './vis/WindTorus.js'
 
 // -------------------------------------
 
@@ -12,9 +13,11 @@ var isWPE = !!(window.wallpaperRegisterAudioListener)
 var sampleSize = isWPE ? 128 : 512
 var audioSamples = Array(sampleSize).fill(0)
 // var vis = new SpecGradient(sampleSize)
-// var vis = new SpecGradientGray(sampleSize)
+var vis = new SpecGradientGray(sampleSize)
 // var vis = new HopfWind(sampleSize)
-var vis = new SpecEntity(sampleSize)
+// var vis = new SpecEntity(sampleSize)
+// var vis = new WindTorus(sampleSize)
+
 
 // -------------------------------------
 

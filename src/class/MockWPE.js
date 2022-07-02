@@ -14,7 +14,8 @@ class MockWPE {
     static track
 
     static bufferLength = 1024
-    static buffer = new Uint8Array(this.bufferLength).fill(0)
+    // static buffer = new Uint8Array(this.bufferLength).fill(0)
+    static buffer = new Float32Array(this.bufferLength).fill(0)
 
     static finalBinCount = 128
     static finalBin;
@@ -48,17 +49,36 @@ class MockWPE {
 
         setInterval(() => {
 
-            this.analyser.getByteFrequencyData(this.buffer)
+            this.analyser.getFloatFrequencyData(this.buffer)
 
-            const step = this.bufferLength / this.finalBinCount
+            const step = this.bufferLength / this.finalBinCount * 2
             for (let i = 0; i < this.finalBinCount; i++) {
-                // const j = i * step
-                // this.finalBin[i] = 0
-                // for (let k = 0; k < step; k++) {
-                //     this.finalBin[i] += this.buffer[j + k]
-                // }
-                // this.finalBin[i] = this.finalBin[i] / step / 256
-                this.finalBin[i] = this.buffer[i] / 256
+
+                if (i >= this.finalBinCount / 2) {
+                    this.finalBin[i] = this.finalBin[this.finalBinCount - i - 1]
+                    continue
+                }
+
+                const j = i * step
+                this.finalBin[i] = 0
+                for (let k = 0; k < step; k++) {
+                    this.finalBin[i] += this.buffer[j + k]
+                }
+                this.finalBin[i] = Math.atan((this.finalBin[i] / step + 70) / 20) / Math.PI + 0.5
+
+                const w = 50
+                // if (i < w) this.finalBin[i] *= i / w
+                if (i < w) this.finalBin[i] = Math.pow(this.finalBin[i], (3 - i / (w - 1) * 2))
+                // this.finalBin[i] = Math.abs(this.finalBin[i] % 200) / 200
+                // this.finalBin[i] = Math.pow(3, 70 + this.finalBin[i] / step)
+                // this.finalBin[i] = Math.abs(this.finalBin[i] / step / 256)
+                // this.finalBin[i] = Math.pow(this.finalBin[i], 1.2)
+            }
+
+            console.log(this.finalBin)
+
+            for (let i = 0; i < this.finalBinCount; i++) {
+                this.finalBin[i] = Math.abs(this.finalBin[i])
             }
 
             this.audioListener(this.finalBin)

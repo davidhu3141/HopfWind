@@ -35,7 +35,7 @@ class Visualizer {
             window.innerWidth / window.innerHeight, 1,
             this.show_half ? this.viewZ : this.viewZ * 2)
         this.renderer = window.WebGLRenderingContext
-            ? new THREE.WebGLRenderer({ alpha: true })
+            ? new THREE.WebGLRenderer({ alpha: true, antialias: true })
             : new THREE.CanvasRenderer()
     }
 
