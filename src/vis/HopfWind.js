@@ -42,18 +42,18 @@ class HopfWind extends Visualizer {
 
         const n64 = this.sampleSize / 2
 
-        const rot_is = 1
+        const rot_is = 0.2
         const rot_sg = 1
         const opa_def = 0.3
         const opa_sc = 1
         const opa_gbs = 1.5
         const hopf_lat = 0.2
-        const hopf_lc = 1.5
+        const hopf_lc = 0.6
         const sm_dec = 7
-        const sm_fac = 1
-        const sm_cap = 0.3
-        const magloud = 1
-        const magfy = 6
+        const sm_fac = 2
+        const sm_cap = 0.4
+        const magloud = 0
+        const magfy = 8
         const sum = audioSamples.reduce((a, b) => a + b) / this.sampleSize
         const magall = sum * magloud / 2
         const capouterlight = true
@@ -69,8 +69,10 @@ class HopfWind extends Visualizer {
             var material_l = object_pool[j].material
             var opa_new = (opa_def + opa_gbs * audioSamples[j]) * opa_sc
 
-            material_l.opacity = opa_new >= material_l.opacity
-                ? opa_new : (material_l.opacity * sm_dec + opa_new) / (sm_dec + 1)
+            // material_l.opacity = opa_new >= material_l.opacity
+            //     ? opa_new : (material_l.opacity * sm_dec + opa_new) / (sm_dec + 1)
+
+            material_l.opacity = audioSamples[j] / 1.5
 
             if (capouterlight && j < n64)
                 material_l.opacity /= 2

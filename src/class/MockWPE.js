@@ -51,7 +51,7 @@ class MockWPE {
 
             this.analyser.getFloatFrequencyData(this.buffer)
 
-            const step = this.bufferLength / this.finalBinCount * 2
+            const step = 1//this.bufferLength / this.finalBinCount * 2
             for (let i = 0; i < this.finalBinCount; i++) {
 
                 if (i >= this.finalBinCount / 2) {
@@ -62,9 +62,10 @@ class MockWPE {
                 const j = i * step
                 this.finalBin[i] = 0
                 for (let k = 0; k < step; k++) {
-                    this.finalBin[i] += this.buffer[j + k]
+                    this.finalBin[i] += this.buffer[j + k + 84]
                 }
-                this.finalBin[i] = Math.atan((this.finalBin[i] / step + 70) / 20) / Math.PI + 0.5
+                // this.finalBin[i] = Math.atan((this.finalBin[i] / step + 70) / 20) / Math.PI + 0.5
+                this.finalBin[i] = Math.atan((this.finalBin[i] / step + 50) / 20) / Math.PI + 0.5
 
                 const w = 50
                 // if (i < w) this.finalBin[i] *= i / w

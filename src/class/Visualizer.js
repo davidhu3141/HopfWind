@@ -12,7 +12,6 @@ class Visualizer {
 
     // camera settings
     viewZ = 30
-    magfy = 6
     pixsz = 1
     canvasPortion = 1.2
     show_half = true
