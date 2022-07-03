@@ -16,9 +16,9 @@ class WindTorus extends Visualizer {
     lq_angle = 0
     composer = null
 
-    constructor(sampleSize) {
+    cirRes = 17
 
-        sampleSize = Math.max(128, sampleSize)
+    constructor(sampleSize) {
 
         super()
         this.sampleSize = sampleSize
@@ -52,6 +52,8 @@ class WindTorus extends Visualizer {
         this.composer.setSize(innerWidth / (this.pixsz * this.canvasPortion), innerHeight / (this.pixsz * this.canvasPortion))
     }
 
+    lastR = 0
+
     render(time, audioSamples) {
 
         const n128 = this.sampleSize
@@ -68,17 +70,22 @@ class WindTorus extends Visualizer {
 
             var position_l = object_pool[j].geometry.attributes.position
             var material_l = object_pool[j].material
-            var opa_new = audioSamples[j] / 1.5
+            var opa_new = audioSamples[j] * 3
             material_l.opacity = opa_new
 
-            const phi = 2 * Math.PI * j / n128
-            for (var k = 0; k <= n64; k++) {
-                const theta = 2 * Math.PI * (k / n64 - 0.5)
-                const R = 3 + magall * 7
-                const r = (0.05 + audioSamples[j])
+            const phi = 2 * Math.PI * (j + 0.5) / n128 + Math.random() * magall * 0.6 + 1
+            for (var k = 0; k <= this.cirRes; k++) {
+                const theta = 2 * Math.PI * (k / this.cirRes - 0.5)
+                const R = Math.max(3 + magall * 129, this.lastR * 0.999)//- 0.000002)
+                // const R = Math.max(6 + magall * 10, this.lastR * 0.999)//- 0.000002)
+                this.lastR = R
+                const r = (0.5 + audioSamples[j])
                 position_l.setX(k, (R + r * Math.cos(theta)) * Math.cos(phi))
                 position_l.setZ(k, (R + r * Math.cos(theta)) * Math.sin(phi))
-                position_l.setY(k, r * Math.sin(theta) - 6)
+                position_l.setY(k, r * Math.sin(theta) - 3 - R / 2)
+                // position_l.setX(k, (R * Math.cos(phi) + r * Math.cos(theta)))
+                // position_l.setZ(k, (R * Math.sin(phi) + r * Math.sin(theta)))
+                // position_l.setY(k, -8 - R / 3)
             }
 
             position_l.needsUpdate = true
@@ -91,7 +98,7 @@ class WindTorus extends Visualizer {
     arbitraryPath() {
         var path = new THREE.Path()
         path.moveTo(0, 0, 0)
-        for (var i = 1; i <= this.sampleSize / 2; i++)
+        for (var i = 1; i <= this.cirRes; i++)
             path.lineTo((i % 2) / 100, 0, 0)
         return path.getPoints()
     }
@@ -138,13 +145,13 @@ class MyPass extends Pass {
                 void main() {
 
                     vec2 vUV2 = vUV;
-                    vUV2[1] -= 0.002;
+                    vUV2[1] -= 0.0025;
                     if(vUV[1] < 0.01) {
                         gl_FragColor = texture2D( tDiffuse, vUV )*0.0;
                         return;
                     }
 
-                    gl_FragColor = max(texture2D( tDiffuse, vUV ) , texture2D( tDiffuse2, vUV2 )*0.99);
+                    gl_FragColor = max(texture2D( tDiffuse, vUV ) , texture2D( tDiffuse2, vUV2 )*0.98);
                     //gl_FragColor = texture2D( tDiffuse2, vUV2 )*0.95;
                 }`
 

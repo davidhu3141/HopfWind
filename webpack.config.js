@@ -1,6 +1,6 @@
 const path = require('path');
 
-var env = 'here' //'prod'
+var env = 'prod' //'prod' here
 
 module.exports = {
   mode: 'development',

@@ -12,7 +12,6 @@ class SpecEntity extends Visualizer {
 
     composer
     sampleSize
-    sampleSizePlus
 
     obj_pool = []
 
@@ -21,14 +20,13 @@ class SpecEntity extends Visualizer {
         super()
 
         this.sampleSize = sampleSize
-        this.sampleSizePlus = sampleSize + 1
 
         for (var i = 0; i < this.sampleSize; i++) {
-            let geo = new THREE.PlaneBufferGeometry(0.05, 0.5, this.sampleSize, 1)
+            let geo = new THREE.PlaneBufferGeometry(0.1, 0.03, this.sampleSize, 1)
             let mat = new THREE.MeshBasicMaterial()
             let square = new THREE.Mesh(geo, mat)
             mat.transparent = true
-            square.matrix.setPosition(40 * i / this.sampleSize - 20, 0, 0)
+            square.matrix.setPosition(40 * i / this.sampleSize - 20, -10, 0)
             square.matrixAutoUpdate = false
             this.scene.add(square)
             this.obj_pool.push(square)
@@ -58,15 +56,16 @@ class SpecEntity extends Visualizer {
     render(time, audioSamples) {
 
         for (var u = 0; u < this.sampleSize; u++) {
-            this.obj_pool[u].material.color = new THREE.Color(this.colorFunction(audioSamples[u]));
-            this.obj_pool[u].material.opacity = audioSamples[u]
+            const access = u > this.sampleSize / 2 ? this.sampleSize / 2 * 3 - u - 1 : u
+            this.obj_pool[u].material.color = new THREE.Color(this.colorFunction(audioSamples[access]));
+            this.obj_pool[u].material.opacity = audioSamples[access] * 5
             this.obj_pool[u].material.needsUpdate = true
         }
         this.composer.render(this.scene, this.camera)
     }
 
     colorFunction(val) {
-        return `hsl(${(val * 400 + 90) % 360}, 100%, 50%)`
+        return `hsl(${(val * 1200 + 90) % 360}, 100%, 50%)`
     }
 
 }
@@ -111,12 +110,7 @@ class MyPass extends Pass {
 
                     vec2 vUV2 = vUV;
                     vUV2[1] -= 0.001;
-                    if(vUV[1] < 0.5) {
-                        gl_FragColor = texture2D( tDiffuse, vUV );
-                        return;
-                    }
-                    //gl_FragColor = max(texture2D( tDiffuse, vUV ) , texture2D( tDiffuse2, vUV2 ));
-                    gl_FragColor = texture2D( tDiffuse2, vUV2 );
+                    gl_FragColor = max(texture2D( tDiffuse, vUV ) , texture2D( tDiffuse2, vUV2 ));
                 }`
 
         };
