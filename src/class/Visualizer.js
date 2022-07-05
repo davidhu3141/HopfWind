@@ -17,7 +17,7 @@ class Visualizer {
     show_half = true
     offX = 0
     offY = 0
-    viewAngle = 0.3//0
+    viewAngle = 0
 
     // desktop 
     use_user_image = false

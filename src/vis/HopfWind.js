@@ -23,7 +23,7 @@ class HopfWind extends Visualizer {
     rot_is = 1 // initial
     rot_sg = 1 // gain
 
-    opa_def = 0.0//0.1 // initial
+    opa_def = 0.2//0.1 // initial
     opa_gbs = 1.8 // gain
     opa_sc = 1 // scale
 
@@ -216,8 +216,8 @@ class HopfWind extends Visualizer {
             ? magall_new
             : (this.magall * this.magdec + this.magall_new) / (this.magdec + 1)
 
-        this.viewAngle += 0.0007
-        this.cameraReposition()
+        // this.viewAngle += 0.0007
+        // this.cameraReposition()
 
         for (var j = 0; j < 128; j++) {
 
@@ -297,11 +297,12 @@ class HopfWind extends Visualizer {
                     const finaly = alpha * proj * Math.cos(theta)
                     const finalz = -beta * proj * Math.sin(phi)
 
-                    const r = Math.hypot(finalx, finaly, finalz)
+                    // const r = Math.hypot(finalx, finaly, finalz)
+                    const r = Math.hypot(finalx, finalz)
                     const newr = this.atancap * Math.atan(r / this.atancap) * this.magfy / 4
 
                     position_l.setX(k, finalx * newr / r)
-                    position_l.setY(k, finaly * newr / r)
+                    position_l.setY(k, finaly * newr)
                     position_l.setZ(k, finalz * newr / r)
                 }
             }
