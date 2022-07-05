@@ -14,10 +14,10 @@ class Visualizer {
     viewZ = 30
     pixsz = 1
     canvasPortion = 1.2
-    show_half = !true
+    show_half = true
     offX = 0
     offY = 0
-    viewAngle = 0
+    viewAngle = 0.3//0
 
     // desktop 
     use_user_image = false
@@ -61,6 +61,10 @@ class Visualizer {
             `top:${innerHeight * (1 - 1 / this.canvasPortion + this.offY) / 2}px;`
         )
         this.camera.aspect = innerWidth / innerHeight
+        this.cameraReposition()
+    }
+
+    cameraReposition() {
         this.camera.position.z = this.viewZ * Math.cos(this.viewAngle)
         this.camera.position.y = this.viewZ * Math.sin(this.viewAngle)
         this.camera.far = this.show_half ? this.viewZ : this.viewZ * 2
