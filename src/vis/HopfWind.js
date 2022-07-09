@@ -23,11 +23,11 @@ class HopfWind extends Visualizer {
     rot_is = 1 // initial
     rot_sg = 1 // gain
 
-    opa_def = 0.0//0.1 // initial
-    opa_gbs = 1.8 // gain
+    opa_def = 0.01//0.1 // initial
+    opa_gbs = 0.5 // gain
     opa_sc = 1 // scale
 
-    hopf_lat = 0.3
+    hopf_lat = 0.55
     hopf_lc = 1.57 // cap
 
     sm_dec = 7 // decay
@@ -47,12 +47,15 @@ class HopfWind extends Visualizer {
     sphere_rot = 0 // clifford store
     cliff90 = false
     cliffauto = true//false
+    objectAngle = 0
 
     use_user_image = false
     user_image = ""
     current_color = new THREE.Color(1, 1, 1)
 
     lq_angle = 0
+
+    circres = 225
 
     constructor(sampleSize) {
 
@@ -216,8 +219,23 @@ class HopfWind extends Visualizer {
             ? magall_new
             : (this.magall * this.magdec + this.magall_new) / (this.magdec + 1)
 
-        this.viewAngle += 0.0007
-        this.cameraReposition()
+        this.objectAngle += 0.007
+        const oc = Math.cos(this.objectAngle)
+        const os = Math.sin(this.objectAngle)
+        const qc = Math.cos(this.objectAngle * 0.77)
+        const qs = Math.sin(this.objectAngle * 0.77)
+
+        if (this.cliff90) {
+            this.sphere_rot = Math.PI / 2
+        } else if (this.cliffauto) {
+            this.sphere_rot += 0.004 //0.00003
+        } else {
+            this.sphere_rot = 0
+        }
+
+        const sc = Math.cos(this.sphere_rot)
+        const ss = Math.sin(this.sphere_rot)
+
 
         for (var j = 0; j < 128; j++) {
 
@@ -254,19 +272,11 @@ class HopfWind extends Visualizer {
                 }
             }
 
-            if (this.cliff90) {
-                this.sphere_rot = Math.PI / 2
-            } else if (this.cliffauto) {
-                this.sphere_rot += 0.00009 //0.00003
-            } else {
-                this.sphere_rot = 0
-            }
-
             var point_x_tmp = Math.cos(lp) * Math.cos(lq)
             var point_z = Math.cos(lp) * Math.sin(lq) //y
             var point_y_tmp = Math.sin(lp) // z
-            var point_x = point_x_tmp * Math.cos(this.sphere_rot) - point_y_tmp * Math.sin(this.sphere_rot)
-            var point_y = point_y_tmp * Math.cos(this.sphere_rot) + point_x_tmp * Math.sin(this.sphere_rot)
+            var point_x = point_x_tmp * sc - point_y_tmp * ss
+            var point_y = point_y_tmp * sc + point_x_tmp * ss
 
             if (j >= 64) {
                 point_x *= -1
@@ -283,19 +293,28 @@ class HopfWind extends Visualizer {
                     const theta = 2 * Math.PI * this.regulate(k / 64)
                     const phi = angleSum - theta
                     const proj = 0.5 / (1 - alpha * Math.sin(theta)) * this.magfy
-                    position_l.setX(k, -beta * proj * Math.cos(phi))
-                    position_l.setY(k, alpha * proj * Math.cos(theta))
-                    position_l.setZ(k, -beta * proj * Math.sin(phi))
+
+                    const finalx = -beta * proj * Math.cos(phi)
+                    const tmp_finaly = alpha * proj * Math.cos(theta)
+                    const tmp_finalz = -beta * proj * Math.sin(phi)
+                    const finaly = tmp_finaly * oc - tmp_finalz * os
+                    const finalz = tmp_finaly * os + tmp_finalz * oc
+
+                    position_l.setX(k, finalx)
+                    position_l.setY(k, finaly)
+                    position_l.setZ(k, finalz)
                 }
             } else {
-                for (var k = 0; k <= 64; k++) {
-                    const theta = 2 * Math.PI * this.regulate(k / 64)
+                for (var k = 0; k <= this.circres; k++) {
+                    const theta = 2 * Math.PI * this.regulate(k / this.circres)
                     const phi = angleSum - theta
                     const proj = 0.5 / (1 - alpha * Math.sin(theta)) * this.magfy
 
                     const finalx = -beta * proj * Math.cos(phi)
-                    const finaly = alpha * proj * Math.cos(theta)
-                    const finalz = -beta * proj * Math.sin(phi)
+                    const tmp_finaly = alpha * proj * Math.cos(theta)
+                    const tmp_finalz = -beta * proj * Math.sin(phi)
+                    const finaly = tmp_finaly * oc - tmp_finalz * os
+                    const finalz = tmp_finaly * os + tmp_finalz * oc
 
                     const r = Math.hypot(finalx, finaly, finalz)
                     const newr = this.atancap * Math.atan(r / this.atancap) * this.magfy / 4
@@ -308,20 +327,20 @@ class HopfWind extends Visualizer {
 
             position_l.needsUpdate = true
         }
-
+        // this.windowResized()
         this.renderer.render(this.scene, this.camera)
     }
 
     arbitraryPath() {
-        const n64 = this.sampleSize / 2
         var path = new THREE.Path()
         path.moveTo(0, 0, 0)
-        for (var i = 1; i <= n64; i++) path.lineTo((i % 2) / 100, 0, 0)
+        for (var i = 1; i <= this.circres; i++) path.lineTo((i % 2) / 100, 0, 0)
         return path.getPoints()
     }
 
     regulate(v) {
-        return v < 0.9 ? v / 9 * 5 : v * 5 - 4
+        let prop = 0.67
+        return v < prop ? v / prop * 0.5 : (v / (1 - prop) - 1 / (1 - prop)) * 0.5 + 1
     }
 
 }

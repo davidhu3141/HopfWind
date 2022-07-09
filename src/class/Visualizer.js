@@ -48,11 +48,11 @@ class Visualizer {
         console.log("Should override render")
     }
 
-    windowResized(innerWidth, innerHeight) {
+    windowResized() {
 
         this.renderer.setSize(
-            innerWidth / (this.pixsz * this.canvasPortion),
-            innerHeight / (this.pixsz * this.canvasPortion))
+            window.innerWidth / (this.pixsz * this.canvasPortion),
+            window.innerHeight / (this.pixsz * this.canvasPortion))
         document.querySelector("#canvasLoader").appendChild(this.renderer.domElement)
         this.renderer.domElement.setAttribute("style",
             `width:${innerWidth / this.canvasPortion}px;` +
@@ -61,14 +61,14 @@ class Visualizer {
             `top:${innerHeight * (1 - 1 / this.canvasPortion + this.offY) / 2}px;`
         )
         this.camera.aspect = innerWidth / innerHeight
+        this.camera.fov = 60 / this.canvasPortion
+        this.camera.far = this.show_half ? this.viewZ : this.viewZ * 2
         this.cameraReposition()
     }
 
     cameraReposition() {
         this.camera.position.z = this.viewZ * Math.cos(this.viewAngle)
         this.camera.position.y = this.viewZ * Math.sin(this.viewAngle)
-        this.camera.far = this.show_half ? this.viewZ : this.viewZ * 2
-        this.camera.fov = 60 / this.canvasPortion
         this.camera.lookAt(new THREE.Vector3(0, 0, 0));
         this.camera.updateProjectionMatrix()
     }
