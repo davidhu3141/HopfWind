@@ -1,3 +1,4 @@
 dist/
 node_modules/
 src/jsm
+src/jsm_depricated

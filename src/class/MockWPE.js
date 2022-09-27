@@ -68,15 +68,8 @@ class MockWPE {
                 this.finalBin[i] = Math.atan((this.finalBin[i] / step + 50) / 20) / Math.PI + 0.5
 
                 const w = 50
-                // if (i < w) this.finalBin[i] *= i / w
                 if (i < w) this.finalBin[i] = Math.pow(this.finalBin[i], (3 - i / (w - 1) * 2))
-                // this.finalBin[i] = Math.abs(this.finalBin[i] % 200) / 200
-                // this.finalBin[i] = Math.pow(3, 70 + this.finalBin[i] / step)
-                // this.finalBin[i] = Math.abs(this.finalBin[i] / step / 256)
-                // this.finalBin[i] = Math.pow(this.finalBin[i], 1.2)
             }
-
-            console.log(this.finalBin)
 
             for (let i = 0; i < this.finalBinCount; i++) {
                 this.finalBin[i] = Math.abs(this.finalBin[i])

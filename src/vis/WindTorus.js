@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { Pass, FullScreenQuad } from '../class/Pass.js';
-import { EffectComposer } from '../jsm/postprocessing/EffectComposer.js';
-import { RenderPass } from '../jsm/postprocessing/RenderPass.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 
 import { Visualizer } from '../class/Visualizer.js'
 
