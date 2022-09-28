@@ -2,8 +2,23 @@
 HopdWind
 ========
 
-- Bring my Wallpaper Engine project "HopfWind" to the web
-- You may need to npm install three
+Bring my Wallpaper Engine project "HopfWind" to the web
+
+### 使用說明
+
+#### 執行這 3 個指令
+
+- `npm install three`
+- `webpack`
+- 打開 index.html，選個音樂檔案
+
+#### 或是 4 個步驟
+
+- `npm install three`
+- 在 `main.js` 的 15~19 行任選一行
+    - 目前是選在 `WindTorus`
+- `webpack`
+- 打開 index.html，選個音樂檔案
 
 ### Notes
 

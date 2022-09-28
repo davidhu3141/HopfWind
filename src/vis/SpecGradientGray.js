@@ -6,7 +6,8 @@ export { SpecGradientGray }
 class SpecGradientGray extends SpecGradient {
 
     colorFunction(val) {
-        return `hsl(0, 0%, ${parseInt((val) * 100)}%)`
+        // return `hsl(0, 0%, ${parseInt((val) * 100)}%)`
+        return `hsl(0, 0%, ${parseInt(((val) * 500)) % 100}%)`
     }
 
 }

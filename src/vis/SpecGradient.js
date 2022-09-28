@@ -57,7 +57,7 @@ class SpecGradient extends Visualizer {
         var geometry = this.band.geometry;
 
         for (var u = 0; u < this.sampleSize; u++) {
-            const access = u > this.sampleSize / 2 ? this.sampleSize / 2 * 3 - u - 1 : u
+            const access = u;//u > this.sampleSize / 2 ? this.sampleSize / 2 * 3 - u - 1 : u
             var color = new THREE.Color(this.colorFunction(audioSamples[access]));
             var i = u//u > 64 ? 192 - u : u
             var bat = 3
@@ -77,7 +77,7 @@ class SpecGradient extends Visualizer {
     }
 
     colorFunction(val) {
-        return `hsl(${parseInt(val * 600 + 180) % 360}, 100%, 50%)`
+        return `hsl(${parseInt(val * 1000 + 240) % 360}, 100%, 50%)`
     }
 
 }

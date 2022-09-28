@@ -55,7 +55,7 @@ class SpecEntity extends Visualizer {
     render(time, audioSamples) {
 
         for (var u = 0; u < this.sampleSize; u++) {
-            const access = u > this.sampleSize / 2 ? this.sampleSize / 2 * 3 - u - 1 : u
+            const access = u //  > this.sampleSize / 2 ? this.sampleSize / 2 * 3 - u - 1 : u
             this.obj_pool[u].material.color = new THREE.Color(this.colorFunction(audioSamples[access]));
             this.obj_pool[u].material.opacity = audioSamples[access] * 5
             this.obj_pool[u].material.needsUpdate = true
