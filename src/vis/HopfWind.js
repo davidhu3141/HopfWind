@@ -31,7 +31,7 @@ class HopfWind extends Visualizer {
     hopf_lc = 1.57 // cap
 
     sm_dec = 7 // decay
-    sm_fac = 1 // gain
+    sm_fac = 1.5 // gain
     sm_cap = 1 //cap
 
     magall = 0 // store
@@ -219,16 +219,16 @@ class HopfWind extends Visualizer {
             ? magall_new
             : (this.magall * this.magdec + this.magall_new) / (this.magdec + 1)
 
-        this.objectAngle += 0.007
+        this.objectAngle += 0.003
         const oc = Math.cos(this.objectAngle)
         const os = Math.sin(this.objectAngle)
-        const qc = Math.cos(this.objectAngle * 0.77)
-        const qs = Math.sin(this.objectAngle * 0.77)
+        const qc = Math.cos(this.objectAngle / 0.77)
+        const qs = Math.sin(this.objectAngle / 0.77)
 
         if (this.cliff90) {
             this.sphere_rot = Math.PI / 2
         } else if (this.cliffauto) {
-            this.sphere_rot += 0.004 //0.00003
+            this.sphere_rot += 0.0015 //0.00003
         } else {
             this.sphere_rot = 0
         }
@@ -310,11 +310,12 @@ class HopfWind extends Visualizer {
                     const phi = angleSum - theta
                     const proj = 0.5 / (1 - alpha * Math.sin(theta)) * this.magfy
 
-                    const finalx = -beta * proj * Math.cos(phi)
+                    const tmp_finalx = -beta * proj * Math.cos(phi)
                     const tmp_finaly = alpha * proj * Math.cos(theta)
                     const tmp_finalz = -beta * proj * Math.sin(phi)
-                    const finaly = tmp_finaly * oc - tmp_finalz * os
-                    const finalz = tmp_finaly * os + tmp_finalz * oc
+                    const finalx = tmp_finalx * qc - tmp_finaly * os * qs - tmp_finalz * oc * qs;
+                    const finaly = tmp_finaly * oc - tmp_finalz * os;
+                    const finalz = tmp_finalx * qs + tmp_finaly * os * qc + tmp_finalz * oc * qc;
 
                     const r = Math.hypot(finalx, finaly, finalz)
                     const newr = this.atancap * Math.atan(r / this.atancap) * this.magfy / 4

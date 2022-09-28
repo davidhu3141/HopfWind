@@ -34,7 +34,7 @@ function run() {
 
 if (isWPE) {
     window.wallpaperRegisterAudioListener(wallpaperAudioListener)
-    window.wallpaperPropertyListener = { applyUserProperties: vis.applySettingForWPE }
+    window.wallpaperPropertyListener = { applyUserProperties: p => vis.applySettingForWPE(p) }
 } else {
     MockWPE.init()
     MockWPE.registerAudioListener(wallpaperAudioListener, sampleSize)
