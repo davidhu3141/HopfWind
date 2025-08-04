@@ -14,7 +14,7 @@ class Visualizer {
     viewZ = 30
     pixsz = 1
     canvasPortion = 1.2
-    show_half = !true
+    show_half = true
     offX = 0
     offY = 0
     viewAngle = 0//.3
@@ -33,9 +33,9 @@ class Visualizer {
         this.camera = new THREE.PerspectiveCamera(60,
             window.innerWidth / window.innerHeight, 1,
             this.show_half ? this.viewZ : this.viewZ * 2)
-        this.renderer = window.WebGLRenderingContext
-            ? new THREE.WebGLRenderer({ alpha: true, antialias: true })
-            : new THREE.CanvasRenderer()
+        this.renderer =// window.WebGLRenderingContext
+            new THREE.WebGLRenderer({ alpha: true, antialias: true })
+        //: new THREE.CanvasRenderer()
     }
 
     // ---------------- for overriding

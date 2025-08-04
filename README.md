@@ -2,6 +2,37 @@
 HopfWind
 ========
 
+### todo
+
+- 先做新的再做舊的
+    - 舊的新增 craziness or say volitility
+- 先釐清怎麼 deploy
+- 需要自動更新 proj.json？還是不要
+- 先都不要管 mock
+
+目前想想 分發的邏輯不太對
+應該是
+    決定主題
+    先用 wpe 建立不同專案
+    用 wpe 編輯 proj.json 就好
+        這個專案就單純生成 js 並 deploy
+
+桌面要在畫面才能debug
+
+npx webpack
+
+修理好舊的
+    - make settings work
+    - make exagerness setting / entire magnitude
+    - simplify goto party
+    - write description
+製作新的
+    - set var into shader?
+
+
+
+----------------------
+
 Bring my Wallpaper Engine project "HopfWind" to the web
 
 ### 使用說明

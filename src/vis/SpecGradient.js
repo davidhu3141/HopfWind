@@ -14,6 +14,7 @@ class SpecGradient extends Visualizer {
     band = null;
     sampleSize
     sampleSizePlus
+    opa_sc
 
     constructor(sampleSize) {
 
@@ -24,7 +25,8 @@ class SpecGradient extends Visualizer {
 
         let mat = new THREE.MeshBasicMaterial()
         mat.vertexColors = true
-        let geo = new THREE.PlaneBufferGeometry(40, 40, this.sampleSize, 1)
+        // mat.wireframe = true
+        let geo = new THREE.PlaneGeometry(20, 30, this.sampleSize, 1)
         let color = new Float32Array(new Array(this.sampleSizePlus * 2 * 3).fill(0.05))
         geo.setAttribute('color', new THREE.BufferAttribute(color, 3))
         this.band = new THREE.Mesh(geo, mat)
@@ -44,7 +46,9 @@ class SpecGradient extends Visualizer {
     }
 
     applySettingForWPE(properties) {
-
+        if (properties.opa_sc) {
+            this.opa_sc = properties.opa_sc.value
+        }
     }
 
     windowResized(innerWidth, innerHeight) {
@@ -52,12 +56,15 @@ class SpecGradient extends Visualizer {
         this.composer.setSize(innerWidth / (this.pixsz * this.canvasPortion), innerHeight / (this.pixsz * this.canvasPortion))
     }
 
+    logged = 200
+    mytime = 0
+
     render(time, audioSamples) {
 
         var geometry = this.band.geometry;
 
         for (var u = 0; u < this.sampleSize; u++) {
-            const access = u;//u > this.sampleSize / 2 ? this.sampleSize / 2 * 3 - u - 1 : u
+            const access = u > this.sampleSize / 2 ? this.sampleSize / 2 * 3 - u - 1 : u
             var color = new THREE.Color(this.colorFunction(audioSamples[access]));
             var i = u//u > 64 ? 192 - u : u
             var bat = 3
@@ -74,10 +81,19 @@ class SpecGradient extends Visualizer {
         }
         geometry.attributes.color.needsUpdate = true;
         this.composer.render(this.scene, this.camera)
+
+        this.mytime++
+        if (this.logged > 0 && this.mytime % 100 == 0) {
+            // console.log(this.band)
+            console.log(`${audioSamples}`)
+            console.log(this.colorFunction(audioSamples[20]))
+            console.log(color.r)
+            this.logged--
+        }
     }
 
     colorFunction(val) {
-        return `hsl(${parseInt(val * 1000 + 240) % 360}, 100%, 50%)`
+        return `hsl(${parseInt(val * 10000 + 240) % 360}, 100%, 50%)`
     }
 
 }
@@ -122,7 +138,7 @@ class MyPass extends Pass {
 
                     vec2 vUV2 = vUV;
                     vUV2[1] -= 0.001;
-                    if(vUV[1] < 0.01) {
+                    if(vUV[1] < 0.0025) { // buttom show portion
                         gl_FragColor = texture2D( tDiffuse, vUV );
                         return;
                     }
@@ -188,10 +204,8 @@ class MyPass extends Pass {
     }
 
     setSize(width, height) {
-
         this.uniforms.width.value = width;
         this.uniforms.height.value = height;
-
     }
 
 }

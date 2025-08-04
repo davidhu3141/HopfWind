@@ -13,10 +13,10 @@ var isWPE = !!(window.wallpaperRegisterAudioListener)
 var sampleSize = isWPE ? 128 : 512
 var audioSamples = Array(sampleSize).fill(0)
 // var vis = new SpecGradient(sampleSize)
-// var vis = new SpecGradientGray(sampleSize = 128)
-// var vis = new HopfWind(sampleSize = 128)
-// var vis = new SpecEntity(sampleSize)
-var vis = new WindTorus(sampleSize = 128)
+// var vis = new SpecGradientGray(sampleSize)
+// var vis = new HopfWind(sampleSize)
+var vis = new SpecEntity(sampleSize)
+// var vis = new WindTorus(sampleSize)
 
 
 // -------------------------------------

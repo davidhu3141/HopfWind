@@ -54,13 +54,16 @@ class WindTorus extends Visualizer {
 
     lastR = 0
 
+    logged = 200
+    mytime = 0
+
     render(time, audioSamples) {
 
         const n128 = this.sampleSize
         const n64 = this.sampleSize / 2
 
         const sum = audioSamples.reduce((a, b) => a + b) / this.sampleSize
-        const magall = sum
+        const magall = sum * 0.3
 
         const object_pool = this.object_pool
 
@@ -70,29 +73,41 @@ class WindTorus extends Visualizer {
 
             var position_l = object_pool[j].geometry.attributes.position
             var material_l = object_pool[j].material
-            var opa_new = audioSamples[j] * 3
-            material_l.opacity = opa_new
+            var opa_new = audioSamples[j] * 100 // 30=times
+            material_l.opacity = opa_new + 0.05
 
-            const phi = 2 * Math.PI * (j + 0.5) / n128 + Math.random() * magall * 0.6 + 1
+            const phi = 2 * Math.PI * (j + 0.5) / n128 + time * 0.0015
             for (var k = 0; k <= this.cirRes; k++) {
                 const theta = 2 * Math.PI * (k / this.cirRes - 0.5)
-                const R = Math.max(3 + magall * 129, this.lastR * 0.999)//- 0.000002)
+                const R = Math.max(7 + magall * 129, this.lastR * 0.9999)//- 0.000002)
                 // const R = Math.max(6 + magall * 10, this.lastR * 0.999)//- 0.000002)
                 this.lastR = R
-                const r = (0.5 + audioSamples[j])
-                position_l.setX(k, (R + r * Math.cos(theta)) * Math.cos(phi))
-                position_l.setZ(k, (R + r * Math.cos(theta)) * Math.sin(phi))
+                const r = (0.1 + audioSamples[j] * 5)
+                // position_l.setX(k, (R + r * Math.cos(theta)) * Math.cos(phi))
+                // position_l.setZ(k, (R + r * Math.cos(theta)) * Math.sin(phi))
+                // position_l.setY(k, r * Math.sin(theta) - 3 - R / 2)
+                position_l.setX(k, R * Math.cos(phi) + r * Math.cos(theta))
+                position_l.setZ(k, R * Math.sin(phi))
                 position_l.setY(k, r * Math.sin(theta) - 3 - R / 2)
-                // position_l.setX(k, (R * Math.cos(phi) + r * Math.cos(theta)))
-                // position_l.setZ(k, (R * Math.sin(phi) + r * Math.sin(theta)))
-                // position_l.setY(k, -8 - R / 3)
+                // position_l.setX(k, ((R + r) * Math.cos(phi) + r * Math.cos(theta)) /*+ Math.random() * 0.1*/)
+                // position_l.setZ(k, ((R + r) * Math.sin(phi) + r * Math.sin(theta)) /*+ Math.random() * 0.1*/)
+                // position_l.setY(k, -5 - R / 3)
             }
 
             position_l.needsUpdate = true
             material_l.needsUpdate = true
+
+            object_pool[j].geometry.computeBoundingBox();
+            object_pool[j].geometry.computeBoundingSphere();
         }
 
         this.composer.render(this.scene, this.camera)
+
+        this.mytime++
+        if (this.logged > 0 && this.mytime % 100 == 0) {
+            console.log(this.object_pool[0].geometry)
+            this.logged--
+        }
     }
 
     arbitraryPath() {
@@ -145,13 +160,17 @@ class MyPass extends Pass {
                 void main() {
 
                     vec2 vUV2 = vUV;
-                    vUV2[1] -= 0.0025;
+                    vUV2[1] -= 0.003;
                     if(vUV[1] < 0.01) {
                         gl_FragColor = texture2D( tDiffuse, vUV )*0.0;
                         return;
                     }
 
-                    gl_FragColor = max(texture2D( tDiffuse, vUV ) , texture2D( tDiffuse2, vUV2 )*0.98);
+                    vec4 tex2 = texture2D( tDiffuse2, vUV2 )*1.0;
+                    if(tex2.r > 0.7) {
+                        tex2 = tex2 * 0.7;
+                    }
+                    gl_FragColor = max(texture2D( tDiffuse, vUV ) , tex2);
                     //gl_FragColor = texture2D( tDiffuse2, vUV2 )*0.95;
                 }`
 

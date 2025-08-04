@@ -210,6 +210,8 @@ class HopfWind extends Visualizer {
 
     render(time, audioSamples) {
 
+        audioSamples = audioSamples.map(e => e * 5)
+
         var sum = audioSamples.reduce((a, b) => a + b) / 128
         var magall_new = sum * this.magloud / 2
         var t = time / 2

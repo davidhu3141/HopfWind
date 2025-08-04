@@ -21,7 +21,7 @@ class SpecEntity extends Visualizer {
         this.sampleSize = sampleSize
 
         for (var i = 0; i < this.sampleSize; i++) {
-            let geo = new THREE.PlaneBufferGeometry(0.1, 0.03, this.sampleSize, 1)
+            let geo = new THREE.PlaneGeometry(0.2, 0.03, 1, 1)
             let mat = new THREE.MeshBasicMaterial()
             let square = new THREE.Mesh(geo, mat)
             mat.transparent = true
@@ -52,19 +52,34 @@ class SpecEntity extends Visualizer {
         this.composer.setSize(innerWidth / (this.pixsz * this.canvasPortion), innerHeight / (this.pixsz * this.canvasPortion))
     }
 
+    printed = 100
+
     render(time, audioSamples) {
 
-        for (var u = 0; u < this.sampleSize; u++) {
-            const access = u //  > this.sampleSize / 2 ? this.sampleSize / 2 * 3 - u - 1 : u
-            this.obj_pool[u].material.color = new THREE.Color(this.colorFunction(audioSamples[access]));
-            this.obj_pool[u].material.opacity = audioSamples[access] * 5
-            this.obj_pool[u].material.needsUpdate = true
+        for (let u = 0; u < this.sampleSize; u++) {
+            // const access = u //  > this.sampleSize / 2 ? this.sampleSize / 2 * 3 - u - 1 : u
+            const access = u > this.sampleSize / 2 ? this.sampleSize / 2 * 3 - u - 1 : u
+
+            const mat = this.obj_pool[u].material
+            mat.color = new THREE.Color(this.colorFunction(audioSamples[access]));
+            mat.opacity = audioSamples[access] * 50 * 2
+            mat.needsUpdate = true
+
+            const pos = this.obj_pool[u].geometry.attributes.position
+            pos.setY(2, -audioSamples[access] * 25)
+            pos.setY(3, -audioSamples[access] * 25)
+            pos.needsUpdate = true
         }
         this.composer.render(this.scene, this.camera)
+
+        if (this.printed) {
+            this.printed--
+            console.log(this.obj_pool[3].geometry)
+        }
     }
 
     colorFunction(val) {
-        return `hsl(${(val * 1200 + 90) % 360}, 100%, 50%)`
+        return `hsl(${(val * 12000 + 90) % 360}, 100%, 50%)`
     }
 
 }
@@ -108,8 +123,9 @@ class MyPass extends Pass {
                 void main() {
 
                     vec2 vUV2 = vUV;
-                    vUV2[1] -= 0.001;
+                    vUV2[1] -= 0.003;
                     gl_FragColor = max(texture2D( tDiffuse, vUV ) , texture2D( tDiffuse2, vUV2 ));
+                    // gl_FragColor = texture2D( tDiffuse, vUV );
                 }`
 
         };
