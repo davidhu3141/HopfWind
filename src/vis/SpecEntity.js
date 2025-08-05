@@ -1,4 +1,3 @@
-
 import * as THREE from 'three'
 import { Pass, FullScreenQuad } from '../class/Pass.js';
 import { Visualizer } from '../class/Visualizer.js'
@@ -43,13 +42,26 @@ class SpecEntity extends Visualizer {
         this.composer.addPass(myPass);
     }
 
+    customimage = ""
+    use_user_image = true
     applySettingForWPE(properties) {
-
+        if (properties.view) {
+            const angle = properties.view.value / 180 * Math.PI
+            this.camera.rotation.z = angle;
+        }
+        if (properties.offsetx) {
+            const angle = Math.round(properties.offsetx.value * 20) / 20 + Math.PI / 2
+            if (this.composer.passes && this.composer.passes.length > 1 && this.composer.passes[1].setMoveDir) {
+                this.composer.passes[1].setMoveDir(angle);
+            }
+        }
+        document.body.setAttribute("style", `background-image: url("file:///C:/Users/david/Desktop/photo-1543094585-3629d00f6f3a.jfif")`)
     }
 
     windowResized(innerWidth, innerHeight) {
         super.windowResized(innerWidth, innerHeight)
         this.composer.setSize(innerWidth / (this.pixsz * this.canvasPortion), innerHeight / (this.pixsz * this.canvasPortion))
+        console.log('width', this.composer.passes[1].uniforms.width.value)
     }
 
     printed = 100
@@ -66,20 +78,22 @@ class SpecEntity extends Visualizer {
             mat.needsUpdate = true
 
             const pos = this.obj_pool[u].geometry.attributes.position
-            pos.setY(2, -audioSamples[access] * 25)
-            pos.setY(3, -audioSamples[access] * 25)
+            // pos.setY(2, -audioSamples[access] * 25)
+            // pos.setY(3, -audioSamples[access] * 25)
+            pos.setY(0, audioSamples[access] * 40)
+            pos.setY(1, audioSamples[access] * 40)
             pos.needsUpdate = true
         }
         this.composer.render(this.scene, this.camera)
 
         if (this.printed) {
             this.printed--
-            console.log(this.obj_pool[3].geometry)
+            // console.log(this.obj_pool[3].geometry)
         }
     }
 
     colorFunction(val) {
-        return `hsl(${(val * 12000 + 90) % 360}, 100%, 50%)`
+        return `hsl(${(val * 9000 + 90) % 360}, 100%, 50%)`
     }
 
 }
@@ -90,8 +104,18 @@ class MyPass extends Pass {
 
         super();
 
-        this.remember = new THREE.WebGLRenderTarget(innerWidth, innerHeight);
-        this.remember2 = new THREE.WebGLRenderTarget(innerWidth, innerHeight);
+        this.remember = new THREE.WebGLRenderTarget(innerWidth, innerHeight, {
+            minFilter: THREE.NearestFilter,
+            magFilter: THREE.NearestFilter,
+            format: THREE.RGBAFormat,
+            stencilBuffer: false
+        });
+        this.remember2 = new THREE.WebGLRenderTarget(innerWidth, innerHeight, {
+            minFilter: THREE.NearestFilter,
+            magFilter: THREE.NearestFilter,
+            format: THREE.RGBAFormat,
+            stencilBuffer: false
+        });
         this.count = 0
 
         const MyPassShader = {
@@ -100,7 +124,8 @@ class MyPass extends Pass {
                 'tDiffuse': { value: null },
                 'tDiffuse2': { value: null },
                 'width': { value: 1 },
-                'height': { value: 1 }
+                'height': { value: 1 },
+                'moveDir': { value: 0.0 }
             },
 
             vertexShader: /* glsl */`
@@ -119,13 +144,21 @@ class MyPass extends Pass {
                 varying vec2 vUV;
                 uniform sampler2D tDiffuse;
                 uniform sampler2D tDiffuse2;
+                uniform float moveDir;
 
                 void main() {
-
                     vec2 vUV2 = vUV;
-                    vUV2[1] -= 0.003;
-                    gl_FragColor = max(texture2D( tDiffuse, vUV ) , texture2D( tDiffuse2, vUV2 ));
+                    vUV2 -= 0.0015 * vec2(cos(moveDir), sin(moveDir));
+
+                    vec4 tex2 = texture2D( tDiffuse2, vUV2 );
+                    if(tex2.a > 0.3) {
+                        tex2 = tex2 * 0.3;
+                    }
+
+                    gl_FragColor = max(texture2D( tDiffuse, vUV ) , tex2 * 0.999);
+                    // gl_FragColor.a = max(texture2D( tDiffuse, vUV ).a , texture2D( tDiffuse2, vUV2 ).a * 0.998);
                     // gl_FragColor = texture2D( tDiffuse, vUV );
+                    gl_FragColor.xyz = normalize(gl_FragColor.xyz);
                 }`
 
         };
@@ -134,7 +167,8 @@ class MyPass extends Pass {
         this.material = new THREE.ShaderMaterial({
             uniforms: this.uniforms,
             fragmentShader: MyPassShader.fragmentShader,
-            vertexShader: MyPassShader.vertexShader
+            vertexShader: MyPassShader.vertexShader,
+            transparent: true
         });
 
         // set params
@@ -142,17 +176,17 @@ class MyPass extends Pass {
         this.uniforms.height.value = height;
 
         for (const key in params) {
-
             if (params.hasOwnProperty(key) && this.uniforms.hasOwnProperty(key)) {
-
                 this.uniforms[key].value = params[key];
-
             }
-
         }
 
         this.fsQuad = new FullScreenQuad(this.material);
 
+    }
+
+    setMoveDir(val) {
+        this.uniforms.moveDir.value = val;
     }
 
     render(renderer, writeBuffer, readBuffer/*, deltaTime, maskActive*/) {
@@ -186,10 +220,8 @@ class MyPass extends Pass {
     }
 
     setSize(width, height) {
-
         this.uniforms.width.value = width;
         this.uniforms.height.value = height;
-
     }
 
 }

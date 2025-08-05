@@ -1,4 +1,3 @@
-
 import * as THREE from 'three'
 
 export { Visualizer }
@@ -23,19 +22,16 @@ class Visualizer {
     use_user_image = false
     user_image = ""
 
-    // settings
-    settings = {}
-    settingKeys = {}
-
-    constructor() {
+    constructor(sortObjects = false) {
 
         this.scene = new THREE.Scene()
         this.camera = new THREE.PerspectiveCamera(60,
             window.innerWidth / window.innerHeight, 1,
             this.show_half ? this.viewZ : this.viewZ * 2)
-        this.renderer =// window.WebGLRenderingContext
-            new THREE.WebGLRenderer({ alpha: true, antialias: true })
-        //: new THREE.CanvasRenderer()
+        this.renderer = window.WebGLRenderingContext
+            ? new THREE.WebGLRenderer({ alpha: true, antialias: true, sortObjects: sortObjects })
+            : this.showError("Error: WebGLRenderer not supported")
+        this.renderer.setClearColor(0x000000, 0.0);
     }
 
     // ---------------- for overriding
@@ -73,4 +69,15 @@ class Visualizer {
         this.camera.updateProjectionMatrix()
     }
 
+
+    showError(message) {
+        setTimeout(() => {
+            let errorDiv = document.createElement('div');
+            errorDiv.style.color = 'white';
+            errorDiv.style.zIndex = '9999';
+            errorDiv.style.fontSize = '18px';
+            document.body.appendChild(errorDiv);
+            errorDiv.textContent = message;
+        }, 1000);
+    }
 }

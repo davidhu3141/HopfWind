@@ -1,4 +1,3 @@
-
 import * as THREE from 'three'
 
 import { Visualizer } from '../class/Visualizer.js'
@@ -56,6 +55,8 @@ class HopfWind extends Visualizer {
     lq_angle = 0
 
     circres = 225
+    _4drotationspeed = 0
+    _3drotationspeed = 0
 
     constructor(sampleSize) {
 
@@ -75,133 +76,129 @@ class HopfWind extends Visualizer {
     }
 
     applySettingForWPE(properties) {
-        if (properties.schemecolor) {
-            var schemeColor = properties.schemecolor.value.split(' ')
-            schemeColor = schemeColor.map(c => Math.ceil(c * 255))
-            properties.schemeColor = schemeColor
-        }
-        /////////////////////////////////////////////////////////
-        if (properties.toruscolor) {
-            var customColor = properties.toruscolor.value.split(' ')
-            current_color = new THREE.Color(customColor[0] * 1, customColor[1] * 1, customColor[2] * 1)
-            this.object_pool.forEach(e => { e.material.color = current_color })
-        }
-        if (properties.pixelated) {
-            pixsz = properties.pixelated.value
-            onWindowResized()
-        }
-        if (properties.canvasportion) {
-            cp = properties.canvasportion.value
-            onWindowResized()
-        }
-        if (properties.showonlyhalf) {
-            show_half = !properties.showonlyhalf.value
-            onWindowResized()
-        }
-        if (properties.customimage) {
-            this.use_user_image = properties.customimage.value
-            if (this.use_user_image && this.user_image)
-                document.body.setAttribute("style", `background-image: url("file:///${this.user_image}")`)
-            else
-                document.body.setAttribute("style", '')
-        }
-        if (properties.customimagepath) {
-            this.user_image = properties.customimagepath.value
-            if (this.use_user_image)
-                document.body.setAttribute("style", `background-image: url("file:///${this.user_image}")`)
-        }
-        /////////////////////////////////////////////////////////
-        if (properties.rot_is) {
-            this.rot_is = properties.rot_is.value
-        }
-        if (properties.rot_sg) {
-            this.rot_sg = properties.rot_sg.value
-        }
-        /////////////////////////////////////////////////////////
-        if (properties.opa_sc) {
-            this.opa_sc = properties.opa_sc.value
-        }
-        if (properties.opacitydefault) {
-            this.opa_def = Math.pow(properties.opacitydefault.value, 2)
-        }
-        if (properties.opa_gbs) {
-            this.opa_gbs = properties.opa_gbs.value
-        }
-        /////////////////////////////////////////////////////////
-        if (properties.hopf_lat) {
-            this.hopf_lat = properties.hopf_lat.value / 180 * Math.PI
-        }
-        if (properties.hopflatitudecap) {
-            this.hopf_lc = properties.hopflatitudecap.value / 180 * Math.PI
-        }
-        /////////////////////////////////////////////////////////
-        if (properties.sm_fac) {
-            this.sm_fac = properties.sm_fac.value
-        }
-        if (properties.sm_dec) {
-            this.sm_dec = properties.sm_dec.value * 10
-        }
-        if (properties.soundmagnitudecap) {
-            this.sm_cap = properties.soundmagnitudecap.value
-        }
-        /////////////////////////////////////////////////////////
-        if (properties.magloud) {
-            this.magloud = properties.magloud.value
-        }
-        if (properties.magfy) {
-            this.magfy = properties.magfy.value
-        }
-        if (properties.view) {
-            this.viewAngle = properties.view.value / 180 * Math.PI
-            windowResized()
-        }
-        if (properties.capouterlight) {
-            this.capouterlight = properties.capouterlight.value
-        }
-        if (properties.usefour) {
-            this.useFour = properties.usefour.value
-        }
-        if (properties.atancap) {
-            this.atancap = properties.atancap.value + 3
-        }
-        if (properties.offsetx) {
-            this.offX = properties.offsetx.value
-            windowResized()
-        }
-        if (properties.offsety) {
-            this.offY = properties.offsety.value
-            windowResized()
-        }
-        if (properties.cliffordrotation45) {
-            this.cliff90 = properties.cliffordrotation45.value
-        }
-        if (properties.cliffordrotationauto) {
-            this.cliffauto = properties.cliffordrotationauto.value
-        }
-        if (properties.toricgotoparty) {
-            this.toriparty = properties.toricgotoparty.value
-            if (!this.toriparty) {
-                this.object_pool.forEach(e => { e.material.color = current_color })
-                if (this.tempForToricParty) {
-                    this.capouterlight = this.tempForToricParty.capouterlight || false
-                    this.opa_sc = this.tempForToricParty.opa_sc || 1
-                    this.opa_def = this.tempForToricParty.opa_def || 0.3
-                    this.opa_gbs = this.tempForToricParty.opa_gbs || 0.5
-                    this.tempForToricParty = null
-                }
-            } else {
-                this.tempForToricParty = {
-                    capouterlight: this.capouterlight,
-                    opa_def: this.opa_def,
-                    opa_sc: this.opa_sc,
-                    opa_gbs: opa_gbs
-                }
-                this.capouterlight = true
-                this.opa_sc = 1
-                this.opa_def = 0
-                this.opa_gbs = 5
+        try {
+            if (properties.schemecolor) {
+                var schemeColor = properties.schemecolor.value.split(' ')
+                schemeColor = schemeColor.map(c => Math.ceil(c * 255))
+                properties.schemeColor = schemeColor
             }
-        }
+            /////////////////////////////////////////////////////////
+            if (properties.toruscolor) {
+                var customColor = properties.toruscolor.value.split(' ')
+                this.current_color = new THREE.Color(customColor[0] * 1, customColor[1] * 1, customColor[2] * 1)
+                this.object_pool.forEach(e => { e.material.color = this.current_color })
+            }
+            if (properties.pixelated) {
+                this.pixsz = properties.pixelated.value
+                this.windowResized()
+            }
+            if (properties.canvasportion) {
+                this.cp = properties.canvasportion.value
+                this.windowResized()
+            }
+            if (properties.showonlyhalf) {
+                this.show_half = !properties.showonlyhalf.value
+                this.windowResized()
+            }
+            if (properties.customimage) {
+                this.use_user_image = properties.customimage.value
+                if (this.use_user_image && this.user_image)
+                    document.body.setAttribute("style", `background-image: url("file:///${this.user_image}")`)
+                else
+                    document.body.setAttribute("style", '')
+            }
+            if (properties.customimagepath) {
+                this.user_image = properties.customimagepath.value
+                if (this.use_user_image)
+                    document.body.setAttribute("style", `background-image: url("file:///${this.user_image}")`)
+            }
+            /////////////////////////////////////////////////////////
+            if (properties.rot_is) {
+                this.rot_is = properties.rot_is.value
+            }
+            if (properties.rot_sg) {
+                this.rot_sg = properties.rot_sg.value
+            }
+            /////////////////////////////////////////////////////////
+            if (properties.opa_sc) {
+                this.opa_sc = properties.opa_sc.value
+            }
+            if (properties.opacitydefault) {
+                this.opa_def = Math.pow(properties.opacitydefault.value, 2)
+            }
+            if (properties.opa_gbs) {
+                this.opa_gbs = properties.opa_gbs.value
+            }
+            /////////////////////////////////////////////////////////
+            if (properties.hopf_lat) {
+                this.hopf_lat = properties.hopf_lat.value / 180 * Math.PI
+            }
+            if (properties.hopflatitudecap) {
+                this.hopf_lc = properties.hopflatitudecap.value / 180 * Math.PI
+            }
+            /////////////////////////////////////////////////////////
+            if (properties.sm_fac) {
+                this.sm_fac = properties.sm_fac.value
+            }
+            if (properties.sm_dec) {
+                this.sm_dec = properties.sm_dec.value * 10
+            }
+            if (properties.soundmagnitudecap) {
+                this.sm_cap = properties.soundmagnitudecap.value
+            }
+            /////////////////////////////////////////////////////////
+            if (properties.magloud) {
+                this.magloud = properties.magloud.value
+            }
+            if (properties.magfy) {
+                this.magfy = properties.magfy.value
+            }
+            if (properties.view) {
+                this.viewAngle = properties.view.value / 180 * Math.PI
+                this.windowResized()
+            }
+            if (properties.capouterlight) {
+                this.capouterlight = properties.capouterlight.value
+            }
+            if (properties.usefour) {
+                this.useFour = properties.usefour.value
+            }
+            if (properties.atancap) {
+                this.atancap = properties.atancap.value + 3
+            }
+            if (properties.offsetx) {
+                this.offX = properties.offsetx.value
+                this.windowResized()
+            }
+            if (properties.offsety) {
+                this.offY = properties.offsety.value
+                this.windowResized()
+            }
+            if (properties.cliffordrotation45) {
+                this.cliff90 = properties.cliffordrotation45.value
+            }
+            if (properties._4drotationspeed) {
+                this._4drotationspeed = properties._4drotationspeed.value
+            }
+            if (properties._3drotationspeed) {
+                this._3drotationspeed = properties._3drotationspeed.value;
+            }
+            if (properties.toricgotoparty) {
+                this.toriparty = properties.toricgotoparty.value
+                if (!this.toriparty) {
+                    this.object_pool.forEach(e => { e.material.color = this.current_color })
+                } else {
+                    this.capouterlight = true
+                    this.opa_sc = 1
+                    this.opa_def = 0
+                    this.opa_gbs = 5
+                    // todo: seperate vars
+                }
+            }
+            if (properties.fiberresolution) {
+                this.circres = properties.fiberresolution.value;
+            }
+        } catch (e) { console.log(e) }
     }
 
     windowResized(innerWidth, innerHeight) {
@@ -210,7 +207,8 @@ class HopfWind extends Visualizer {
 
     render(time, audioSamples) {
 
-        audioSamples = audioSamples.map(e => e * 5)
+        // todo: add setting
+        audioSamples = audioSamples.map(e => e * 8)
 
         var sum = audioSamples.reduce((a, b) => a + b) / 128
         var magall_new = sum * this.magloud / 2
@@ -219,9 +217,13 @@ class HopfWind extends Visualizer {
         this.lq_angle += 0.0012 * this.rot_is + sum / 6 * this.rot_sg
         this.magall = magall_new >= this.magall
             ? magall_new
-            : (this.magall * this.magdec + this.magall_new) / (this.magdec + 1)
+            : (this.magall * this.magdec) / (this.magdec + 1)
 
-        this.objectAngle += 0.003
+        if (this._3drotationspeed > 0) {
+            this.objectAngle += this._3drotationspeed
+        } else {
+            this.objectAngle = 0
+        }
         const oc = Math.cos(this.objectAngle)
         const os = Math.sin(this.objectAngle)
         const qc = Math.cos(this.objectAngle / 0.77)
@@ -229,8 +231,8 @@ class HopfWind extends Visualizer {
 
         if (this.cliff90) {
             this.sphere_rot = Math.PI / 2
-        } else if (this.cliffauto) {
-            this.sphere_rot += 0.0015 //0.00003
+        } else if (this._4drotationspeed > 0) {
+            this.sphere_rot += this._4drotationspeed
         } else {
             this.sphere_rot = 0
         }
@@ -291,7 +293,7 @@ class HopfWind extends Visualizer {
             const angleSum = Math.atan2(point_x, -point_z)
 
             if (this.atancap == 3) {
-                for (var k = 0; k <= 64; k++) {
+                for (var k = 0; k <= this.circres; k++) {
                     const theta = 2 * Math.PI * this.regulate(k / 64)
                     const phi = angleSum - theta
                     const proj = 0.5 / (1 - alpha * Math.sin(theta)) * this.magfy

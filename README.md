@@ -23,13 +23,12 @@ npx webpack
 
 修理好舊的
     - make settings work
-    - make exagerness setting / entire magnitude
+    - make exagerateness setting / entire magnitude
     - simplify goto party
     - write description
 製作新的
     - set var into shader?
-
-
+    - delay update pass/geo?
 
 ----------------------
 

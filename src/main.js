@@ -1,22 +1,22 @@
 
-import { MockWPE } from './class/MockWPE.js'
-import { SpecGradient } from './vis/SpecGradient.js'
-import { SpecGradientGray } from './vis/SpecGradientGray.js'
-import { SpecEntity } from './vis/SpecEntity.js'
+// import { MockWPE } from './class/MockWPE.js'
+// import { SpecGradient } from './vis/SpecGradient.js'
+// import { SpecGradientGray } from './vis/SpecGradientGray.js'
+// import { SpecEntity } from './vis/SpecEntity.js'
 import { HopfWind } from './vis/HopfWind.js'
-import { WindTorus } from './vis/WindTorus.js'
+// import { WindTorus } from './vis/WindTorus.js'
 
 // -------------------------------------
 
-var frameLapsed = 0
-var isWPE = !!(window.wallpaperRegisterAudioListener)
-var sampleSize = isWPE ? 128 : 512
-var audioSamples = Array(sampleSize).fill(0)
-// var vis = new SpecGradient(sampleSize)
-// var vis = new SpecGradientGray(sampleSize)
-// var vis = new HopfWind(sampleSize)
-var vis = new SpecEntity(sampleSize)
-// var vis = new WindTorus(sampleSize)
+let frameLapsed = 0
+let isWPE = !!(window.wallpaperRegisterAudioListener)
+let sampleSize = isWPE ? 128 : 512
+let audioSamples = Array(sampleSize).fill(0)
+// let vis = new SpecGradient(sampleSize)
+// let vis = new SpecGradientGray(sampleSize)
+let vis = new HopfWind(sampleSize)
+// let vis = new SpecEntity(sampleSize)
+// let vis = new WindTorus(sampleSize)
 
 
 // -------------------------------------
@@ -34,7 +34,7 @@ function run() {
 
 if (isWPE) {
     window.wallpaperRegisterAudioListener(wallpaperAudioListener)
-    window.wallpaperPropertyListener = { applyUserProperties: p => vis.applySettingForWPE(p) }
+    window.wallpaperPropertyListener = { applyUserProperties: p => { vis.applySettingForWPE(p); } }
 } else {
     MockWPE.init()
     MockWPE.registerAudioListener(wallpaperAudioListener, sampleSize)
@@ -44,17 +44,14 @@ if (isWPE) {
 window.addEventListener('load', () => {
     vis.windowResized(window.innerWidth, window.innerHeight)
     window.requestAnimationFrame(run)
-
-    document.querySelector("#fileinput")
-        .addEventListener("change", fileSelected);
-
     document.body.setAttribute("style", `background-image: url("dist/bg.png")`)
+    // document.querySelector("#fileinput").addEventListener("change", fileSelected);
 })
 
 window.addEventListener('resize', () => {
     vis.windowResized(window.innerWidth, window.innerHeight)
 })
 
-function fileSelected(files) {
-    MockWPE.setAudioFile(new Audio(URL.createObjectURL(this.files[0])))
-}
+// function fileSelected(files) {
+//     MockWPE.setAudioFile(new Audio(URL.createObjectURL(this.files[0])))
+// }
