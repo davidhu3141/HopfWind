@@ -54,25 +54,35 @@ class HopfWind extends Visualizer {
 
     lq_angle = 0
 
-    circres = 225
+    _circres = 150
+    _circrestweak = 0
     _4drotationspeed = 0
     _3drotationspeed = 0
+
+    overallMagnitude = 8
 
     constructor(sampleSize) {
 
         super()
         this.sampleSize = sampleSize
 
-        for (var j = 0; j < sampleSize; j++) {
+        this.generateFibers();
+
+        var light = new THREE.HemisphereLight(0xffffbb, 0x080820, 1)
+        this.scene.add(light)
+    }
+
+    generateFibers() {
+        // Remove existing fibers from scene
+        this.object_pool.forEach(fiber => this.scene.remove(fiber));
+        this.object_pool = [];
+        for (var j = 0; j < this.sampleSize; j++) {
             var fiberGeo = new THREE.BufferGeometry().setFromPoints(this.arbitraryPath());
             var fiberMaterial = new THREE.LineBasicMaterial({ color: this.current_color, transparent: true, opacity: 1, depthWrite: false });
             var newFiber = new THREE.Line(fiberGeo, fiberMaterial);
             this.scene.add(newFiber);
             this.object_pool.push(newFiber);
         }
-
-        var light = new THREE.HemisphereLight(0xffffbb, 0x080820, 1)
-        this.scene.add(light)
     }
 
     applySettingForWPE(properties) {
@@ -187,16 +197,26 @@ class HopfWind extends Visualizer {
                 this.toriparty = properties.toricgotoparty.value
                 if (!this.toriparty) {
                     this.object_pool.forEach(e => { e.material.color = this.current_color })
-                } else {
-                    this.capouterlight = true
-                    this.opa_sc = 1
-                    this.opa_def = 0
-                    this.opa_gbs = 5
-                    // todo: seperate vars
                 }
+                // else {
+                //     this.capouterlight = true
+                //     this.opa_sc = 1
+                //     this.opa_def = 0
+                //     this.opa_gbs = 5
+                //     // todo: seperate vars
+                // }
             }
             if (properties.fiberresolution) {
-                this.circres = properties.fiberresolution.value;
+                this._circres = properties.fiberresolution.value;
+            }
+            if (properties.fiberresolutiontweak) {
+                this._circrestweak = properties.fiberresolutiontweak.value;
+            }
+            if (properties.fiberresolutiontweak || properties.fiberresolution) {
+                this.generateFibers();
+            }
+            if (properties.overallmagnitude) {
+                this.overallMagnitude = properties.overallmagnitude.value;
             }
         } catch (e) { console.log(e) }
     }
@@ -207,8 +227,8 @@ class HopfWind extends Visualizer {
 
     render(time, audioSamples) {
 
-        // todo: add setting
-        audioSamples = audioSamples.map(e => e * 8)
+        const circres = this._circres + this._circrestweak
+        audioSamples = audioSamples.map(e => e * this.overallMagnitude)
 
         var sum = audioSamples.reduce((a, b) => a + b) / 128
         var magall_new = sum * this.magloud / 2
@@ -229,14 +249,15 @@ class HopfWind extends Visualizer {
         const qc = Math.cos(this.objectAngle / 0.77)
         const qs = Math.sin(this.objectAngle / 0.77)
 
-        if (this.cliff90) {
+        if (this.cliff90) { // todo: become number
             this.sphere_rot = Math.PI / 2
         } else if (this._4drotationspeed > 0) {
             this.sphere_rot += this._4drotationspeed
         } else {
             this.sphere_rot = 0
         }
-
+        // todo: seperate decay, decay called smooth
+        // size looks like zoom
         const sc = Math.cos(this.sphere_rot)
         const ss = Math.sin(this.sphere_rot)
 
@@ -293,8 +314,8 @@ class HopfWind extends Visualizer {
             const angleSum = Math.atan2(point_x, -point_z)
 
             if (this.atancap == 3) {
-                for (var k = 0; k <= this.circres; k++) {
-                    const theta = 2 * Math.PI * this.regulate(k / 64)
+                for (var k = 0; k <= circres; k++) {
+                    const theta = 2 * Math.PI * this.regulate(k / circres)
                     const phi = angleSum - theta
                     const proj = 0.5 / (1 - alpha * Math.sin(theta)) * this.magfy
 
@@ -309,8 +330,8 @@ class HopfWind extends Visualizer {
                     position_l.setZ(k, finalz)
                 }
             } else {
-                for (var k = 0; k <= this.circres; k++) {
-                    const theta = 2 * Math.PI * this.regulate(k / this.circres)
+                for (var k = 0; k <= circres; k++) {
+                    const theta = 2 * Math.PI * this.regulate(k / circres)
                     const phi = angleSum - theta
                     const proj = 0.5 / (1 - alpha * Math.sin(theta)) * this.magfy
 
@@ -337,9 +358,10 @@ class HopfWind extends Visualizer {
     }
 
     arbitraryPath() {
-        var path = new THREE.Path()
+        const circres = this._circres + this._circrestweak
+        let path = new THREE.Path()
         path.moveTo(0, 0, 0)
-        for (var i = 1; i <= this.circres; i++) path.lineTo((i % 2) / 100, 0, 0)
+        for (var i = 1; i <= circres; i++) path.lineTo((i % 2) / 100, 0, 0)
         return path.getPoints()
     }
 
