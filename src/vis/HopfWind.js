@@ -87,24 +87,12 @@ class HopfWind extends Visualizer {
 
     applySettingForWPE(properties) {
         try {
-            if (properties.schemecolor) {
-                var schemeColor = properties.schemecolor.value.split(' ')
-                schemeColor = schemeColor.map(c => Math.ceil(c * 255))
-                properties.schemeColor = schemeColor
-            }
+            super.applySettingForWPE(properties)
             /////////////////////////////////////////////////////////
             if (properties.toruscolor) {
                 var customColor = properties.toruscolor.value.split(' ')
                 this.current_color = new THREE.Color(customColor[0] * 1, customColor[1] * 1, customColor[2] * 1)
                 this.object_pool.forEach(e => { e.material.color = this.current_color })
-            }
-            if (properties.pixelated) {
-                this.pixsz = properties.pixelated.value
-                this.windowResized()
-            }
-            if (properties.canvasportion) {
-                this.cp = properties.canvasportion.value
-                this.windowResized()
             }
             if (properties.showonlyhalf) {
                 this.show_half = !properties.showonlyhalf.value
@@ -176,14 +164,6 @@ class HopfWind extends Visualizer {
             if (properties.atancap) {
                 this.atancap = properties.atancap.value + 3
             }
-            if (properties.offsetx) {
-                this.offX = properties.offsetx.value
-                this.windowResized()
-            }
-            if (properties.offsety) {
-                this.offY = properties.offsety.value
-                this.windowResized()
-            }
             if (properties.cliffordrotation45) {
                 this.cliff90 = properties.cliffordrotation45.value
             }
@@ -198,25 +178,16 @@ class HopfWind extends Visualizer {
                 if (!this.toriparty) {
                     this.object_pool.forEach(e => { e.material.color = this.current_color })
                 }
-                // else {
-                //     this.capouterlight = true
-                //     this.opa_sc = 1
-                //     this.opa_def = 0
-                //     this.opa_gbs = 5
-                //     // todo: seperate vars
-                // }
             }
             if (properties.fiberresolution) {
                 this._circres = properties.fiberresolution.value;
-            }
-            if (properties.fiberresolutiontweak) {
-                this._circrestweak = properties.fiberresolutiontweak.value;
-            }
-            if (properties.fiberresolutiontweak || properties.fiberresolution) {
                 this.generateFibers();
             }
             if (properties.overallmagnitude) {
                 this.overallMagnitude = properties.overallmagnitude.value;
+            }
+            if (properties.cliffordrotationauto) {
+                this.cliffauto = properties.cliffordrotationauto.value
             }
         } catch (e) { console.log(e) }
     }
@@ -227,7 +198,7 @@ class HopfWind extends Visualizer {
 
     render(time, audioSamples) {
 
-        const circres = this._circres + this._circrestweak
+        const circres = this._circres
         audioSamples = audioSamples.map(e => e * this.overallMagnitude)
 
         var sum = audioSamples.reduce((a, b) => a + b) / 128
@@ -251,13 +222,15 @@ class HopfWind extends Visualizer {
 
         if (this.cliff90) { // todo: become number
             this.sphere_rot = Math.PI / 2
+        } else if (this.cliffauto) {
+            this.sphere_rot += Math.max(this._4drotationspeed, 0.002)
         } else if (this._4drotationspeed > 0) {
             this.sphere_rot += this._4drotationspeed
         } else {
             this.sphere_rot = 0
         }
-        // todo: seperate decay, decay called smooth
-        // size looks like zoom
+        // todo: seperate decay, decay called smooth -> only one decay / done
+        // size looks like zoom -> already, just tan calib
         const sc = Math.cos(this.sphere_rot)
         const ss = Math.sin(this.sphere_rot)
 
@@ -353,12 +326,11 @@ class HopfWind extends Visualizer {
 
             position_l.needsUpdate = true
         }
-        // this.windowResized()
         this.renderer.render(this.scene, this.camera)
     }
 
     arbitraryPath() {
-        const circres = this._circres + this._circrestweak
+        const circres = this._circres
         let path = new THREE.Path()
         path.moveTo(0, 0, 0)
         for (var i = 1; i <= circres; i++) path.lineTo((i % 2) / 100, 0, 0)

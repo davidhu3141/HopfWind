@@ -37,7 +37,27 @@ class Visualizer {
     // ---------------- for overriding
 
     applySettingForWPE(properties) {
-        console.log("Should override applySettingForWPE")
+        if (properties.schemecolor) {
+            var schemeColor = properties.schemecolor.value.split(' ')
+            schemeColor = schemeColor.map(c => Math.ceil(c * 255))
+            properties.schemeColor = schemeColor
+        }
+        if (properties.offsetx) {
+            this.offX = properties.offsetx.value
+            this.windowResized()
+        }
+        if (properties.offsety) {
+            this.offY = properties.offsety.value
+            this.windowResized()
+        }
+        if (properties.pixelated) {
+            this.pixsz = properties.pixelated.value
+            this.windowResized()
+        }
+        if (properties.canvasportion) {
+            this.canvasPortion = properties.canvasportion.value
+            this.windowResized()
+        }
     }
 
     render(time, audioSamples) {
