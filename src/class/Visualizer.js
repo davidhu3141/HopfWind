@@ -4,6 +4,8 @@ export { Visualizer }
 
 class Visualizer {
 
+    // todo: apply fps limit
+
     // three js settings
     scene = null
     renderer = null
@@ -42,6 +44,7 @@ class Visualizer {
             schemeColor = schemeColor.map(c => Math.ceil(c * 255))
             properties.schemeColor = schemeColor
         }
+        /////////////////////////////////////////////////////////
         if (properties.offsetx) {
             this.offX = properties.offsetx.value
             this.windowResized()

@@ -9,14 +9,6 @@ class HopfWind extends Visualizer {
     sampleSize
     object_pool = [];
 
-    // pixsz = 1
-    // cp = 1
-    // show_half = true
-    // viewZ = 30
-    // viewAngle = 0
-    // offX = 0
-    // offY = 0
-
     magfy = 8
 
     rot_is = 1 // initial
@@ -55,7 +47,6 @@ class HopfWind extends Visualizer {
     lq_angle = 0
 
     _circres = 150
-    _circrestweak = 0
     _4drotationspeed = 0
     _3drotationspeed = 0
 

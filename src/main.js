@@ -32,21 +32,14 @@ function run() {
 
 // -------------------------------------
 
-if (isWPE) {
-    window.wallpaperRegisterAudioListener(wallpaperAudioListener)
-    window.wallpaperPropertyListener = { applyUserProperties: p => { vis.applySettingForWPE(p); } }
-} else {
-    MockWPE.init()
-    MockWPE.registerAudioListener(wallpaperAudioListener, sampleSize)
-    // MockWPE.setupGUI(vis.settings, vis.settingKeys)
-}
+window.wallpaperRegisterAudioListener(wallpaperAudioListener)
+window.wallpaperPropertyListener = { applyUserProperties: p => { vis.applySettingForWPE(p); } }
 
-window.addEventListener('load', () => {
-    vis.windowResized(window.innerWidth, window.innerHeight)
-    window.requestAnimationFrame(run)
-    document.body.setAttribute("style", `background-image: url("dist/bg.png")`)
-    // document.querySelector("#fileinput").addEventListener("change", fileSelected);
-})
+// originally in load event. so it would cause bugs. try the case that the code is missing
+vis.windowResized(window.innerWidth, window.innerHeight)
+window.requestAnimationFrame(run)
+document.body.setAttribute("style", `background-image: url("dist/bg.png")`)
+// document.querySelector("#fileinput").addEventListener("change", fileSelected);
 
 window.addEventListener('resize', () => {
     vis.windowResized(window.innerWidth, window.innerHeight)
