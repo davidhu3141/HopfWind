@@ -50,8 +50,6 @@ class HopfWind extends Visualizer {
     _4drotationspeed = 0
     _3drotationspeed = 0
 
-    overallMagnitude = 8
-
     constructor(sampleSize) {
 
         super()
@@ -77,124 +75,151 @@ class HopfWind extends Visualizer {
     }
 
     applySettingForWPE(properties) {
-        try {
-            super.applySettingForWPE(properties)
-            /////////////////////////////////////////////////////////
-            if (properties.toruscolor) {
-                var customColor = properties.toruscolor.value.split(' ')
-                this.current_color = new THREE.Color(customColor[0] * 1, customColor[1] * 1, customColor[2] * 1)
+        if (properties.schemecolor) {
+            var schemeColor = properties.schemecolor.value.split(' ')
+            schemeColor = schemeColor.map(c => Math.ceil(c * 255))
+            properties.schemeColor = schemeColor
+        }
+        /////////////////////////////////////////////////////////
+        if (properties.overallmagnitude) {
+            this.overallMagnitude = properties.overallmagnitude.value;
+        }
+        /////////////////////////////////////////////////////////
+        if (properties.offsetx) {
+            this.offX = properties.offsetx.value
+            this.windowResized()
+        }
+        if (properties.offsety) {
+            this.offY = properties.offsety.value
+            this.windowResized()
+        }
+        if (properties.pixelated) {
+            this.pixsz = properties.pixelated.value
+            this.windowResized()
+        }
+        if (properties.canvasportion) {
+            this.canvasPortion = properties.canvasportion.value
+            this.windowResized()
+        }
+        /////////////////////////////////////////////////////////
+        if (properties.customimage) {
+            this.use_user_image = properties.customimage.value
+            if (this.use_user_image && this.user_image)
+                document.body.setAttribute("style", `background-image: url("file:///${this.user_image}")`)
+            else
+                document.body.setAttribute("style", '')
+        }
+        if (properties.customimagepath) {
+            this.user_image = properties.customimagepath.value
+            if (this.use_user_image)
+                document.body.setAttribute("style", `background-image: url("file:///${this.user_image}")`)
+        }
+        /////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////
+        if (properties.toruscolor) {
+            var customColor = properties.toruscolor.value.split(' ')
+            this.current_color = new THREE.Color(customColor[0] * 1, customColor[1] * 1, customColor[2] * 1)
+            this.object_pool.forEach(e => { e.material.color = this.current_color })
+        }
+        if (properties.showonlyhalf) {
+            this.show_half = !properties.showonlyhalf.value
+            this.windowResized()
+        }
+        /////////////////////////////////////////////////////////
+        if (properties.rot_is) {
+            this.rot_is = properties.rot_is.value
+        }
+        if (properties.rot_sg) {
+            this.rot_sg = properties.rot_sg.value
+        }
+        /////////////////////////////////////////////////////////
+        if (properties.opa_sc) {
+            this.opa_sc = properties.opa_sc.value
+        }
+        if (properties.opacitydefault) {
+            this.opa_def = Math.pow(properties.opacitydefault.value, 2)
+        }
+        if (properties.opa_gbs) {
+            this.opa_gbs = properties.opa_gbs.value
+        }
+        /////////////////////////////////////////////////////////
+        if (properties.hopf_lat) {
+            this.hopf_lat = properties.hopf_lat.value / 180 * Math.PI
+        }
+        if (properties.hopflatitudecap) {
+            this.hopf_lc = properties.hopflatitudecap.value / 180 * Math.PI
+        }
+        /////////////////////////////////////////////////////////
+        if (properties.sm_fac) {
+            this.sm_fac = properties.sm_fac.value
+        }
+        if (properties.sm_dec) {
+            this.sm_dec = properties.sm_dec.value * 10
+        }
+        if (properties.soundmagnitudecap) {
+            this.sm_cap = properties.soundmagnitudecap.value
+        }
+        /////////////////////////////////////////////////////////
+        if (properties.magloud) {
+            this.magloud = properties.magloud.value
+        }
+        if (properties.magfy) {
+            this.magfy = properties.magfy.value
+        }
+        if (properties.view) {
+            this.viewAngle = properties.view.value / 180 * Math.PI
+            this.windowResized()
+        }
+        if (properties.capouterlight) {
+            this.capouterlight = properties.capouterlight.value
+        }
+        if (properties.usefour) {
+            this.useFour = properties.usefour.value
+        }
+        if (properties.atancap) {
+            this.atancap = properties.atancap.value + 3
+        }
+        if (properties.cliffordrotation45) {
+            this.cliff90 = properties.cliffordrotation45.value
+        }
+        if (properties._4drotationspeed) {
+            this._4drotationspeed = properties._4drotationspeed.value
+        }
+        if (properties._3drotationspeed) {
+            this._3drotationspeed = properties._3drotationspeed.value;
+        }
+        if (properties.toricgotoparty) {
+            this.toriparty = properties.toricgotoparty.value
+            if (!this.toriparty) {
                 this.object_pool.forEach(e => { e.material.color = this.current_color })
             }
-            if (properties.showonlyhalf) {
-                this.show_half = !properties.showonlyhalf.value
-                this.windowResized()
-            }
-            if (properties.customimage) {
-                this.use_user_image = properties.customimage.value
-                if (this.use_user_image && this.user_image)
-                    document.body.setAttribute("style", `background-image: url("file:///${this.user_image}")`)
-                else
-                    document.body.setAttribute("style", '')
-            }
-            if (properties.customimagepath) {
-                this.user_image = properties.customimagepath.value
-                if (this.use_user_image)
-                    document.body.setAttribute("style", `background-image: url("file:///${this.user_image}")`)
-            }
-            /////////////////////////////////////////////////////////
-            if (properties.rot_is) {
-                this.rot_is = properties.rot_is.value
-            }
-            if (properties.rot_sg) {
-                this.rot_sg = properties.rot_sg.value
-            }
-            /////////////////////////////////////////////////////////
-            if (properties.opa_sc) {
-                this.opa_sc = properties.opa_sc.value
-            }
-            if (properties.opacitydefault) {
-                this.opa_def = Math.pow(properties.opacitydefault.value, 2)
-            }
-            if (properties.opa_gbs) {
-                this.opa_gbs = properties.opa_gbs.value
-            }
-            /////////////////////////////////////////////////////////
-            if (properties.hopf_lat) {
-                this.hopf_lat = properties.hopf_lat.value / 180 * Math.PI
-            }
-            if (properties.hopflatitudecap) {
-                this.hopf_lc = properties.hopflatitudecap.value / 180 * Math.PI
-            }
-            /////////////////////////////////////////////////////////
-            if (properties.sm_fac) {
-                this.sm_fac = properties.sm_fac.value
-            }
-            if (properties.sm_dec) {
-                this.sm_dec = properties.sm_dec.value * 10
-            }
-            if (properties.soundmagnitudecap) {
-                this.sm_cap = properties.soundmagnitudecap.value
-            }
-            /////////////////////////////////////////////////////////
-            if (properties.magloud) {
-                this.magloud = properties.magloud.value
-            }
-            if (properties.magfy) {
-                this.magfy = properties.magfy.value
-            }
-            if (properties.view) {
-                this.viewAngle = properties.view.value / 180 * Math.PI
-                this.windowResized()
-            }
-            if (properties.capouterlight) {
-                this.capouterlight = properties.capouterlight.value
-            }
-            if (properties.usefour) {
-                this.useFour = properties.usefour.value
-            }
-            if (properties.atancap) {
-                this.atancap = properties.atancap.value + 3
-            }
-            if (properties.cliffordrotation45) {
-                this.cliff90 = properties.cliffordrotation45.value
-            }
-            if (properties._4drotationspeed) {
-                this._4drotationspeed = properties._4drotationspeed.value
-            }
-            if (properties._3drotationspeed) {
-                this._3drotationspeed = properties._3drotationspeed.value;
-            }
-            if (properties.toricgotoparty) {
-                this.toriparty = properties.toricgotoparty.value
-                if (!this.toriparty) {
-                    this.object_pool.forEach(e => { e.material.color = this.current_color })
-                }
-            }
-            if (properties.fiberresolution) {
-                this._circres = properties.fiberresolution.value;
-                this.generateFibers();
-            }
-            if (properties.overallmagnitude) {
-                this.overallMagnitude = properties.overallmagnitude.value;
-            }
-            if (properties.cliffordrotationauto) {
-                this.cliffauto = properties.cliffordrotationauto.value
-            }
-        } catch (e) { console.log(e) }
+        }
+        if (properties.fiberresolution) {
+            this._circres = properties.fiberresolution.value;
+            this.generateFibers();
+        }
+        if (properties.overallmagnitude) {
+            this.overallMagnitude = properties.overallmagnitude.value;
+        }
+        if (properties.cliffordrotationauto) {
+            this.cliffauto = properties.cliffordrotationauto.value
+        }
     }
 
-    windowResized(innerWidth, innerHeight) {
-        super.windowResized(innerWidth, innerHeight)
+    windowResized() {
+        super.windowResized()
     }
 
     render(time, audioSamples) {
 
-        const circres = this._circres
         audioSamples = audioSamples.map(e => e * this.overallMagnitude)
 
-        var sum = audioSamples.reduce((a, b) => a + b) / 128
-        var magall_new = sum * this.magloud / 2
-        var t = time / 2
+        const circres = this._circres
+        const sum = audioSamples.reduce((a, b) => a + b) / 128
+        const magall_new = sum * this.magloud / 2
+        const t = time / 2
 
         this.lq_angle += 0.0012 * this.rot_is + sum / 6 * this.rot_sg
         this.magall = magall_new >= this.magall

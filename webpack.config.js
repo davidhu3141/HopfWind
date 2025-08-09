@@ -2,11 +2,12 @@ const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
-let env = 'prod' //'prod' or 'here'
-let minify = true
+const env = 'prod' //'prod' or 'here'
+const minify = true
 
-let exportPathHopfWind = 'C:/Program Files (x86)/Steam/steamapps/common/wallpaper_engine/projects/myprojects/index1'
-let exportPath = exportPathHopfWind
+const exportPathHopfWind = 'C:/Program Files (x86)/Steam/steamapps/common/wallpaper_engine/projects/myprojects/index1'
+const exportPathSpecEntity = 'C:/Program Files (x86)/Steam/steamapps/common/wallpaper_engine/projects/myprojects/spectrum_city_au'
+const exportPath = exportPathSpecEntity
 
 module.exports = {
   mode: 'development',

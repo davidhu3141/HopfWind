@@ -1,0 +1,445 @@
+{
+    "_3drotationspeed": {
+        "condition": "showhopfset.value",
+        "fraction": true,
+        "index": 24,
+        "max": 0.02,
+        "min": 0,
+        "order": 124,
+        "precision": 4,
+        "step": 0.001,
+        "text": "3D rotation speed",
+        "type": "slider",
+        "value": 0
+    },
+    "_4drotationspeed": {
+        "condition": "showhopfset.value && !cliffordrotation45.value",
+        "fraction": true,
+        "index": 23,
+        "max": 0.02,
+        "min": 0,
+        "order": 123,
+        "precision": 4,
+        "step": 0.001,
+        "text": "4D rotation speed",
+        "type": "slider",
+        "value": 0
+    },
+    "_d0": {
+        "order": 0,
+        "type": "divider"
+    },
+    "alignmentfliph": {
+        "icon": "fa-exchange",
+        "order": -12,
+        "text": "ui_browse_properties_alignment_flip_horizontally",
+        "type": "bool",
+        "value": false
+    },
+    "atancap": {
+        "condition": "showmoreset.value",
+        "fraction": false,
+        "index": 31,
+        "max": 10,
+        "min": 0,
+        "order": 131,
+        "text": "bounded with atan",
+        "type": "slider",
+        "value": 0
+    },
+    "audioprocessing": {
+        "icon": "fa-microphone",
+        "order": -21,
+        "text": "ui_browse_properties_audio_recording",
+        "type": "bool",
+        "value": true
+    },
+    "canvasportion": {
+        "condition": "showmoreset.value",
+        "fraction": false,
+        "index": 33,
+        "max": 8,
+        "min": 1,
+        "order": 133,
+        "text": "canvas portion",
+        "type": "slider",
+        "value": 1
+    },
+    "capouterlight": {
+        "condition": "showlightset.value",
+        "index": 17,
+        "order": 117,
+        "text": "light reduce outer",
+        "type": "bool",
+        "value": false
+    },
+    "cliffordrotation45": {
+        "condition": "showhopfset.value",
+        "index": 22,
+        "order": 122,
+        "text": "4D rotation 90",
+        "type": "bool",
+        "value": false
+    },
+    "cliffordrotationauto": {
+        "condition": "showmoreset.value",
+        "index": 35,
+        "order": 135,
+        "text": "Clifford rotation auto (legacy. please consider unchecking this and set 4D rotation speed)",
+        "type": "bool",
+        "value": false
+    },
+    "customimage": {
+        "index": 0,
+        "order": 100,
+        "text": "custom image",
+        "type": "bool",
+        "value": false
+    },
+    "customimagepath": {
+        "index": 1,
+        "order": 101,
+        "text": "custom image path",
+        "type": "file",
+        "value": ""
+    },
+    "fiberresolution": {
+        "condition": "showmoreset.value",
+        "fraction": false,
+        "index": 32,
+        "max": 256,
+        "min": 2,
+        "order": 132,
+        "text": "fiber resolution",
+        "type": "slider",
+        "value": 64
+    },
+    "hopf_lat": {
+        "condition": "showhopfset.value",
+        "fraction": false,
+        "index": 19,
+        "max": 89,
+        "min": 0,
+        "order": 119,
+        "text": "Hopf latitude",
+        "type": "slider",
+        "value": 15
+    },
+    "hopflatitudecap": {
+        "condition": "showhopfset.value",
+        "fraction": false,
+        "index": 20,
+        "max": 89,
+        "min": 1,
+        "order": 120,
+        "text": "Hopf lat outer cap",
+        "type": "slider",
+        "value": 25
+    },
+    "magfy": {
+        "fraction": false,
+        "index": 3,
+        "max": 12,
+        "min": 2,
+        "order": 103,
+        "text": "size",
+        "type": "slider",
+        "value": 6
+    },
+    "magloud": {
+        "condition": "showhopfset.value",
+        "fraction": false,
+        "index": 21,
+        "max": 10,
+        "min": 0,
+        "order": 121,
+        "text": "Hopf lat by loudness",
+        "type": "slider",
+        "value": 0
+    },
+    "offsetx": {
+        "condition": "showmoreset.value",
+        "fraction": true,
+        "index": 26,
+        "max": 1,
+        "min": -1,
+        "order": 126,
+        "precision": 2,
+        "step": 0.1,
+        "text": "offsetX",
+        "type": "slider",
+        "value": 0
+    },
+    "offsety": {
+        "condition": "showmoreset.value",
+        "fraction": true,
+        "index": 27,
+        "max": 1,
+        "min": -1,
+        "order": 127,
+        "precision": 2,
+        "step": 0.1,
+        "text": "offsetY",
+        "type": "slider",
+        "value": 0
+    },
+    "opa_gbs": {
+        "condition": "showlightset.value",
+        "fraction": true,
+        "index": 14,
+        "max": 5,
+        "min": 0,
+        "order": 114,
+        "precision": 2,
+        "step": 0.1,
+        "text": "light gain by sound",
+        "type": "slider",
+        "value": 1.8
+    },
+    "opa_sc": {
+        "condition": "showlightset.value",
+        "fraction": true,
+        "index": 16,
+        "max": 1,
+        "min": 0,
+        "order": 116,
+        "precision": 2,
+        "step": 0.1,
+        "text": "light scale",
+        "type": "slider",
+        "value": 1
+    },
+    "opacitydefault": {
+        "condition": "showlightset.value",
+        "fraction": true,
+        "index": 13,
+        "max": 1,
+        "min": 0,
+        "order": 113,
+        "precision": 2,
+        "step": 0.1,
+        "text": "lightness initial",
+        "type": "slider",
+        "value": 0.4
+    },
+    "overallmagnitude": {
+        "fraction": true,
+        "index": 2,
+        "max": 20,
+        "min": 1,
+        "order": 102,
+        "precision": 2,
+        "step": 0.1,
+        "text": "overall magnitude",
+        "type": "slider",
+        "value": 3.1
+    },
+    "pixelated": {
+        "condition": "showmoreset.value",
+        "fraction": false,
+        "index": 34,
+        "max": 5,
+        "min": 1,
+        "order": 134,
+        "text": "pixelated",
+        "type": "slider",
+        "value": 1
+    },
+    "rot_is": {
+        "condition": "showspeedset.value",
+        "fraction": true,
+        "index": 7,
+        "max": 25,
+        "min": 0,
+        "order": 107,
+        "precision": 1,
+        "step": 1,
+        "text": "spin initial speed",
+        "type": "slider",
+        "value": 1
+    },
+    "rot_sg": {
+        "condition": "showspeedset.value",
+        "fraction": true,
+        "index": 8,
+        "max": 10,
+        "min": 0,
+        "order": 108,
+        "precision": 1,
+        "step": 1,
+        "text": "spin speed gain by loudness",
+        "type": "slider",
+        "value": 2
+    },
+    "schemecolor": {
+        "icon": "fa-palette",
+        "order": -20,
+        "text": "ui_browse_properties_scheme_color",
+        "type": "color",
+        "value": "0 0 0"
+    },
+    "showhopfset": {
+        "index": 18,
+        "order": 118,
+        "text": "【𝗛𝗼𝗽𝗳 𝗦𝗲𝘁𝘁𝗶𝗻𝗴𝘀】",
+        "type": "bool",
+        "value": false
+    },
+    "showlightset": {
+        "index": 12,
+        "order": 112,
+        "text": "【𝗟𝗶𝗴𝗵𝘁 𝗦𝗲𝘁𝘁𝗶𝗻𝗴𝘀】",
+        "type": "bool",
+        "value": false
+    },
+    "showmagset": {
+        "index": 9,
+        "order": 109,
+        "text": "【𝐅𝐢𝐛𝐞𝐫 𝗦𝗶𝘇𝗲 𝗦𝗲𝘁𝘁𝗶𝗻𝗴𝘀】",
+        "type": "bool",
+        "value": false
+    },
+    "showmoreset": {
+        "index": 25,
+        "order": 125,
+        "text": "【𝗠𝗼𝗿𝗲 𝗦𝗲𝘁𝘁𝗶𝗻𝗴𝘀】",
+        "type": "bool",
+        "value": false
+    },
+    "showonlyhalf": {
+        "index": 5,
+        "order": 105,
+        "text": "show not only half",
+        "type": "bool",
+        "value": false
+    },
+    "showspeedset": {
+        "index": 6,
+        "order": 106,
+        "text": "【𝗦𝗽𝗶𝗻 𝗦𝗲𝘁𝘁𝗶𝗻𝗴𝘀】",
+        "type": "bool",
+        "value": false
+    },
+    "sm_dec": {
+        "condition": "showlightset.value",
+        "fraction": false,
+        "index": 15,
+        "max": 10,
+        "min": 0,
+        "order": 115,
+        "text": "light smooth decay",
+        "type": "slider",
+        "value": 2
+    },
+    "sm_fac": {
+        "condition": "showmagset.value",
+        "fraction": true,
+        "index": 10,
+        "max": 8,
+        "min": 0,
+        "order": 110,
+        "precision": 2,
+        "step": 0.1,
+        "text": "fiber size gain by sound",
+        "type": "slider",
+        "value": 5
+    },
+    "soundmagnitudecap": {
+        "condition": "showmagset.value",
+        "fraction": true,
+        "index": 11,
+        "max": 1,
+        "min": 0,
+        "order": 111,
+        "precision": 2,
+        "step": 0.1,
+        "text": "fiber size cap",
+        "type": "slider",
+        "value": 1
+    },
+    "toricgotoparty": {
+        "condition": "showmoreset.value",
+        "index": 29,
+        "order": 129,
+        "text": "tori go to party",
+        "type": "bool",
+        "value": false
+    },
+    "toruscolor": {
+        "condition": "showmoreset.value",
+        "index": 28,
+        "order": 128,
+        "text": "tori color",
+        "type": "color",
+        "value": "1 1 1"
+    },
+    "usefour": {
+        "index": 4,
+        "order": 104,
+        "text": "use four tori",
+        "type": "bool",
+        "value": false
+    },
+    "view": {
+        "condition": "showmoreset.value",
+        "fraction": false,
+        "index": 30,
+        "max": 90,
+        "min": 0,
+        "order": 130,
+        "text": "view angle",
+        "type": "slider",
+        "value": 0
+    },
+    "wec_brs": {
+        "condition": "wec_e.value",
+        "icon": "fa-sun",
+        "max": 100,
+        "min": 0,
+        "order": -10,
+        "text": "ui_browse_properties_brightness",
+        "type": "slider",
+        "value": 51
+    },
+    "wec_con": {
+        "condition": "wec_e.value",
+        "icon": "fa-adjust",
+        "max": 100,
+        "min": 0,
+        "order": -9,
+        "text": "ui_browse_properties_contrast",
+        "type": "slider",
+        "value": 36
+    },
+    "wec_e": {
+        "order": -11,
+        "text": "ui_browse_properties_show_color_options",
+        "type": "bool",
+        "value": true
+    },
+    "wec_hue": {
+        "condition": "wec_e.value",
+        "icon": "fa-palette",
+        "max": 100,
+        "min": 0,
+        "order": -7,
+        "text": "ui_browse_properties_hue_shift",
+        "type": "slider",
+        "value": 50
+    },
+    "wec_sa": {
+        "condition": "wec_e.value",
+        "icon": "fa-tint",
+        "max": 100,
+        "min": 0,
+        "order": -8,
+        "text": "ui_browse_properties_saturation",
+        "type": "slider",
+        "value": 50
+    },
+    "schemeColor": [
+        0,
+        0,
+        0
+    ]
+}

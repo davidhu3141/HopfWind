@@ -30,6 +30,10 @@ npx webpack
     - set var into shader?
     - delay update pass/geo?
 
+                    //gl_FragColor = max(texture2D( tDiffuse, vUV ) , tex2);
+                    // gl_FragColor.a = max(texture2D( tDiffuse, vUV ).a , texture2D( tDiffuse2, vUV2 ).a * 0.998);
+                    // gl_FragColor = texture2D( tDiffuse, vUV );
+
 ----------------------
 
 Bring my Wallpaper Engine project "HopfWind" to the web

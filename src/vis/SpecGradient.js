@@ -51,9 +51,9 @@ class SpecGradient extends Visualizer {
         }
     }
 
-    windowResized(innerWidth, innerHeight) {
-        super.windowResized(innerWidth, innerHeight)
-        this.composer.setSize(innerWidth / (this.pixsz * this.canvasPortion), innerHeight / (this.pixsz * this.canvasPortion))
+    windowResized() {
+        super.windowResized()
+        this.composer.setSize(window.innerWidth / (this.pixsz * this.canvasPortion), window.innerHeight / (this.pixsz * this.canvasPortion))
     }
 
     logged = 200

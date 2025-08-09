@@ -44,23 +44,25 @@ class WindTorus extends Visualizer {
     }
 
     applySettingForWPE(properties) {
-
+        super.applySettingForWPE(properties)
     }
 
-    windowResized(innerWidth, innerHeight) {
-        super.windowResized(innerWidth, innerHeight)
-        this.composer.setSize(innerWidth / (this.pixsz * this.canvasPortion), innerHeight / (this.pixsz * this.canvasPortion))
+    windowResized() {
+        super.windowResized()
+        const innerWidth = window.innerWidth
+        const innerHeight = window.innerHeight
+        const pixsz = this.pixsz
+        const cp = this.canvasPortion
+        this.composer.setSize(innerWidth / (pixsz * cp), innerHeight / (pixsz * cp))
     }
 
     lastR = 0
 
-    logged = 200
-    mytime = 0
-
     render(time, audioSamples) {
 
+        audioSamples = audioSamples.map(e => e * this.overallMagnitude)
+
         const n128 = this.sampleSize
-        const n64 = this.sampleSize / 2
 
         const sum = audioSamples.reduce((a, b) => a + b) / this.sampleSize
         const magall = sum * 0.3
@@ -83,12 +85,12 @@ class WindTorus extends Visualizer {
                 // const R = Math.max(6 + magall * 10, this.lastR * 0.999)//- 0.000002)
                 this.lastR = R
                 const r = (0.1 + audioSamples[j] * 5)
-                // position_l.setX(k, (R + r * Math.cos(theta)) * Math.cos(phi))
-                // position_l.setZ(k, (R + r * Math.cos(theta)) * Math.sin(phi))
-                // position_l.setY(k, r * Math.sin(theta) - 3 - R / 2)
-                position_l.setX(k, R * Math.cos(phi) + r * Math.cos(theta))
-                position_l.setZ(k, R * Math.sin(phi))
+                position_l.setX(k, (R + r * Math.cos(theta)) * Math.cos(phi))
+                position_l.setZ(k, (R + r * Math.cos(theta)) * Math.sin(phi))
                 position_l.setY(k, r * Math.sin(theta) - 3 - R / 2)
+                // position_l.setX(k, R * Math.cos(phi) + r * Math.cos(theta))
+                // position_l.setZ(k, R * Math.sin(phi))
+                // position_l.setY(k, r * Math.sin(theta) - 3 - R / 2)
                 // position_l.setX(k, ((R + r) * Math.cos(phi) + r * Math.cos(theta)) /*+ Math.random() * 0.1*/)
                 // position_l.setZ(k, ((R + r) * Math.sin(phi) + r * Math.sin(theta)) /*+ Math.random() * 0.1*/)
                 // position_l.setY(k, -5 - R / 3)
@@ -102,12 +104,6 @@ class WindTorus extends Visualizer {
         }
 
         this.composer.render(this.scene, this.camera)
-
-        this.mytime++
-        if (this.logged > 0 && this.mytime % 100 == 0) {
-            console.log(this.object_pool[0].geometry)
-            this.logged--
-        }
     }
 
     arbitraryPath() {
@@ -129,6 +125,18 @@ class MyPass extends Pass {
 
         this.remember = new THREE.WebGLRenderTarget(innerWidth, innerHeight);
         this.remember2 = new THREE.WebGLRenderTarget(innerWidth, innerHeight);
+        // this.remember = new THREE.WebGLRenderTarget(innerWidth, innerHeight, {
+        //     minFilter: THREE.NearestFilter,
+        //     magFilter: THREE.NearestFilter,
+        //     format: THREE.RGBAFormat,
+        //     stencilBuffer: false
+        // });
+        // this.remember2 = new THREE.WebGLRenderTarget(innerWidth, innerHeight, {
+        //     minFilter: THREE.NearestFilter,
+        //     magFilter: THREE.NearestFilter,
+        //     format: THREE.RGBAFormat,
+        //     stencilBuffer: false
+        // });
         this.count = 0
 
         const MyPassShader = {

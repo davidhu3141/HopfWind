@@ -14,8 +14,8 @@ class Visualizer {
     // camera settings
     viewZ = 30
     pixsz = 1
-    canvasPortion = 1.2
-    show_half = true
+    canvasPortion = 1.2 // todo: setting precision
+    show_half = !true
     offX = 0
     offY = 0
     viewAngle = 0//.3
@@ -23,6 +23,8 @@ class Visualizer {
     // desktop 
     use_user_image = false
     user_image = ""
+
+    overallMagnitude = 8
 
     constructor(sortObjects = false) {
 
@@ -39,28 +41,7 @@ class Visualizer {
     // ---------------- for overriding
 
     applySettingForWPE(properties) {
-        if (properties.schemecolor) {
-            var schemeColor = properties.schemecolor.value.split(' ')
-            schemeColor = schemeColor.map(c => Math.ceil(c * 255))
-            properties.schemeColor = schemeColor
-        }
-        /////////////////////////////////////////////////////////
-        if (properties.offsetx) {
-            this.offX = properties.offsetx.value
-            this.windowResized()
-        }
-        if (properties.offsety) {
-            this.offY = properties.offsety.value
-            this.windowResized()
-        }
-        if (properties.pixelated) {
-            this.pixsz = properties.pixelated.value
-            this.windowResized()
-        }
-        if (properties.canvasportion) {
-            this.canvasPortion = properties.canvasportion.value
-            this.windowResized()
-        }
+
     }
 
     render(time, audioSamples) {
@@ -68,10 +49,11 @@ class Visualizer {
     }
 
     windowResized() {
-
+        const innerWidth = window.innerWidth
+        const innerHeight = window.innerHeight
         this.renderer.setSize(
-            window.innerWidth / (this.pixsz * this.canvasPortion),
-            window.innerHeight / (this.pixsz * this.canvasPortion))
+            innerWidth / (this.pixsz * this.canvasPortion),
+            innerHeight / (this.pixsz * this.canvasPortion))
         document.querySelector("#canvasLoader").appendChild(this.renderer.domElement)
         this.renderer.domElement.setAttribute("style",
             `width:${innerWidth / this.canvasPortion}px;` +
