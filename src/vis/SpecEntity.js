@@ -100,10 +100,7 @@ class SpecEntity extends Visualizer {
         }
         if (properties.applyfadingpernframes) {
             const applyfadingpernframes = properties.applyfadingpernframes.value
-            // todo: define a corresponding property in shader pass, and pass the value to the property
-            if (this.composer && this.composer.passes[1] && typeof this.composer.passes[1].setApplyFadingPerNFrames === 'function') {
-                this.composer.passes[1].setApplyFadingPerNFrames(applyfadingpernframes)
-            }
+            this.composer.passes[1].setApplyFadingPerNFrames(applyfadingpernframes)
         }
         if (properties.backgroundcolor) {
             this.backgroundcolor = properties.backgroundcolor.value
@@ -133,7 +130,8 @@ class SpecEntity extends Visualizer {
             this.customimage = properties.customimage.value
         }
         if (properties.fade) {
-            this.fade = properties.fade.value
+            const fadeAmount = properties.fade.value / 255
+            this.composer.passes[1].setFadeAmount(fadeAmount)
         }
         if (properties.flow) {
             this.flow = properties.flow.value
@@ -145,6 +143,10 @@ class SpecEntity extends Visualizer {
         if (properties.flowvelocity) {
             const flowvelocity = properties.flowvelocity.value / 5
             this.composer.passes[1].setMoveVelocity(flowvelocity)
+        }
+        if (properties.flowopacitylimit) {
+            const flowopacitylimit = properties.flowopacitylimit.value
+            this.composer.passes[1].setFlowOpacityLimit(flowopacitylimit)
         }
         if (properties.gradientbarcolor1) {
             this.gradientbarcolor1 = properties.gradientbarcolor1.value
@@ -215,7 +217,7 @@ class SpecEntity extends Visualizer {
 
             const mat = this.obj_pool[u].material
             mat.color = new THREE.Color(this.colorFunction(audioSamples[access]));
-            mat.opacity = audioSamples[access] * 50 * 2
+            mat.opacity = 1//audioSamples[access] * 50 * 2
             mat.needsUpdate = true
 
             const pos = this.obj_pool[u].geometry.attributes.position
@@ -234,17 +236,17 @@ class SpecEntity extends Visualizer {
     }
 
     colorFunction(val) {
-        // return `hsl(${(val * 9000 + 90) % 360}, 100%, 50%)`
-        return `hsl(${(val * 9000 + 90) % 360}, 100%, 100%)`
+        return `hsl(${(val * 9000 + 240) % 360}, 80%, 20%)`
+        // return `hsl(${(val * 9000 + 90) % 360}, 100%, 100%)`
     }
 
 }
 
 class MyPass extends Pass {
 
-    _velocity = 1
+    _velocity = 1 / 255
     _moveDir = 0.7
-    _applyFadingPerNFrames = 5 // default value
+    _applyFadingPerNFrames = 1
 
     constructor(width, height, params) {
 
@@ -275,7 +277,9 @@ class MyPass extends Pass {
                 'height': { value: 1 },
                 'moveVelocityX': { value: 0.0 },
                 'moveVelocityY': { value: 0.0 },
-                'shouldDecline': { value: 1.0 }
+                'shouldDecline': { value: 1.0 },
+                'fadeAmount': { value: 0.0025 },
+                'flowOpacityLimit': { value: 0.9 }
             },
 
             vertexShader: /* glsl */`
@@ -297,27 +301,26 @@ class MyPass extends Pass {
                 uniform float moveVelocityX;
                 uniform float moveVelocityY;
                 uniform float shouldDecline;
+                uniform float fadeAmount;
+                uniform float flowOpacityLimit;
 
                 void main() {
-                    vec2 vUV2 = vUV;
-                    vUV2 -= vec2(moveVelocityX, moveVelocityY);
+                    vec2 vUV2 = vUV - vec2(moveVelocityX, moveVelocityY);
 
+                    vec4 tex1 = texture2D( tDiffuse, vUV );
                     vec4 tex2 = texture2D( tDiffuse2, vUV2 );
-                    if(tex2.a > 0.9) {
-                        tex2 = tex2 * 0.9;
-                    }
-
-                    if(shouldDecline > 0.0){
-                        gl_FragColor = max(texture2D( tDiffuse, vUV ) , tex2 - vec4(0.0025)); // will be x times smaller
-                    } else {
-                        gl_FragColor = max(texture2D( tDiffuse, vUV ) , tex2);
-                    }
-
-                    gl_FragColor.xyz = normalize(gl_FragColor.xyz);
+                    tex2.rgb /= tex2.a;
+                    tex2.a = min(tex2.a, flowOpacityLimit) - (shouldDecline > 0.0 ? fadeAmount : 0.0);
+                    // tex2.a = tex2.a - (shouldDecline > 0.0 ? fadeAmount : 0.0);
+                    gl_FragColor = tex1.a >= tex2.a ? tex1 : tex2;
+                    // gl_FragColor.rgb /= gl_FragColor.a;
+                    // gl_FragColor.rgb = normalize(gl_FragColor.rgb);
+                    // gl_FragColor.rgb = ceil(gl_FragColor.rgb * 255.0) / 255.0;
                 }`
-
         };
+        // note: 所以 sampler 拿到的是 after blend
 
+        // note: color blending of two opacity? didn't.
         this.uniforms = THREE.UniformsUtils.clone(MyPassShader.uniforms);
         this.material = new THREE.ShaderMaterial({
             uniforms: this.uniforms,
@@ -325,6 +328,10 @@ class MyPass extends Pass {
             vertexShader: MyPassShader.vertexShader,
             transparent: true
         });
+        // this.material.blending = THREE.CustomBlending;
+        // this.material.blendEquation = THREE.AddEquation;
+        // this.material.blendSrc = THREE.SrcAlphaFactor;
+        // this.material.blendDst = THREE.ZeroFactor; // == no blend
 
         // set params
         this.uniforms.width.value = width;
@@ -356,10 +363,18 @@ class MyPass extends Pass {
         this._applyFadingPerNFrames = val;
     }
 
+    setFadeAmount(val) {
+        this.uniforms.fadeAmount.value = val;
+    }
+
+    setFlowOpacityLimit(val) {
+        this.uniforms.flowOpacityLimit.value = val;
+    }
+
     render(renderer, writeBuffer, readBuffer/*, deltaTime, maskActive*/) {
 
         this.count++
-        this.uniforms.shouldDecline.value = (this.count % this._applyFadingPerNFrames > 0)
+        this.uniforms.shouldDecline.value = (this.count % this._applyFadingPerNFrames === 0)
             ? 1.0
             : 0.0
 
