@@ -12,7 +12,8 @@ class Visualizer {
     camera = null
 
     // camera settings
-    viewZ = 30
+    fov = 30
+    viewZ = 60
     pixsz = 1
     canvasPortion = 1.2 // todo: setting precision
     show_half = !true
@@ -29,7 +30,7 @@ class Visualizer {
     constructor(sortObjects = false) {
 
         this.scene = new THREE.Scene()
-        this.camera = new THREE.PerspectiveCamera(60,
+        this.camera = new THREE.PerspectiveCamera(this.fov,
             window.innerWidth / window.innerHeight, 1,
             this.show_half ? this.viewZ : this.viewZ * 2)
         this.renderer = window.WebGLRenderingContext
@@ -41,11 +42,11 @@ class Visualizer {
     // ---------------- for overriding
 
     applySettingForWPE(properties) {
-
+        console.log("Should override applySettingForWPE")
     }
 
     render(time, audioSamples) {
-        console.log("Should override render")
+
     }
 
     windowResized() {
@@ -62,7 +63,7 @@ class Visualizer {
             `top:${innerHeight * (1 - 1 / this.canvasPortion + this.offY) / 2}px;`
         )
         this.camera.aspect = innerWidth / innerHeight
-        this.camera.fov = 60 / this.canvasPortion
+        this.camera.fov = this.fov / this.canvasPortion
         this.camera.far = this.show_half ? this.viewZ : this.viewZ * 2
         this.cameraReposition()
     }
