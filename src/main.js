@@ -27,7 +27,13 @@ function wallpaperAudioListener(audioArray) {
 
 function run() {
     window.requestAnimationFrame(run)
-    vis.render(frameLapsed++, audioSamples)
+    try {
+        vis.render(frameLapsed++, audioSamples)
+    } catch (e) {
+        if (frameLapsed % 50 == 0) {
+            console.log(e)
+        }
+    }
 }
 
 // -------------------------------------
@@ -41,11 +47,8 @@ window.wallpaperPropertyListener = {
     }
 }
 
-// originally in load event. so it would cause bugs. try the case that the code is missing
 vis.windowResized()
 window.requestAnimationFrame(run)
-document.body.setAttribute("style", `background-image: url("dist/bg.png")`)
-// document.querySelector("#fileinput").addEventListener("change", fileSelected);
 
 window.addEventListener('resize', () => {
     vis.windowResized()

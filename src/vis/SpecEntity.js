@@ -3,6 +3,7 @@ import { Pass, FullScreenQuad } from '../class/Pass.js';
 import { Visualizer } from '../class/Visualizer.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { rasterizeTextToTransposedMatrix } from '../class/Utils.js';
 
 export { SpecEntity }
 
@@ -33,6 +34,7 @@ class SpecEntity extends Visualizer {
     usesinglecolor = false
     barwidth = 0.2
     bardistance = 0.25
+    textArray = rasterizeTextToTransposedMatrix(" ")
 
     constructor(sampleSize) {
 
@@ -229,6 +231,10 @@ class SpecEntity extends Visualizer {
                 this.obj_pool.forEach(e => { e.material.color = this.current_color })
             }
         }
+
+        if (properties.text) {
+            this.textArray = rasterizeTextToTransposedMatrix(properties.text.value + " ")
+        }
     }
 
     windowResized() {
@@ -242,15 +248,33 @@ class SpecEntity extends Visualizer {
 
     render(time, audioSamples) {
 
-        audioSamples = audioSamples.map(e => e * this.overallMagnitude)
+        const allZero = audioSamples.every(e => e === 0)
+        if (allZero) {
+            audioSamples = audioSamples.map((_, i) => {
+                const canvasSize = this.textArray[0].length
+                const shift = Math.max(
+                    0,
+                    Math.floor(
+                        (this.sampleSize - canvasSize) / 2
+                    )
+                )
+                return i >= shift && i + shift < canvasSize
+                    ? this.textArray[time % this.textArray.length][i - shift] / 24
+                    : 0
+            })
+        } else {
+            audioSamples = audioSamples.map(e => e * this.overallMagnitude)
+        }
         const a0 = this.barsflip ? 2 : 0
         const a1 = this.barsflip ? 3 : 1
         const barmagfac = 40 * (this.barsflip ? -1 : 1)
 
         for (let u = 0; u < this.sampleSize; u++) {
-            const access = u >= this.sampleSize / 2
-                ? this.sampleSize / 2 * 3 - u - 1
-                : u
+            const access = allZero
+                ? 127 - u
+                : u >= this.sampleSize / 2
+                    ? this.sampleSize / 2 * 3 - u - 1
+                    : u
 
             const mat = this.obj_pool[u].material
             if (!this.usesinglecolor) {
