@@ -258,7 +258,7 @@ class SpecEntity extends Visualizer {
                         (this.sampleSize - canvasSize) / 2
                     )
                 )
-                return i >= shift && i + shift < canvasSize
+                return i >= shift && i - shift < canvasSize
                     ? this.textArray[time % this.textArray.length][i - shift] / 24
                     : 0
             })
@@ -363,7 +363,11 @@ class MyPass extends Pass {
                     vec4 tex2 = texture2D( tDiffuse2, vUV2 );
                     tex2.rgb /= tex2.a;
                     tex2.a = min(tex2.a, flowOpacityLimit) - (shouldDecline > 0.0 ? fadeAmount : 0.0);
-                    gl_FragColor = tex1.a >= tex2.a ? tex1 : tex2;
+                    // gl_FragColor = tex1.a >= tex2.a ? tex1 : tex2;
+                    gl_FragColor = tex2.a == 0.0 ? tex1 : tex2;
+
+                    // gl_FragColor.xyz = tex1.xyz * tex1.a + tex2.xyz * (1.0 - tex1.a);
+                    // gl_FragColor.a = tex1.a + tex2.a * (1.0 - tex1.a);
                 }`
         };
         // note: 所以 sampler 拿到的是 after blend
