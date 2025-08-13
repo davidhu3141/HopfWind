@@ -258,8 +258,8 @@ class SpecEntity extends Visualizer {
                         (this.sampleSize - canvasSize) / 2
                     )
                 )
-                return i >= shift && i - shift < canvasSize
-                    ? this.textArray[time % this.textArray.length][i - shift] / 24
+                return i >= shift && i - shift <= canvasSize - 1
+                    ? this.textArray[time % this.textArray.length][canvasSize - 1 - (i - shift)] / 24
                     : 0
             })
         } else {
@@ -357,14 +357,32 @@ class MyPass extends Pass {
                 uniform float flowOpacityLimit;
 
                 void main() {
-                    vec2 vUV2 = vUV - vec2(moveVelocityX, moveVelocityY);
+                    // vec2 vUV2 = vUV - vec2(
+                    //     moveVelocityX - vUV[1] * vUV[1] * moveVelocityY * 0.5,
+                    //     moveVelocityY + vUV[1] * vUV[1] * moveVelocityX * 0.5);
+
+                    // vec2 vUV2 = vUV - vec2(
+                    //     moveVelocityX,
+                    //     moveVelocityY * (1.0 + texture2D( tDiffuse2, vUV ).a));
+
+                    // vec2 vUV2 = vUV - vec2(
+                    //     moveVelocityX * (0.9 + texture2D( tDiffuse2, vUV ).a * 0.2),
+                    //     moveVelocityY * (1.0 - texture2D( tDiffuse2, vUV ).a*texture2D( tDiffuse2, vUV ).a-texture2D( tDiffuse2, vUV ).a));
+
+                    // vec2 vUV2 = vUV - vec2(
+                    //     moveVelocityX * (1.0 + texture2D( tDiffuse2, vUV ).a * 0.2),
+                    //     moveVelocityY * (1.0 - texture2D( tDiffuse2, vUV ).a*texture2D( tDiffuse2, vUV ).a-texture2D( tDiffuse2, vUV ).a));
+
+                    vec2 vUV2 = vUV - vec2(
+                        moveVelocityX * (1.0 + max(0.0,texture2D( tDiffuse2, vUV ).r*2.0-texture2D( tDiffuse2, vUV ).b) * 1.8),
+                        moveVelocityY * (1.2 - texture2D( tDiffuse2, vUV ).a * 0.8 + (1.0-vUV[1])*1.5));
 
                     vec4 tex1 = texture2D( tDiffuse, vUV );
                     vec4 tex2 = texture2D( tDiffuse2, vUV2 );
                     tex2.rgb /= tex2.a;
                     tex2.a = min(tex2.a, flowOpacityLimit) - (shouldDecline > 0.0 ? fadeAmount : 0.0);
                     // gl_FragColor = tex1.a >= tex2.a ? tex1 : tex2;
-                    gl_FragColor = tex2.a == 0.0 ? tex1 : tex2;
+                    gl_FragColor = tex2.a == 0.0 || vUV[1] > 0.9975 ? tex1 : tex2;
 
                     // gl_FragColor.xyz = tex1.xyz * tex1.a + tex2.xyz * (1.0 - tex1.a);
                     // gl_FragColor.a = tex1.a + tex2.a * (1.0 - tex1.a);

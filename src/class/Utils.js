@@ -84,7 +84,7 @@ export function rasterizeTextToTransposedMatrix(text, opts = {}) {
         for (let ty = 0; ty < h; ty++) {
             let base = ty * W * 4;
             for (let tx = 0; tx < w; tx++) {
-                const a = img[base + tx * 4 + 3]; // alpha
+                const a = img[base + tx * 4 + 2]; // rgba, b=2
                 arr[ty][tx] = a / 255; // normalize to 0..1
             }
         }
@@ -96,7 +96,7 @@ export function rasterizeTextToTransposedMatrix(text, opts = {}) {
                 const y0 = ty * sampleScale;
                 let sum = 0;
                 for (let yy = 0; yy < sampleScale; yy++) {
-                    let idx = ((y0 + yy) * W + x0) * 4 + 3; // alpha
+                    let idx = ((y0 + yy) * W + x0) * 4 + 2; // rgba, b=2
                     for (let xx = 0; xx < sampleScale; xx++) {
                         sum += img[idx];
                         idx += 4;
