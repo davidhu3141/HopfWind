@@ -264,10 +264,13 @@ class SpecEntity extends Visualizer {
                     clockElem.style.zIndex = '1000';
                     clockElem.style.pointerEvents = 'none';
                     clockElem.style.color = '#fff';
-                    clockElem.style.fontFamily = 'monospace';
+                    // Use any font, but force even spacing
+                    clockElem.style.fontFamily = 'sans-serif, monospace';
                     clockElem.style.fontSize = '2em';
                     clockElem.style.textAlign = 'center';
                     clockElem.style.textShadow = '0 0 8px #000';
+                    clockElem.style.letterSpacing = '0.15em'; // force spacing
+                    clockElem.style.fontFeatureSettings = '"tnum"'; // tabular numbers
                     document.body.appendChild(clockElem);
                 }
                 clockElem.style.left = `${clockX}%`;
@@ -284,8 +287,8 @@ class SpecEntity extends Visualizer {
                     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
                     const dayStr = days[now.getDay()];
                     clockElem.innerHTML =
-                        `<span style="font-size:3em;line-height:1.2;">${hhmm}</span><br>` +
-                        `<span style="font-size:1em;line-height:1;">${yyyy}.${mm}.${dd} ${dayStr}</span>`;
+                        `<span style="font-size:3em;line-height:1.2;letter-spacing:0.15em;font-feature-settings:'tnum';">${hhmm}</span><br>` +
+                        `<span style="font-size:1em;line-height:1;letter-spacing:0.15em;font-feature-settings:'tnum';">${yyyy}.${mm}.${dd} ${dayStr}</span>`;
                 }
                 if (!clockElem._interval) {
                     updateClock();
