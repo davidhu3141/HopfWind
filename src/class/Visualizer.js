@@ -46,7 +46,7 @@ class Visualizer {
     }
 
     render(time, audioSamples) {
-
+        console.log("Should override render")
     }
 
     windowResized() {

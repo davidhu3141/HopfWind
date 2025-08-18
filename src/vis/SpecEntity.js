@@ -263,7 +263,9 @@ class SpecEntity extends Visualizer {
                     : 0
             })
         } else {
-            audioSamples = audioSamples.map(e => e * this.overallMagnitude)
+            let max = audioSamples.reduce((a, b) => a > b ? a : b)
+            max = (max === 0 ? 1 : max) * 100
+            audioSamples = audioSamples.map(e => e / max * this.overallMagnitude)
         }
         const a0 = this.barsflip ? 2 : 0
         const a1 = this.barsflip ? 3 : 1
@@ -375,7 +377,7 @@ class MyPass extends Pass {
 
                     vec2 vUV2 = vUV - vec2(
                         moveVelocityX * (1.0 + max(0.0,texture2D( tDiffuse2, vUV ).r*2.0-texture2D( tDiffuse2, vUV ).b) * 1.8),
-                        moveVelocityY * (1.2 - texture2D( tDiffuse2, vUV ).a * 0.8 + (1.0-vUV[1])*1.5));
+                        moveVelocityY * (1.2 - texture2D( tDiffuse2, vUV ).a * 0.8 + (1.0-vUV[1])*2.5));
 
                     vec4 tex1 = texture2D( tDiffuse, vUV );
                     vec4 tex2 = texture2D( tDiffuse2, vUV2 );

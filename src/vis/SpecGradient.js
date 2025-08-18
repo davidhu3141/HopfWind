@@ -160,17 +160,11 @@ class MyPass extends Pass {
         this.uniforms.height.value = height;
 
         for (const key in params) {
-
-            if (params.hasOwnProperty(key) && this.uniforms.hasOwnProperty(key)) {
-
+            if (params.hasOwnProperty(key) && this.uniforms.hasOwnProperty(key))
                 this.uniforms[key].value = params[key];
-
-            }
-
         }
 
         this.fsQuad = new FullScreenQuad(this.material);
-
     }
 
     render(renderer, writeBuffer, readBuffer/*, deltaTime, maskActive*/) {
@@ -200,7 +194,6 @@ class MyPass extends Pass {
             if (this.clear) renderer.clear();
             this.fsQuad.render(renderer);
         }
-
     }
 
     setSize(width, height) {
