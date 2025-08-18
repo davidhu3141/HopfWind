@@ -68,6 +68,8 @@ class SpecEntity extends Visualizer {
 
     // note: dev webview reload won't re-apply attr?
     applySettingForWPE(properties) {
+        let mypass = this.composer.passes[1]
+
         if (properties.overallmagnitude) {
             this.overallMagnitude = properties.overallmagnitude.value;
         }
@@ -141,11 +143,11 @@ class SpecEntity extends Visualizer {
         if (properties.antialiasingwillcauseblur) {
             this.antialiasingwillcauseblur = properties.antialiasingwillcauseblur.value
             const filter = this.antialiasingwillcauseblur ? THREE.LinearFilter : THREE.NearestFilter
-            this.composer.passes[1].setFilter(filter)
+            mypass.setFilter(filter)
         }
         if (properties.applyfadingpernframes) {
             const applyfadingpernframes = properties.applyfadingpernframes.value
-            this.composer.passes[1].setApplyFadingPerNFrames(applyfadingpernframes)
+            mypass.setApplyFadingPerNFrames(applyfadingpernframes)
         }
         if (properties.backgroundcolor) {
             const c = properties.backgroundcolor.value
@@ -190,22 +192,22 @@ class SpecEntity extends Visualizer {
         }
         if (properties.fade) {
             const fadeAmount = properties.fade.value / 255
-            this.composer.passes[1].setFadeAmount(fadeAmount)
+            mypass.setFadeAmount(fadeAmount)
         }
         if (properties.flow) {
             this.flow = properties.flow.value
         }
         if (properties.flowdirection) {
             const flowdirection = properties.flowdirection.value / 180 * Math.PI + Math.PI / 2
-            this.composer.passes[1].setMoveDir(flowdirection)
+            mypass.setMoveDir(flowdirection)
         }
         if (properties.flowvelocity) {
             const flowvelocity = properties.flowvelocity.value / 5
-            this.composer.passes[1].setMoveVelocity(flowvelocity)
+            mypass.setMoveVelocity(flowvelocity)
         }
         if (properties.flowopacitylimit) {
             const flowopacitylimit = properties.flowopacitylimit.value
-            this.composer.passes[1].setFlowOpacityLimit(flowopacitylimit)
+            mypass.setFlowOpacityLimit(flowopacitylimit)
         }
         if (properties.huechangebysound) {
             this.huechangebysound = properties.huechangebysound.value
@@ -231,9 +233,72 @@ class SpecEntity extends Visualizer {
                 this.obj_pool.forEach(e => { e.material.color = this.current_color })
             }
         }
-
         if (properties.text) {
             this.textArray = rasterizeTextToTransposedMatrix(properties.text.value + " ")
+        }
+        if (properties.flowbeforebars) {
+            mypass.setShadeFront(properties.flowbeforebars.value)
+        }
+        if (properties.usewaterfallsettings) {
+            mypass.setWaterfall(properties.usewaterfallsettings.value)
+        }
+        if (properties.waterfallgravity) {
+            mypass.setWaterfallGravity(properties.waterfallgravity.value)
+        }
+        if (properties.bluepxxshiftfactor) {
+            mypass.setNonBlueShift(properties.bluepxxshiftfactor.value)
+        }
+        if (properties.whitepixelsdropspeedfactor) {
+            mypass.setWhitePxDrop(properties.whitepixelsdropspeedfactor.value)
+        }
+        if (properties.showclock) {
+            if (properties.showclock.value) {
+                const clockX = 50
+                const clockY = 50
+                // Remove previous clock if exists
+                let clockElem = document.getElementById('spec-entity-clock');
+                if (!clockElem) {
+                    clockElem = document.createElement('div');
+                    clockElem.id = 'spec-entity-clock';
+                    clockElem.style.position = 'absolute';
+                    clockElem.style.zIndex = '1000';
+                    clockElem.style.pointerEvents = 'none';
+                    clockElem.style.color = '#fff';
+                    clockElem.style.fontFamily = 'monospace';
+                    clockElem.style.fontSize = '2em';
+                    clockElem.style.textAlign = 'center';
+                    clockElem.style.textShadow = '0 0 8px #000';
+                    document.body.appendChild(clockElem);
+                }
+                clockElem.style.left = `${clockX}%`;
+                clockElem.style.top = `${clockY}%`;
+                clockElem.style.transform = 'translate(-50%, -50%)';
+
+                function updateClock() {
+                    const now = new Date();
+                    const pad = n => n.toString().padStart(2, '0');
+                    const hhmm = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+                    const yyyy = now.getFullYear();
+                    const mm = pad(now.getMonth() + 1);
+                    const dd = pad(now.getDate());
+                    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                    const dayStr = days[now.getDay()];
+                    clockElem.innerHTML =
+                        `<span style="font-size:3em;line-height:1.2;">${hhmm}</span><br>` +
+                        `<span style="font-size:1em;line-height:1;">${yyyy}.${mm}.${dd} ${dayStr}</span>`;
+                }
+                if (!clockElem._interval) {
+                    updateClock();
+                    clockElem._interval = setInterval(updateClock, 1000);
+                }
+            } else {
+                // Remove clock if not needed
+                const clockElem = document.getElementById('spec-entity-clock');
+                if (clockElem) {
+                    if (clockElem._interval) clearInterval(clockElem._interval);
+                    clockElem.remove();
+                }
+            }
         }
     }
 
@@ -263,9 +328,10 @@ class SpecEntity extends Visualizer {
                     : 0
             })
         } else {
-            let max = audioSamples.reduce((a, b) => a > b ? a : b)
-            max = (max === 0 ? 1 : max) * 100
-            audioSamples = audioSamples.map(e => e / max * this.overallMagnitude)
+            // normalize 會導致一些很奇怪的結果 先不做 (雖然也可以放 thres)
+            // let max = audioSamples.reduce((a, b) => a > b ? a : b)
+            // max = (max === 0 ? 1 : max) * 50
+            audioSamples = audioSamples.map(e => e * this.overallMagnitude)
         }
         const a0 = this.barsflip ? 2 : 0
         const a1 = this.barsflip ? 3 : 1
@@ -303,6 +369,7 @@ class SpecEntity extends Visualizer {
 
 }
 
+
 class MyPass extends Pass {
 
     count = 0
@@ -312,6 +379,11 @@ class MyPass extends Pass {
     _moveDir = 0.7
     _applyFadingPerNFrames = 1
     _filter = THREE.NearestFilter
+    _shadeFront = false
+    _waterfall = false
+    _waterfallGravity = 0.0
+    _nonBlueShift = 0.0
+    _whitePxDrop = 0.0
 
     constructor(width, height, params) {
 
@@ -322,83 +394,29 @@ class MyPass extends Pass {
 
         this.createRenderTargets(this._filter);
 
-        const MyPassShader = {
-
-            uniforms: {
-                'tDiffuse': { value: null },
-                'tDiffuse2': { value: null },
-                'width': { value: 1 },
-                'height': { value: 1 },
-                'moveVelocityX': { value: 0.0 },
-                'moveVelocityY': { value: 0.0 },
-                'shouldDecline': { value: 1.0 },
-                'fadeAmount': { value: 0.0025 },
-                'flowOpacityLimit': { value: 0.9 }
-            },
-
-            vertexShader: /* glsl */`
-
-                varying vec2 vUV;
-
-                void main() {
-
-                    vUV = uv;
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-
-                }`,
-
-            fragmentShader: /* glsl */`
-
-                varying vec2 vUV;
-                uniform sampler2D tDiffuse;
-                uniform sampler2D tDiffuse2;
-                uniform float moveVelocityX;
-                uniform float moveVelocityY;
-                uniform float shouldDecline;
-                uniform float fadeAmount;
-                uniform float flowOpacityLimit;
-
-                void main() {
-                    // vec2 vUV2 = vUV - vec2(
-                    //     moveVelocityX - vUV[1] * vUV[1] * moveVelocityY * 0.5,
-                    //     moveVelocityY + vUV[1] * vUV[1] * moveVelocityX * 0.5);
-
-                    // vec2 vUV2 = vUV - vec2(
-                    //     moveVelocityX,
-                    //     moveVelocityY * (1.0 + texture2D( tDiffuse2, vUV ).a));
-
-                    // vec2 vUV2 = vUV - vec2(
-                    //     moveVelocityX * (0.9 + texture2D( tDiffuse2, vUV ).a * 0.2),
-                    //     moveVelocityY * (1.0 - texture2D( tDiffuse2, vUV ).a*texture2D( tDiffuse2, vUV ).a-texture2D( tDiffuse2, vUV ).a));
-
-                    // vec2 vUV2 = vUV - vec2(
-                    //     moveVelocityX * (1.0 + texture2D( tDiffuse2, vUV ).a * 0.2),
-                    //     moveVelocityY * (1.0 - texture2D( tDiffuse2, vUV ).a*texture2D( tDiffuse2, vUV ).a-texture2D( tDiffuse2, vUV ).a));
-
-                    vec2 vUV2 = vUV - vec2(
-                        moveVelocityX * (1.0 + max(0.0,texture2D( tDiffuse2, vUV ).r*2.0-texture2D( tDiffuse2, vUV ).b) * 1.8),
-                        moveVelocityY * (1.2 - texture2D( tDiffuse2, vUV ).a * 0.8 + (1.0-vUV[1])*2.5));
-
-                    vec4 tex1 = texture2D( tDiffuse, vUV );
-                    vec4 tex2 = texture2D( tDiffuse2, vUV2 );
-                    tex2.rgb /= tex2.a;
-                    tex2.a = min(tex2.a, flowOpacityLimit) - (shouldDecline > 0.0 ? fadeAmount : 0.0);
-                    // gl_FragColor = tex1.a >= tex2.a ? tex1 : tex2;
-                    gl_FragColor = tex2.a == 0.0 || vUV[1] > 0.9975 ? tex1 : tex2;
-
-                    // gl_FragColor.xyz = tex1.xyz * tex1.a + tex2.xyz * (1.0 - tex1.a);
-                    // gl_FragColor.a = tex1.a + tex2.a * (1.0 - tex1.a);
-                }`
-        };
+        const myUniforms = {
+            'tDiffuse': { value: null },
+            'tDiffuse2': { value: null },
+            'width': { value: 1 },
+            'height': { value: 1 },
+            'moveVelocityX': { value: 0.0 },
+            'moveVelocityY': { value: 0.0 },
+            'shouldDecline': { value: 1.0 },
+            'fadeAmount': { value: 0.0025 },
+            'flowOpacityLimit': { value: 0.9 },
+            'waterfallGravity': { value: 0.0 },
+            'nonBlueShift': { value: 0.0 },
+            'whitePxDrop': { value: 0.0 }
+        }
         // note: 所以 sampler 拿到的是 after blend
 
         // note: color blending of two opacity? didn't.
-        this.uniforms = THREE.UniformsUtils.clone(MyPassShader.uniforms);
+        this.uniforms = THREE.UniformsUtils.clone(myUniforms);
         this.material = new THREE.ShaderMaterial({
+            transparent: true,
             uniforms: this.uniforms,
-            fragmentShader: MyPassShader.fragmentShader,
-            vertexShader: MyPassShader.vertexShader,
-            transparent: true
+            vertexShader: makeVertexShader(),
+            fragmentShader: makeFragmentShader(this._shadeFront, this._waterfall)
         });
 
         this.uniforms.width.value = width;
@@ -437,6 +455,33 @@ class MyPass extends Pass {
         this.material.needsUpdate = true;
     }
 
+    setShadeFront(val) {
+        this._shadeFront = val;
+        this.material.fragmentShader = makeFragmentShader(this._shadeFront, this._waterfall);
+        this.material.needsUpdate = true;
+    }
+
+    setWaterfall(val) {
+        this._waterfall = val;
+        this.material.fragmentShader = makeFragmentShader(this._shadeFront, this._waterfall);
+        this.material.needsUpdate = true;
+    }
+
+    setWaterfallGravity(val) {
+        this._waterfallGravity = val;
+        this.uniforms.waterfallGravity.value = val;
+    }
+
+    setNonBlueShift(val) {
+        this._nonBlueShift = val;
+        this.uniforms.nonBlueShift.value = val;
+    }
+
+    setWhitePxDrop(val) {
+        this._whitePxDrop = val;
+        this.uniforms.whitePxDrop.value = val;
+    }
+
     setMoveDir(val) {
         this._moveDir = val
         this.uniforms.moveVelocityX.value = this._velocity * Math.cos(this._moveDir);
@@ -449,16 +494,21 @@ class MyPass extends Pass {
         this.uniforms.moveVelocityY.value = this._velocity * Math.sin(this._moveDir);
     }
 
-    setApplyFadingPerNFrames(val) {
-        this._applyFadingPerNFrames = val;
-    }
-
     setFadeAmount(val) {
         this.uniforms.fadeAmount.value = val;
     }
 
     setFlowOpacityLimit(val) {
         this.uniforms.flowOpacityLimit.value = val;
+    }
+
+    setSize(width, height) {
+        this.uniforms.width.value = width;
+        this.uniforms.height.value = height;
+    }
+
+    setApplyFadingPerNFrames(val) {
+        this._applyFadingPerNFrames = val;
     }
 
     render(renderer, writeBuffer, readBuffer/*, deltaTime, maskActive*/) {
@@ -494,9 +544,61 @@ class MyPass extends Pass {
 
     }
 
-    setSize(width, height) {
-        this.uniforms.width.value = width;
-        this.uniforms.height.value = height;
-    }
+}
 
+function makeVertexShader() {
+    const result = /* glsl */`
+varying vec2 vUV;
+void main() {
+    vUV = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}`
+    return result
+}
+
+function makeFragmentShader(shadeFront = false, waterfall = false) {
+    const defineTex0 = waterfall
+        ? `vec4 tex0 = texture2D( tDiffuse2, vUV );`
+        : ``
+
+    const moveDir = waterfall // todo: use innerprod
+        ? `moveVelocityX * (1.0 + max(0.0,tex0.r+tex0.g-tex0.b) * nonBlueShift),
+           moveVelocityY * (1.2 - tex0.a * whitePxDrop + (1.0-vUV[1]) * waterfallGravity)`
+        : `moveVelocityX, 
+           moveVelocityY`
+
+    const frontJudge = shadeFront
+        ? `tex2.a == 0.0`
+        : `tex1.a >= tex2.a`
+
+    let result = /* glsl */`
+
+#define ETH 0.0025 // edge threshold
+
+varying vec2 vUV;
+uniform sampler2D tDiffuse;
+uniform sampler2D tDiffuse2;
+uniform float moveVelocityX;
+uniform float moveVelocityY;
+uniform float shouldDecline;
+uniform float fadeAmount;
+uniform float flowOpacityLimit;
+uniform float waterfallGravity;
+uniform float nonBlueShift;
+uniform float whitePxDrop;
+
+void main() {
+    ${defineTex0}
+    vec2 vUV2 = vUV - vec2(${moveDir});
+    vec4 tex1 = texture2D( tDiffuse, vUV );
+    vec4 tex2 = texture2D( tDiffuse2, vUV2 );
+    tex2.rgb /= tex2.a;
+    tex2.a = min(tex2.a, flowOpacityLimit) - (shouldDecline > 0.0 ? fadeAmount : 0.0);
+    gl_FragColor = ${frontJudge}
+        || min(vUV[0], vUV[1]) < ETH
+        || max(vUV[0], vUV[1]) > 1.0-ETH
+            ? tex1
+            : tex2;
+}`
+    return result
 }
