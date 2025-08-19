@@ -1,36 +1,36 @@
 import * as THREE from 'three'
 import { Pass, FullScreenQuad } from '../class/Pass.js';
-import { Visualizer } from '../class/Visualizer.js'
+import { VisualizerOrthogonal } from '../class/VisualizerOrthogonal.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { rasterizeTextToTransposedMatrix } from '../class/Utils.js';
+import { nearestFraction, rasterizeTextToTransposedMatrix } from '../class/Utils.js';
 
 export { SpecEntity }
 
-class SpecEntity extends Visualizer {
+class SpecEntity extends VisualizerOrthogonal {
 
     composer
     sampleSize
 
     obj_pool = []
 
-    // default values
+    // default values, only affect preview refresh
     _2doffsetx = 0
     _2doffsety = 0
     _3drotation = 0
     antialiasingwillcauseblur = false
     backgroundcolor = "rgb(0 0 0)"
     barsflip = false
-    barslengthchangebysound = false
+    barslengthchangebysound = 1
     barslengthinitial = 0
     canvasshrink = 0
-    current_color = null
+    current_color = new THREE.Color(1, 1, 1)
     huechangebysound = 0
-    hueinitial = 0
-    lightness = 0
-    opacitychangebysound = 0
-    opacityinitial = 0
-    saturation = 0
+    hueinitial = 40
+    lightness = 50
+    opacitychangebysound = 1
+    opacityinitial = 1
+    saturation = 50
     usesinglecolor = false
     barwidth = 0.2
     bardistance = 0.25
@@ -43,6 +43,10 @@ class SpecEntity extends Visualizer {
     _24hourclock = false
     clockcolor = "#fff"
     clockshadowcolor = "#000"
+    frameratereduce = { n: 1, d: 1 }
+    frameratereduceFraction = 1
+    frameratereduceCount = 0
+    flowvelocity = 1
 
     makeClockShadow = color => '0 0 8px ' + color;
     makeColor = e => `rgb(${e.split(' ').map(e => e * 255).join(' ')})`
@@ -76,6 +80,8 @@ class SpecEntity extends Visualizer {
 
         this.composer.addPass(renderPass);
         this.composer.addPass(myPass);
+
+        this.recreateOrUpdateClock()
     }
 
     // note: dev webview reload won't re-apply attr?
@@ -154,6 +160,10 @@ class SpecEntity extends Visualizer {
             this._3drotation = properties._3drotation.value
             this.scene.rotation.y = this._3drotation / 180 * Math.PI
         }
+        if (properties._3drotationy) {
+            this.viewAngle = properties._3drotationy.value / 180 * Math.PI
+            this.windowResized()
+        }
         if (properties.antialiasingwillcauseblur) {
             this.antialiasingwillcauseblur = properties.antialiasingwillcauseblur.value
             const filter = this.antialiasingwillcauseblur ? THREE.LinearFilter : THREE.NearestFilter
@@ -173,9 +183,6 @@ class SpecEntity extends Visualizer {
             if (this.usesinglecolor) {
                 this.obj_pool.forEach(e => { e.material.color = this.current_color })
             }
-        }
-        if (properties.bars) {
-            this.bars = properties.bars.value
         }
         if (properties.barsflip) {
             this.barsflip = properties.barsflip.value
@@ -197,23 +204,17 @@ class SpecEntity extends Visualizer {
         if (properties.canvasshrink) {
             this.canvasshrink = properties.canvasshrink.value
         }
-        if (properties.colors) {
-            this.colors = properties.colors.value
-        }
         if (properties.fade) {
             const fadeAmount = properties.fade.value / 255
             mypass.setFadeAmount(fadeAmount)
-        }
-        if (properties.flow) {
-            this.flow = properties.flow.value
         }
         if (properties.flowdirection) {
             const flowdirection = properties.flowdirection.value / 180 * Math.PI + Math.PI / 2
             mypass.setMoveDir(flowdirection)
         }
         if (properties.flowvelocity) {
-            const flowvelocity = properties.flowvelocity.value / 5
-            mypass.setMoveVelocity(flowvelocity)
+            this.flowvelocity = properties.flowvelocity.value / 5
+            mypass.setMoveVelocity(this.flowvelocity / this.frameratereduceFraction)
         }
         if (properties.flowopacitylimit) {
             const flowopacitylimit = properties.flowopacitylimit.value
@@ -302,6 +303,11 @@ class SpecEntity extends Visualizer {
             // 最後才一次更新 而且不會更新完沒更新 local clockElem
             this.recreateOrUpdateClock()
         }
+        if (properties.frameratereduce) {
+            this.frameratereduceFraction = 1 - properties.frameratereduce.value
+            this.frameratereduce = nearestFraction(this.frameratereduceFraction)
+            mypass.setMoveVelocity(this.flowvelocity / this.frameratereduceFraction)
+        }
     }
 
     recreateOrUpdateClock() {
@@ -366,6 +372,16 @@ class SpecEntity extends Visualizer {
     }
 
     render(time, audioSamples) {
+
+        this.frameratereduceCount += this.frameratereduce.n
+        if (this.frameratereduceCount >= this.frameratereduce.d) {
+            this.frameratereduceCount %= this.frameratereduce.d
+        } else {
+            return
+        }
+        if (time % 60 == 0) {
+            console.log(new Date().getTime())
+        }
 
         const allZero = audioSamples.every(e => e === 0)
         if (allZero) {
@@ -454,7 +470,7 @@ class MyPass extends Pass {
             'width': { value: 1 },
             'height': { value: 1 },
             'moveVelocityX': { value: 0.0 },
-            'moveVelocityY': { value: 0.0 },
+            'moveVelocityY': { value: 1 / 255 },
             'shouldDecline': { value: 1.0 },
             'fadeAmount': { value: 0.0025 },
             'flowOpacityLimit': { value: 0.9 },

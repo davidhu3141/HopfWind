@@ -54,6 +54,3 @@ window.addEventListener('resize', () => {
     vis.windowResized()
 })
 
-// function fileSelected(files) {
-//     MockWPE.setAudioFile(new Audio(URL.createObjectURL(this.files[0])))
-// }

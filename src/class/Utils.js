@@ -125,3 +125,45 @@ export function rasterizeTextToTransposedMatrix(text, opts = {}) {
 // Example:
 // const mat = rasterizeTextToTransposedMatrix("Hello", { fontFamily: "monospace", sampleScale: 2 });
 // console.log(mat); // -> grayscale 2D array, transposed
+
+/**
+ * Return the nearest reduced fraction to x in [0,1]
+ * whose denominator is < 100.
+ * @param {number} x
+ * @returns {{n:number, d:number, toString:()=>string}}
+ */
+export function nearestFraction(x) {
+    x = Math.max(0, Math.min(1, x)); // clamp to [0,1]
+
+    const MAX_DEN = 99;
+    let bestN = 0, bestD = 1, bestErr = Infinity;
+    const EPS = 1e-15;
+
+    for (let d = 1; d <= MAX_DEN; d++) {
+        let n = Math.round(x * d);
+        if (n < 0) n = 0;
+        if (n > d) n = d;
+
+        const err = Math.abs(x - n / d);
+        const better =
+            err < bestErr - EPS ||
+            (Math.abs(err - bestErr) <= EPS && (d < bestD || (d === bestD && n < bestN)));
+
+        if (better) {
+            bestErr = err;
+            bestN = n;
+            bestD = d;
+        }
+    }
+
+    const g = gcd(bestN, bestD);
+    const n = bestN / g, d = bestD / g;
+    return { n, d, toString() { return `${n}/${d}`; } };
+
+    function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) [a, b] = [b, a % b]; return a || 1; }
+}
+
+// Examples:
+// nearestFraction(0.33).toString()  // "1/3"
+// nearestFraction(0.62).toString()  // "5/8"
+// nearestFraction(0.5).toString()   // "1/2"
