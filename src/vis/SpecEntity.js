@@ -4,8 +4,12 @@ import { VisualizerOrthogonal } from '../class/VisualizerOrthogonal.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { rasterizeTextToTransposedMatrix } from '../class/Utils.js';
+import { all } from 'three/tsl';
 
 export { SpecEntity }
+
+const defaultCountDown = 600
+const clockElementId = 'spec-entity-clock'
 
 class SpecEntity extends VisualizerOrthogonal {
 
@@ -46,6 +50,7 @@ class SpecEntity extends VisualizerOrthogonal {
     _24hourclock = false
     clockcolor = "#fff"
     clockshadowcolor = "#000"
+    reduceframerate = true
 
 
     makeClockShadow = color => '0 0 8px ' + color;
@@ -87,7 +92,7 @@ class SpecEntity extends VisualizerOrthogonal {
     // note: dev webview reload won't re-apply attr?
     applySettingForWPE(properties) {
         let mypass = this.composer.passes[1]
-        let clockElem = document.getElementById('spec-entity-clock');
+        let clockElem = document.getElementById(clockElementId);
         let shouldUpdateClock = false
 
         if (properties.overallmagnitude) {
@@ -307,6 +312,9 @@ class SpecEntity extends VisualizerOrthogonal {
         if (properties.showtext) {
             this.showtext = properties.showtext.value
         }
+        if (properties.reduceframerate) {
+            this.reduceframerate = properties.reduceframerate.value
+        }
 
         if (shouldUpdateClock) {
             // 最後才一次更新 而且不會更新完沒更新 local clockElem
@@ -317,10 +325,10 @@ class SpecEntity extends VisualizerOrthogonal {
     recreateOrUpdateClock() {
         if (this.showclock) {
             // Remove previous clock if exists
-            let clockElem = document.getElementById('spec-entity-clock');
+            let clockElem = document.getElementById(clockElementId);
             if (!clockElem) {
                 clockElem = document.createElement('div');
-                clockElem.id = 'spec-entity-clock';
+                clockElem.id = clockElementId;
                 clockElem.style.position = 'absolute';
                 clockElem.style.zIndex = '1000';
                 clockElem.style.pointerEvents = 'none';
@@ -358,7 +366,7 @@ class SpecEntity extends VisualizerOrthogonal {
             }
         } else {
             // Remove clock if not needed
-            const clockElem = document.getElementById('spec-entity-clock');
+            const clockElem = document.getElementById(clockElementId);
             if (clockElem) {
                 if (clockElem._interval) clearInterval(clockElem._interval);
                 clockElem.remove();
@@ -375,9 +383,12 @@ class SpecEntity extends VisualizerOrthogonal {
         this.composer.setSize(innerWidth / (pixsz * cp), innerHeight / (pixsz * cp))
     }
 
+    sleepCountDown = defaultCountDown
+
     render(time, audioSamples) {
 
-        const useAllZero = this.showtext && audioSamples.every(e => e == 0)
+        const allZero = audioSamples.every(e => e == 0)
+        const useAllZero = this.showtext && allZero
         if (useAllZero) {
             audioSamples = audioSamples.map((_, i) => {
                 const canvasSize = this.textArray[0].length
@@ -389,12 +400,26 @@ class SpecEntity extends VisualizerOrthogonal {
                     ? this.textArray[time % this.textArray.length][canvasSize - 1 - (i - shift)] * this.textmagnitude
                     : 0
             })
+        } else if (allZero) {
+            // 全為零且不顯示字幕 則應倒數10秒降低 fps
+            if (this.reduceframerate)
+                if (this.sleepCountDown === 0) {
+                    if (time % 30 > 0)
+                        return
+                } else {
+                    this.sleepCountDown--
+                }
         } else {
             // normalize 會導致一些很奇怪的結果 先不做 (雖然也可以放 thres)
             // let max = audioSamples.reduce((a, b) => a > b ? a : b)
             // max = (max === 0 ? 1 : max) * 50
             audioSamples = audioSamples.map(e => e * this.overallMagnitude)
         }
+
+        if (this.showtext || !allZero) {
+            this.sleepCountDown = defaultCountDown
+        }
+
         const a0 = this.barsflip ? 2 : 0
         const a1 = this.barsflip ? 3 : 1
         const barmagfac = 40 * (this.barsflip ? -1 : 1)
