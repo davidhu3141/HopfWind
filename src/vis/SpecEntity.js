@@ -3,7 +3,7 @@ import { Pass, FullScreenQuad } from '../class/Pass.js';
 import { VisualizerOrthogonal } from '../class/VisualizerOrthogonal.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { nearestFraction, rasterizeTextToTransposedMatrix } from '../class/Utils.js';
+import { rasterizeTextToTransposedMatrix } from '../class/Utils.js';
 
 export { SpecEntity }
 
@@ -35,6 +35,9 @@ class SpecEntity extends VisualizerOrthogonal {
     barwidth = 0.2
     bardistance = 0.25
     textArray = rasterizeTextToTransposedMatrix(" ")
+    textflip = false
+    textmagnitude = 1 / 24
+    showtext = true
     showclock = true
     clockpositionx = 50
     clockpositiony = 50
@@ -43,10 +46,7 @@ class SpecEntity extends VisualizerOrthogonal {
     _24hourclock = false
     clockcolor = "#fff"
     clockshadowcolor = "#000"
-    frameratereduce = { n: 1, d: 1 }
-    frameratereduceFraction = 1
-    frameratereduceCount = 0
-    flowvelocity = 1
+
 
     makeClockShadow = color => '0 0 8px ' + color;
     makeColor = e => `rgb(${e.split(' ').map(e => e * 255).join(' ')})`
@@ -213,8 +213,8 @@ class SpecEntity extends VisualizerOrthogonal {
             mypass.setMoveDir(flowdirection)
         }
         if (properties.flowvelocity) {
-            this.flowvelocity = properties.flowvelocity.value / 5
-            mypass.setMoveVelocity(this.flowvelocity / this.frameratereduceFraction)
+            const flowvelocity = properties.flowvelocity.value / 5
+            mypass.setMoveVelocity(flowvelocity)
         }
         if (properties.flowopacitylimit) {
             const flowopacitylimit = properties.flowopacitylimit.value
@@ -298,15 +298,19 @@ class SpecEntity extends VisualizerOrthogonal {
             if (clockElem)
                 clockElem.style.textShadow = this.makeClockShadow(this.clockshadowcolor)
         }
+        if (properties.textflip) {
+            this.textflip = properties.textflip.value
+        }
+        if (properties.textmagnitude) {
+            this.textmagnitude = properties.textmagnitude.value / 24
+        }
+        if (properties.showtext) {
+            this.showtext = properties.showtext.value
+        }
 
         if (shouldUpdateClock) {
             // 最後才一次更新 而且不會更新完沒更新 local clockElem
             this.recreateOrUpdateClock()
-        }
-        if (properties.frameratereduce) {
-            this.frameratereduceFraction = 1 - properties.frameratereduce.value
-            this.frameratereduce = nearestFraction(this.frameratereduceFraction)
-            mypass.setMoveVelocity(this.flowvelocity / this.frameratereduceFraction)
         }
     }
 
@@ -373,28 +377,16 @@ class SpecEntity extends VisualizerOrthogonal {
 
     render(time, audioSamples) {
 
-        this.frameratereduceCount += this.frameratereduce.n
-        if (this.frameratereduceCount >= this.frameratereduce.d) {
-            this.frameratereduceCount %= this.frameratereduce.d
-        } else {
-            return
-        }
-        if (time % 60 == 0) {
-            console.log(new Date().getTime())
-        }
-
-        const allZero = audioSamples.every(e => e === 0)
-        if (allZero) {
+        const useAllZero = this.showtext && audioSamples.every(e => e == 0)
+        if (useAllZero) {
             audioSamples = audioSamples.map((_, i) => {
                 const canvasSize = this.textArray[0].length
                 const shift = Math.max(
                     0,
-                    Math.floor(
-                        (this.sampleSize - canvasSize) / 2
-                    )
+                    Math.floor((this.sampleSize - canvasSize) / 2)
                 )
                 return i >= shift && i - shift <= canvasSize - 1
-                    ? this.textArray[time % this.textArray.length][canvasSize - 1 - (i - shift)] / 24
+                    ? this.textArray[time % this.textArray.length][canvasSize - 1 - (i - shift)] * this.textmagnitude
                     : 0
             })
         } else {
@@ -408,8 +400,8 @@ class SpecEntity extends VisualizerOrthogonal {
         const barmagfac = 40 * (this.barsflip ? -1 : 1)
 
         for (let u = 0; u < this.sampleSize; u++) {
-            const access = allZero
-                ? 127 - u
+            const access = useAllZero
+                ? (this.textflip ? 127 - u : u)
                 : u >= this.sampleSize / 2
                     ? this.sampleSize / 2 * 3 - u - 1
                     : u
