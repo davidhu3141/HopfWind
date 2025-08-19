@@ -35,6 +35,18 @@ class SpecEntity extends Visualizer {
     barwidth = 0.2
     bardistance = 0.25
     textArray = rasterizeTextToTransposedMatrix(" ")
+    showclock = true
+    clockpositionx = 50
+    clockpositiony = 50
+    clocksizea = 3
+    clocksizeb = 1
+    _24hourclock = false
+    clockcolor = "#fff"
+    clockshadowcolor = "#000"
+
+    makeClockShadow = color => '0 0 8px ' + color;
+    makeColor = e => `rgb(${e.split(' ').map(e => e * 255).join(' ')})`
+
 
     constructor(sampleSize) {
 
@@ -69,6 +81,8 @@ class SpecEntity extends Visualizer {
     // note: dev webview reload won't re-apply attr?
     applySettingForWPE(properties) {
         let mypass = this.composer.passes[1]
+        let clockElem = document.getElementById('spec-entity-clock');
+        let shouldUpdateClock = false
 
         if (properties.overallmagnitude) {
             this.overallMagnitude = properties.overallmagnitude.value;
@@ -150,11 +164,7 @@ class SpecEntity extends Visualizer {
             mypass.setApplyFadingPerNFrames(applyfadingpernframes)
         }
         if (properties.backgroundcolor) {
-            const c = properties.backgroundcolor.value
-                .split(' ')
-                .map(e => e * 255)
-                .join(' ')
-            this.backgroundcolor = `rgb(${c})`
+            this.backgroundcolor = this.makeColor(properties.backgroundcolor.value)
             document.body.style.backgroundColor = this.backgroundcolor
         }
         if (properties.barcolor) {
@@ -252,55 +262,96 @@ class SpecEntity extends Visualizer {
             mypass.setWhitePxDrop(properties.whitepixelsdropspeedfactor.value)
         }
         if (properties.showclock) {
-            if (properties.showclock.value) {
-                const clockX = 50
-                const clockY = 50
-                // Remove previous clock if exists
-                let clockElem = document.getElementById('spec-entity-clock');
-                if (!clockElem) {
-                    clockElem = document.createElement('div');
-                    clockElem.id = 'spec-entity-clock';
-                    clockElem.style.position = 'absolute';
-                    clockElem.style.zIndex = '1000';
-                    clockElem.style.pointerEvents = 'none';
-                    clockElem.style.color = '#fff';
-                    // Use any font, but force even spacing
-                    clockElem.style.fontFamily = 'sans-serif, monospace';
-                    clockElem.style.fontSize = '2em';
-                    clockElem.style.textAlign = 'center';
-                    clockElem.style.textShadow = '0 0 8px #000';
-                    clockElem.style.letterSpacing = '0.15em'; // force spacing
-                    clockElem.style.fontFeatureSettings = '"tnum"'; // tabular numbers
-                    document.body.appendChild(clockElem);
-                }
-                clockElem.style.left = `${clockX}%`;
-                clockElem.style.top = `${clockY}%`;
-                clockElem.style.transform = 'translate(-50%, -50%)';
+            this.showclock = properties.showclock.value
+            shouldUpdateClock = true
+        }
+        if (properties.clocksizea) {
+            this.clocksizea = properties.clocksizea.value
+            shouldUpdateClock = true
+        }
+        if (properties.clocksizeb) {
+            this.clocksizeb = properties.clocksizeb.value
+            shouldUpdateClock = true
+        }
+        if (properties.clockpositionx) {
+            this.clockpositionx = properties.clockpositionx.value
+            if (clockElem)
+                clockElem.style.left = `${this.clockpositionx}%`;
+        }
+        if (properties.clockpositiony) {
+            this.clockpositiony = properties.clockpositiony.value
+            if (clockElem)
+                clockElem.style.top = `${this.clockpositiony}%`;
+        }
+        if (properties._24hourclock) {
+            this._24hourclock = properties._24hourclock.value
+            shouldUpdateClock = true
+        }
+        if (properties.clockcolor) {
+            this.clockcolor = this.makeColor(properties.clockcolor.value)
+            if (clockElem)
+                clockElem.style.color = this.clockcolor
+        }
+        if (properties.clockshadowcolor) {
+            this.clockshadowcolor = this.makeColor(properties.clockshadowcolor.value)
+            if (clockElem)
+                clockElem.style.textShadow = this.makeClockShadow(this.clockshadowcolor)
+        }
 
-                function updateClock() {
-                    const now = new Date();
-                    const pad = n => n.toString().padStart(2, '0');
-                    const hhmm = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-                    const yyyy = now.getFullYear();
-                    const mm = pad(now.getMonth() + 1);
-                    const dd = pad(now.getDate());
-                    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                    const dayStr = days[now.getDay()];
-                    clockElem.innerHTML =
-                        `<span style="font-size:3em;line-height:1.2;letter-spacing:0.15em;font-feature-settings:'tnum';">${hhmm}</span><br>` +
-                        `<span style="font-size:1em;line-height:1;letter-spacing:0.15em;font-feature-settings:'tnum';">${yyyy}.${mm}.${dd} ${dayStr}</span>`;
-                }
-                if (!clockElem._interval) {
-                    updateClock();
-                    clockElem._interval = setInterval(updateClock, 1000);
-                }
-            } else {
-                // Remove clock if not needed
-                const clockElem = document.getElementById('spec-entity-clock');
-                if (clockElem) {
-                    if (clockElem._interval) clearInterval(clockElem._interval);
-                    clockElem.remove();
-                }
+        if (shouldUpdateClock) {
+            // 最後才一次更新 而且不會更新完沒更新 local clockElem
+            this.recreateOrUpdateClock()
+        }
+    }
+
+    recreateOrUpdateClock() {
+        if (this.showclock) {
+            // Remove previous clock if exists
+            let clockElem = document.getElementById('spec-entity-clock');
+            if (!clockElem) {
+                clockElem = document.createElement('div');
+                clockElem.id = 'spec-entity-clock';
+                clockElem.style.position = 'absolute';
+                clockElem.style.zIndex = '1000';
+                clockElem.style.pointerEvents = 'none';
+                clockElem.style.color = this.clockcolor;
+                clockElem.style.fontFamily = 'monospace';
+                clockElem.style.fontSize = '2em';
+                clockElem.style.textAlign = 'center';
+                clockElem.style.textShadow = this.makeClockShadow(this.clockshadowcolor) // 都這樣做，寫到屬性並在兩處改屬性
+                document.body.appendChild(clockElem);
+            }
+            clockElem.style.left = `${this.clockpositionx}%`;
+            clockElem.style.top = `${this.clockpositiony}%`;
+            clockElem.style.transform = 'translate(-50%, -50%)';
+
+            const captureThis = this
+            const hours12 = n => n % 12 || 12
+
+            function updateClock() {
+                const now = new Date();
+                const pad = n => n.toString().padStart(2, '0');
+                const h = captureThis._24hourclock ? now.getHours() : hours12(now.getHours())
+                const hhmm = `${pad(h)}:${pad(now.getMinutes())}`;
+                const yyyy = now.getFullYear();
+                const mm = pad(now.getMonth() + 1);
+                const dd = pad(now.getDate());
+                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                const dayStr = days[now.getDay()];
+                clockElem.innerHTML =
+                    `<span style="font-size:${captureThis.clocksizea}em;line-height:1.2;">${hhmm}</span><br>` +
+                    `<span style="font-size:${captureThis.clocksizeb}em;line-height:1;">${yyyy}.${mm}.${dd} ${dayStr}</span>`;
+            }
+            updateClock();
+            if (!clockElem._interval) {
+                clockElem._interval = setInterval(updateClock, 1000);
+            }
+        } else {
+            // Remove clock if not needed
+            const clockElem = document.getElementById('spec-entity-clock');
+            if (clockElem) {
+                if (clockElem._interval) clearInterval(clockElem._interval);
+                clockElem.remove();
             }
         }
     }
@@ -571,7 +622,7 @@ function makeFragmentShader(shadeFront = false, waterfall = false) {
            moveVelocityY`
 
     const frontJudge = shadeFront
-        ? `tex2.a == 0.0`
+        ? `tex2.a <= 0.0` // 有可能小於 不影響 movedir
         : `tex1.a >= tex2.a`
 
     let result = /* glsl */`

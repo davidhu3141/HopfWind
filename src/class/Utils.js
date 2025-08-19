@@ -69,7 +69,7 @@ export function rasterizeTextToTransposedMatrix(text, opts = {}) {
     ctx.font = `${fontSize}px ${fontFamily}`;
     ctx.textBaseline = 'alphabetic';
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = '#fff';
     const x = padding - left;
     const y = padding + ascent;
     ctx.fillText(text, x, y);
@@ -84,8 +84,11 @@ export function rasterizeTextToTransposedMatrix(text, opts = {}) {
         for (let ty = 0; ty < h; ty++) {
             let base = ty * W * 4;
             for (let tx = 0; tx < w; tx++) {
-                const a = img[base + tx * 4 + 2]; // rgba, b=2
-                arr[ty][tx] = a / 255; // normalize to 0..1
+                // const a = img[base + tx * 4 + 3]; // rgba, b=2, a=3
+                const r = img[base + tx * 4 + 0];
+                const g = img[base + tx * 4 + 1];
+                const b = img[base + tx * 4 + 2];
+                arr[ty][tx] = (r + g + b) / 255 / 3; // normalize to 0..1
             }
         }
     } else {
