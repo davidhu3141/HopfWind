@@ -4,7 +4,6 @@ import { VisualizerOrthogonal } from '../class/VisualizerOrthogonal.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { rasterizeTextToTransposedMatrix } from '../class/Utils.js';
-import { all } from 'three/tsl';
 
 export { SpecEntity }
 
@@ -51,7 +50,7 @@ class SpecEntity extends VisualizerOrthogonal {
     clockcolor = "#fff"
     clockshadowcolor = "#000"
     reduceframerate = true
-
+    sleepCountDown = defaultCountDown
 
     makeClockShadow = color => '0 0 8px ' + color;
     makeColor = e => `rgb(${e.split(' ').map(e => e * 255).join(' ')})`
@@ -320,6 +319,7 @@ class SpecEntity extends VisualizerOrthogonal {
             // 最後才一次更新 而且不會更新完沒更新 local clockElem
             this.recreateOrUpdateClock()
         }
+        this.sleepCountDown = defaultCountDown
     }
 
     recreateOrUpdateClock() {
@@ -383,8 +383,6 @@ class SpecEntity extends VisualizerOrthogonal {
         this.composer.setSize(innerWidth / (pixsz * cp), innerHeight / (pixsz * cp))
     }
 
-    sleepCountDown = defaultCountDown
-
     render(time, audioSamples) {
 
         const allZero = audioSamples.every(e => e == 0)
@@ -401,14 +399,12 @@ class SpecEntity extends VisualizerOrthogonal {
                     : 0
             })
         } else if (allZero) {
-            // 全為零且不顯示字幕 則應倒數10秒降低 fps
-            if (this.reduceframerate)
-                if (this.sleepCountDown === 0) {
-                    if (time % 30 > 0)
-                        return
-                } else {
-                    this.sleepCountDown--
-                }
+            // 全為零且不顯示字幕 則應倒數10秒停止渲染
+            if (this.reduceframerate) {
+                if (this.sleepCountDown === 0)
+                    return;
+                this.sleepCountDown--
+            }
         } else {
             // normalize 會導致一些很奇怪的結果 先不做 (雖然也可以放 thres)
             // let max = audioSamples.reduce((a, b) => a > b ? a : b)
