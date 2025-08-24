@@ -21,6 +21,8 @@ class VisualizerOrthogonal {
     user_image = ""
     overallMagnitude = 2
 
+    // _2drotation = 0
+
     constructor(sortObjects = false) {
         this.scene = new THREE.Scene()
         const { left, right, top, bottom } = this._computeOrthoFrustum(
@@ -79,6 +81,7 @@ class VisualizerOrthogonal {
         this.camera.position.z = this.viewZ * Math.cos(this.viewAngle)
         this.camera.position.y = this.viewZ * Math.sin(this.viewAngle)
         this.camera.lookAt(new THREE.Vector3(0, 0, 0))
+        // this.camera.rotation.z = this._2drotation
         this.camera.updateProjectionMatrix()
     }
 

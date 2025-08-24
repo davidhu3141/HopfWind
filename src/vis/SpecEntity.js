@@ -158,7 +158,9 @@ class SpecEntity extends VisualizerOrthogonal {
         }
         if (properties._2drotation) {
             const angle = properties._2drotation.value / 180 * Math.PI
-            this.camera.rotation.z = angle;
+            this.scene.rotation.z = angle
+            // this._2drotation = angle;
+            // this.windowResized()
         }
         if (properties._3drotation) {
             this._3drotation = properties._3drotation.value
