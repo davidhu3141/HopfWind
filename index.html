@@ -1,32 +1,12 @@
-<!DOCTYPE html
-    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-
+﻿<!doctype html>
+<html lang="en">
 <head>
-    <style>
-        body {
-            background-color: #888;
-            background-size: cover;
-            overflow: hidden;
-        }
-
-        canvas {
-            image-rendering: optimizeSpeed;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: -webkit-optimize-contrast;
-            image-rendering: -o-crisp-edges;
-            image-rendering: pixelated;
-            -ms-interpolation-mode: nearest-neighbor;
-
-            position: absolute;
-        }
-    </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HopfWind Wallpaper Preview</title>
 </head>
-
 <body>
-    <div id="canvasLoader"></div>
-    <!-- It's said to be important to load js at the tail of body -->
-    <script type="text/javascript" src="dist/main.js"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/entries/web.jsx"></script>
 </body>
-
 </html>

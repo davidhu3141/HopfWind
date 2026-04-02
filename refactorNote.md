@@ -68,7 +68,7 @@
             - audio[k] = (freq(start) + freq(start+2) + ... + freq(k+22)) / 12
         - when `31<=k<=63`
             - let start = Math.round(772 * Math.pow(1.093, k-31))
-            - let end = Math.round(772 * Math.pow(1.093, k-31))
+            - let end = Math.round(772 * Math.pow(1.093, k-30))
             - let step = (end - start) / 30
             - audio[k] = (sum_i freq(Math.round(start+i*step))) / 30
         - freq(x) 就從 getFloatFrequencyData 的結果取相近的就好

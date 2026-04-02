@@ -1,0 +1,126 @@
+﻿import * as THREE from 'three';
+
+function applyCanvasStyle(canvas, metrics) {
+    canvas.style.position = 'absolute';
+    canvas.style.left = `${metrics.left}px`;
+    canvas.style.top = `${metrics.top}px`;
+    canvas.style.width = `${metrics.width}px`;
+    canvas.style.height = `${metrics.height}px`;
+    canvas.style.imageRendering = metrics.pixelated > 1 ? 'pixelated' : 'auto';
+}
+
+function computeRenderMetrics(host, pixelated, canvasScale, offsetX, offsetY) {
+    const bounds = host.stage.getBoundingClientRect();
+    const width = bounds.width || window.innerWidth;
+    const height = bounds.height || window.innerHeight;
+    const scaledWidth = width / canvasScale;
+    const scaledHeight = height / canvasScale;
+
+    return {
+        width: scaledWidth,
+        height: scaledHeight,
+        renderWidth: Math.max(1, Math.round(scaledWidth / pixelated)),
+        renderHeight: Math.max(1, Math.round(scaledHeight / pixelated)),
+        left: (width * (1 - 1 / canvasScale + offsetX)) / 2,
+        top: (height * (1 - 1 / canvasScale + offsetY)) / 2,
+        pixelated,
+    };
+}
+
+function updateOrthographicCamera(camera, viewZ, viewport, viewAngle, showHalf) {
+    const aspect = viewport.width / viewport.height;
+    const referenceFov = 30;
+    const halfHeight = viewZ * Math.tan(THREE.MathUtils.degToRad(referenceFov / 2));
+    const halfWidth = halfHeight * aspect;
+
+    camera.left = -halfWidth;
+    camera.right = halfWidth;
+    camera.top = halfHeight;
+    camera.bottom = -halfHeight;
+    camera.near = 1;
+    camera.far = showHalf ? viewZ : viewZ * 2;
+    camera.position.z = viewZ * Math.cos(viewAngle);
+    camera.position.y = viewZ * Math.sin(viewAngle);
+    camera.lookAt(0, 0, 0);
+    camera.updateProjectionMatrix();
+}
+
+function updatePerspectiveCamera(camera, fov, viewZ, viewport, viewAngle, showHalf) {
+    camera.aspect = viewport.width / viewport.height;
+    camera.fov = fov;
+    camera.near = 1;
+    camera.far = showHalf ? viewZ : viewZ * 2;
+    camera.position.z = viewZ * Math.cos(viewAngle);
+    camera.position.y = viewZ * Math.sin(viewAngle);
+    camera.lookAt(0, 0, 0);
+    camera.updateProjectionMatrix();
+}
+
+export function createThreeCanvasApp(host, options = {}) {
+    const {
+        cameraType = 'orthographic',
+        viewZ = 60,
+        showHalf = false,
+        fov = 30,
+        alpha = true,
+        antialias = true,
+        sortObjects = false,
+    } = options;
+
+    const scene = new THREE.Scene();
+    const camera = cameraType === 'orthographic'
+        ? new THREE.OrthographicCamera(-1, 1, 1, -1, 1, viewZ * 2)
+        : new THREE.PerspectiveCamera(fov, 1, 1, viewZ * 2);
+
+    const renderer = new THREE.WebGLRenderer({
+        alpha,
+        antialias,
+        sortObjects,
+    });
+    renderer.setClearColor(0x000000, 0);
+    host.canvasMount.appendChild(renderer.domElement);
+
+    let viewportState = {
+        pixelated: 1,
+        canvasScale: 1,
+        offsetX: 0,
+        offsetY: 0,
+        viewAngle: 0,
+    };
+
+    const resize = (nextViewportState = viewportState) => {
+        viewportState = { ...viewportState, ...nextViewportState };
+        const metrics = computeRenderMetrics(
+            host,
+            viewportState.pixelated,
+            viewportState.canvasScale,
+            viewportState.offsetX,
+            viewportState.offsetY,
+        );
+
+        renderer.setSize(metrics.renderWidth, metrics.renderHeight, false);
+        applyCanvasStyle(renderer.domElement, metrics);
+
+        if (cameraType === 'orthographic') {
+            updateOrthographicCamera(camera, viewZ, metrics, viewportState.viewAngle, showHalf);
+        } else {
+            updatePerspectiveCamera(camera, fov / viewportState.canvasScale, viewZ, metrics, viewportState.viewAngle, showHalf);
+        }
+
+        return metrics;
+    };
+
+    return {
+        scene,
+        camera,
+        renderer,
+        resize,
+        getViewportState() {
+            return { ...viewportState };
+        },
+        dispose() {
+            renderer.dispose();
+            renderer.domElement.remove();
+        },
+    };
+}

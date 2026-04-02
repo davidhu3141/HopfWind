@@ -1,0 +1,253 @@
+﻿:root {
+    color-scheme: dark;
+    --bg: #07111a;
+    --panel: rgba(8, 19, 28, 0.82);
+    --panel-strong: rgba(11, 26, 39, 0.92);
+    --line: rgba(160, 199, 215, 0.16);
+    --text: #edf6fb;
+    --muted: #8fa8b7;
+    --accent: #d9ff70;
+    --accent-soft: rgba(217, 255, 112, 0.14);
+    --shadow: 0 22px 60px rgba(0, 0, 0, 0.35);
+    font-family: 'Segoe UI', 'Noto Sans TC', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html, body, #root {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    background:
+        radial-gradient(circle at top left, rgba(217, 255, 112, 0.1), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(65, 158, 255, 0.18), transparent 26%),
+        linear-gradient(135deg, #04070b, #0a1a27 55%, #08131e);
+    color: var(--text);
+    overflow: hidden;
+}
+
+button,
+input,
+select {
+    font: inherit;
+}
+
+button {
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 0.55rem 0.95rem;
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+input,
+select {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+    padding: 0.7rem 0.85rem;
+}
+
+input[type='checkbox'] {
+    width: 1.1rem;
+    height: 1.1rem;
+    padding: 0;
+}
+
+input[type='color'] {
+    padding: 0.2rem;
+    min-height: 2.6rem;
+}
+
+input[type='range'] {
+    padding: 0;
+}
+
+.app-shell {
+    display: grid;
+    grid-template-columns: minmax(320px, 420px) 1fr;
+    gap: 1.2rem;
+    height: 100vh;
+    padding: 1.2rem;
+    overflow: hidden;
+}
+
+.control-panel,
+.preview-card {
+    backdrop-filter: blur(18px);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+}
+
+.control-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 0;
+    padding: 1rem;
+    border-radius: 24px;
+    overflow: auto;
+}
+
+.panel-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1rem;
+    background: var(--panel-strong);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 20px;
+}
+
+.panel-block-grow {
+    min-height: 0;
+    flex: 0 0 auto;
+}
+
+.panel-block-hero {
+    gap: 0.35rem;
+}
+
+.eyebrow {
+    margin: 0;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 0.72rem;
+}
+
+.panel-copy,
+.preview-note {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.section-head h2,
+.preview-header h2,
+.panel-block-hero h1 {
+    margin: 0;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    color: var(--muted);
+}
+
+.field span {
+    font-size: 0.88rem;
+}
+
+.field-bool {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.slider-row,
+.color-row,
+.transport-row {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.slider-row output,
+.color-row code {
+    min-width: 5.4rem;
+    color: var(--text);
+}
+
+.transport-row button,
+.ghost-button {
+    flex: 1;
+}
+
+.seek-field {
+    gap: 0.6rem;
+}
+
+.property-grid {
+    display: grid;
+    gap: 0.75rem;
+    padding-right: 0.2rem;
+}
+
+.preview-panel {
+    min-width: 0;
+    min-height: 0;
+}
+
+.preview-card {
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 28px;
+}
+
+.preview-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.preview-surface {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent),
+        #000;
+}
+
+@media (max-width: 1080px) {
+    body {
+        overflow: auto;
+    }
+
+    .app-shell {
+        grid-template-columns: 1fr;
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
+    .control-panel,
+    .preview-card {
+        overflow: visible;
+    }
+
+    .preview-card {
+        min-height: 70vh;
+    }
+}
