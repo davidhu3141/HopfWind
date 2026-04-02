@@ -1,9 +1,11 @@
 ﻿import { hopfWindDefinition } from './hopf-wind/definition.js';
+import { retroFlowDefinition } from './retro-flow/definition.js';
 import { specEntityDefinition } from './spec-entity/definition.js';
 import { windTorusDefinition } from './wind-torus/definition.js';
 
 const definitions = [
     specEntityDefinition,
+    retroFlowDefinition,
     hopfWindDefinition,
     windTorusDefinition,
 ];
