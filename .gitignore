@@ -2,4 +2,4 @@ dist/
 node_modules/
 src/jsm
 src/jsm_depricated
-wallpapers/*/config.json
+wallpaper-configs/*/config.json

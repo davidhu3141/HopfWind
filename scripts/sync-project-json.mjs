@@ -11,7 +11,7 @@ if (!wallpaperId) {
 }
 
 const definition = getWallpaperDefinition(wallpaperId);
-const configPath = path.resolve('wallpapers', wallpaperId, 'config.json');
+const configPath = path.resolve('wallpaper-configs', wallpaperId, 'config.json');
 let projectPath = projectPathArg;
 
 try {
@@ -23,7 +23,7 @@ try {
 }
 
 if (!projectPath) {
-    console.error('No project path configured. Pass one explicitly or create wallpapers/<id>/config.json.');
+    console.error('No project path configured. Pass one explicitly or create wallpaper-configs/<id>/config.json.');
     process.exit(1);
 }
 

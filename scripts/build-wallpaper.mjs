@@ -11,7 +11,7 @@ if (!wallpaperId) {
 }
 
 const definition = getWallpaperDefinition(wallpaperId);
-const configPath = path.resolve('wallpapers', wallpaperId, 'config.json');
+const configPath = path.resolve('wallpaper-configs', wallpaperId, 'config.json');
 let buildDestination = destinationArg;
 
 try {
