@@ -27,7 +27,9 @@ void main() {
         return;
     }
 
-    gl_FragColor = texture2D(tDiffuse2, rememberedUv);
+    vec4 rememberedColor = texture2D(tDiffuse2, rememberedUv);
+    rememberedColor.rgb /= max(rememberedColor.a, 0.0001);
+    gl_FragColor = rememberedColor;
 }`;
 }
 

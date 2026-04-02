@@ -20,11 +20,10 @@ export class SpecGradientWallpaper {
         this.scene = this.canvas.scene;
         this.camera = this.canvas.camera;
         this.renderer = this.canvas.renderer;
+        this.tempColor = new THREE.Color();
 
         const material = new THREE.MeshBasicMaterial({ vertexColors: true });
-        const geometry = new THREE.PlaneGeometry(20, 30, this.sampleSize, 1);
-        const colors = new Float32Array(this.sampleSizePlus * 2 * 3).fill(0.05);
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        const geometry = this.createBandGeometry(20);
         this.band = new THREE.Mesh(geometry, material);
         this.scene.add(this.band);
 
@@ -36,6 +35,19 @@ export class SpecGradientWallpaper {
         this.trailPass = new GradientTrailPass(1, 1);
         this.composer.addPass(this.renderPass);
         this.composer.addPass(this.trailPass);
+    }
+
+    createBandGeometry(width) {
+        const geometry = new THREE.PlaneGeometry(width, 30, this.sampleSize, 1);
+        const colors = new Float32Array(this.sampleSizePlus * 2 * 3).fill(0.05);
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        return geometry;
+    }
+
+    updateBandGeometry() {
+        const nextGeometry = this.createBandGeometry(this.currentValues.bandwidth);
+        this.band.geometry.dispose();
+        this.band.geometry = nextGeometry;
     }
 
     updateViewport() {
@@ -54,7 +66,14 @@ export class SpecGradientWallpaper {
     }
 
     applyProperties(nextValues) {
+        const previousValues = this.currentValues;
+        const shouldRefreshAll = Object.keys(previousValues).length === 0;
+        const hasChanged = (...keys) => shouldRefreshAll || keys.some((key) => previousValues[key] !== nextValues[key]);
+
         this.currentValues = { ...nextValues };
+        if (hasChanged('bandwidth')) {
+            this.updateBandGeometry();
+        }
         this.updateViewport();
     }
 
@@ -62,19 +81,27 @@ export class SpecGradientWallpaper {
         this.updateViewport();
     }
 
-    colorFunction(value) {
-        return `hsl(${Math.trunc(value * 10000 + 240) % 360}, 100%, 50%)`;
+    colorForSample(value) {
+        const hue = (this.currentValues.basehue + value * this.currentValues.huegainbysound) % 360;
+        const wrappedHue = hue >= 0 ? hue : hue + 360;
+        this.tempColor.setHSL(
+            wrappedHue / 360,
+            this.currentValues.saturation / 100,
+            this.currentValues.lightness / 100,
+        );
+        return this.tempColor;
     }
 
     render(frame, incomingAudioSamples) {
         const geometry = this.band.geometry;
         const colorArray = geometry.attributes.color.array;
 
-        for (let index = 0; index < this.sampleSize; index += 1) {
+        for (let index = 0; index < this.sampleSizePlus; index += 1) {
             const mirroredIndex = index > this.sampleSize / 2
                 ? (this.sampleSize / 2) * 3 - index - 1
                 : index;
-            const color = new THREE.Color(this.colorFunction(incomingAudioSamples[mirroredIndex] ?? 0));
+            const sample = incomingAudioSamples[Math.max(0, Math.min(this.sampleSize - 1, mirroredIndex))] ?? 0;
+            const color = this.colorForSample(sample);
             const base = index * 3;
             const mirroredBase = this.sampleSizePlus * 3 + base;
 
