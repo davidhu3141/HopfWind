@@ -4,6 +4,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { applyBackground } from '../../shared/features/background.js';
 import { createClockOverlay } from '../../shared/features/clockOverlay.js';
 import { RetroFlowPass } from '../../shared/three/RetroFlowPass.js';
+import { RetroRadialWarpPass } from '../../shared/three/RetroRadialWarpPass.js';
 import { createThreeCanvasApp } from '../../shared/three/createThreeCanvasApp.js';
 import { rgbTripletToCss } from '../../shared/utils/color.js';
 
@@ -30,8 +31,10 @@ export class RetroFlowWallpaper {
         this.composer = new EffectComposer(this.renderer);
         this.renderPass = new RenderPass(this.scene, this.camera);
         this.flowPass = new RetroFlowPass(1, 1);
+        this.postWarpPass = new RetroRadialWarpPass(1, 1);
         this.composer.addPass(this.renderPass);
         this.composer.addPass(this.flowPass);
+        this.composer.addPass(this.postWarpPass);
 
         this.currentValues = {};
         this.idleCountdown = IDLE_COUNTDOWN_FRAMES;
@@ -94,6 +97,7 @@ export class RetroFlowWallpaper {
         this.flowPass.setFieldMix(this.currentValues.flowfieldmix);
         this.flowPass.setFlowOpacityLimit(this.currentValues.flowopacitylimit);
         this.flowPass.setShadeFront(this.currentValues.flowbeforebars);
+        this.postWarpPass.enabled = this.currentValues.usepostwarp;
     }
 
     updateCanvas() {
@@ -106,6 +110,7 @@ export class RetroFlowWallpaper {
         });
         this.composer.setSize(metrics.renderWidth, metrics.renderHeight);
         this.flowPass.setSize(metrics.renderWidth, metrics.renderHeight);
+        this.postWarpPass.setSize(metrics.renderWidth, metrics.renderHeight);
     }
 
     applyProperties(nextValues) {
@@ -143,6 +148,7 @@ export class RetroFlowWallpaper {
                 'flowfieldmix',
                 'flowopacitylimit',
                 'flowbeforebars',
+                'usepostwarp',
             )
         ) {
             this.updateFlowSettings();
@@ -230,6 +236,7 @@ export class RetroFlowWallpaper {
         this.clock.destroy();
         this.composer.dispose();
         this.flowPass.dispose();
+        this.postWarpPass.dispose();
         this.bars.forEach((bar) => {
             bar.geometry.dispose();
             bar.material.dispose();

@@ -87,6 +87,7 @@ export const retroFlowProperties = [
     slider('flowfieldmix', 'Flow Field Mix', 0, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
     slider('flowopacitylimit', 'Flow Opacity Limit', 0, 1, 0.9, { step: 0.01, fraction: true, precision: 2 }),
     bool('flowbeforebars', 'Flow Before Bars', false),
+    bool('usepostwarp', 'Use Post Warp', true),
 
     group('clock', 'Clock'),
     bool('showclock', 'Show Clock', true),
