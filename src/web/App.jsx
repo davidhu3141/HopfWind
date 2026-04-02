@@ -1,11 +1,57 @@
 ﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { createMockAudioSpectrum } from '../shared/audio/createMockAudioSpectrum.js';
 import { createWallpaperSession } from '../shared/runtime/createWallpaperSession.js';
-import { getDefaultPropertyValues } from '../shared/utils/propertySchema.js';
+import { getDefaultPropertyValues, mergePropertyValues } from '../shared/utils/propertySchema.js';
 import { listWallpaperDefinitions } from '../wallpapers/registry.js';
 import { PropertyField } from './components/PropertyField.jsx';
 
 const definitions = listWallpaperDefinitions();
+const SELECTED_WALLPAPER_STORAGE_KEY = 'hopfwind:selected-wallpaper';
+const PROPERTY_STORAGE_KEY_PREFIX = 'hopfwind:properties:';
+const AUDIO_VOLUME_STORAGE_KEY = 'hopfwind:audio-volume';
+
+function getPropertyStorageKey(wallpaperId) {
+    return `${PROPERTY_STORAGE_KEY_PREFIX}${wallpaperId}`;
+}
+
+function getPersistedWallpaperId() {
+    try {
+        const wallpaperId = window.localStorage.getItem(SELECTED_WALLPAPER_STORAGE_KEY);
+        return definitions.some((definition) => definition.id === wallpaperId)
+            ? wallpaperId
+            : definitions[0]?.id ?? '';
+    } catch {
+        return definitions[0]?.id ?? '';
+    }
+}
+
+function getPersistedAudioVolume() {
+    try {
+        const raw = window.localStorage.getItem(AUDIO_VOLUME_STORAGE_KEY);
+        const volume = Number.parseFloat(raw ?? '');
+        return Number.isFinite(volume)
+            ? Math.min(1, Math.max(0, volume))
+            : 1;
+    } catch {
+        return 1;
+    }
+}
+
+function loadPersistedProperties(definition) {
+    const defaults = getDefaultPropertyValues(definition.properties);
+
+    try {
+        const raw = window.localStorage.getItem(getPropertyStorageKey(definition.id));
+        if (!raw) {
+            return defaults;
+        }
+
+        const parsed = JSON.parse(raw);
+        return mergePropertyValues(definition.properties, defaults, parsed);
+    } catch {
+        return defaults;
+    }
+}
 
 function formatTime(seconds) {
     if (!Number.isFinite(seconds)) {
@@ -18,22 +64,50 @@ function formatTime(seconds) {
 }
 
 export function App() {
-    const [selectedWallpaperId, setSelectedWallpaperId] = useState(definitions[0]?.id ?? '');
+    const [selectedWallpaperId, setSelectedWallpaperId] = useState(() => getPersistedWallpaperId());
     const definition = useMemo(
         () => definitions.find((item) => item.id === selectedWallpaperId) ?? definitions[0],
         [selectedWallpaperId],
     );
-    const [properties, setProperties] = useState(() => getDefaultPropertyValues(definition.properties));
+    const [properties, setProperties] = useState(() => loadPersistedProperties(definition));
     const [audioInfo, setAudioInfo] = useState({ currentTime: 0, duration: 0, paused: true, hasFile: false });
     const [audioSourceUrl, setAudioSourceUrl] = useState('');
+    const [audioVolume, setAudioVolume] = useState(() => getPersistedAudioVolume());
     const previewRef = useRef(null);
     const audioRef = useRef(null);
     const sessionRef = useRef(null);
     const spectrumRef = useRef(null);
 
     useEffect(() => {
-        setProperties(getDefaultPropertyValues(definition.properties));
+        setProperties(loadPersistedProperties(definition));
     }, [definition]);
+
+    useEffect(() => {
+        try {
+            window.localStorage.setItem(SELECTED_WALLPAPER_STORAGE_KEY, selectedWallpaperId);
+        } catch {
+            // Ignore storage failures in restricted environments.
+        }
+    }, [selectedWallpaperId]);
+
+    useEffect(() => {
+        try {
+            window.localStorage.setItem(
+                getPropertyStorageKey(definition.id),
+                JSON.stringify(properties),
+            );
+        } catch {
+            // Ignore storage failures in restricted environments.
+        }
+    }, [definition.id, properties]);
+
+    useEffect(() => {
+        try {
+            window.localStorage.setItem(AUDIO_VOLUME_STORAGE_KEY, String(audioVolume));
+        } catch {
+            // Ignore storage failures in restricted environments.
+        }
+    }, [audioVolume]);
 
     useEffect(() => {
         if (!previewRef.current) {
@@ -70,6 +144,8 @@ export function App() {
             return undefined;
         }
 
+        audioElement.volume = audioVolume;
+
         spectrumRef.current?.destroy();
         spectrumRef.current = createMockAudioSpectrum({
             audioElement,
@@ -96,6 +172,12 @@ export function App() {
             events.forEach((eventName) => audioElement.removeEventListener(eventName, syncAudioState));
         };
     }, [definition.audioBinCount]);
+
+    useEffect(() => {
+        if (audioRef.current) {
+            audioRef.current.volume = audioVolume;
+        }
+    }, [audioVolume]);
 
     useEffect(() => () => {
         if (audioSourceUrl) {
@@ -127,8 +209,13 @@ export function App() {
         const nextUrl = URL.createObjectURL(file);
         setAudioSourceUrl(nextUrl);
         audioRef.current.src = nextUrl;
+        audioRef.current.volume = audioVolume;
         audioRef.current.load();
         setAudioInfo({ currentTime: 0, duration: 0, paused: true, hasFile: true });
+    };
+
+    const handleVolumeChange = (event) => {
+        setAudioVolume(Number(event.target.value));
     };
 
     const togglePlayback = async () => {
@@ -214,6 +301,17 @@ export function App() {
                             value={Number.isFinite(audioInfo.currentTime) ? audioInfo.currentTime : 0}
                             onChange={seekAudio}
                             disabled={!audioInfo.hasFile}
+                        />
+                    </label>
+                    <label className="field volume-field">
+                        <span>Volume {Math.round(audioVolume * 100)}%</span>
+                        <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.01"
+                            value={audioVolume}
+                            onChange={handleVolumeChange}
                         />
                     </label>
                     <audio ref={audioRef} preload="auto" />

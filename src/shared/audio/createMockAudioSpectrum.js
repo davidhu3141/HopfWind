@@ -1,7 +1,10 @@
 ﻿const graphStore = new WeakMap();
 
-function normalizeSample(decibelValue) {
-    return Math.max(0, Math.atan((decibelValue + 50) / 20) / Math.PI + 0.5);
+function normalizeSample(decibelValue, kOverHalf) {
+    const wpeScaleAdjust = (kOverHalf * 2 + 1) * 0.03
+    const lowerBound = kOverHalf * 0.07 + 0.33
+    const clamped = Math.max(0, Math.atan((decibelValue + 50) / 20) / Math.PI + lowerBound);
+    return clamped * wpeScaleAdjust
 }
 
 function sampleFrequencyBin(data, frequencyHz, sampleRate, fftSize) {
@@ -34,14 +37,16 @@ function createWpeLikeSpectrum(data, binCount, sampleRate, fftSize) {
             const startHz = 23.57 * k;
             average = sampleAverageForFrequencyRange(data, startHz, startHz + 22, 12, sampleRate, fftSize);
         } else {
-            const startHz = 772 * Math.pow(1.093, k - 31);
-            const endHz = 772 * Math.pow(1.093, k - 30);
+            const startHz = 772 * Math.pow(1.085, k - 31);
+            const endHz = 772 * Math.pow(1.085, k - 30);
             average = sampleAverageForFrequencyRange(data, startHz, endHz, 30, sampleRate, fftSize);
         }
 
-        const normalized = normalizeSample(average);
+        const normalized = normalizeSample(average, k / halfBinCount);
         spectrum[k] = normalized;
-        spectrum[binCount - 1 - k] = normalized;
+        if (halfBinCount + k < binCount) {
+            spectrum[halfBinCount + k] = normalized;
+        }
     }
 
     if (binCount % 2 === 1) {
@@ -84,7 +89,7 @@ export function createMockAudioSpectrum({ audioElement, onSamples, binCount = 12
     const graph = getOrCreateAudioGraph(audioElement);
     if (!graph) {
         return {
-            destroy() {},
+            destroy() { },
         };
     }
 
