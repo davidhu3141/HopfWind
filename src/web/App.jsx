@@ -231,7 +231,7 @@ export function App() {
         setSelectedWallpaperId(event.target.value);
     };
 
-    const handleAudioFile = (event) => {
+    const handleAudioFile = async (event) => {
         const file = event.target.files?.[0];
         if (!file || !audioRef.current) {
             return;
@@ -247,6 +247,12 @@ export function App() {
         audioRef.current.volume = audioVolume;
         audioRef.current.load();
         setAudioInfo({ currentTime: 0, duration: 0, paused: true, hasFile: true });
+
+        try {
+            await audioRef.current.play();
+        } catch (error) {
+            console.warn('Auto-play failed after selecting audio file.', error);
+        }
     };
 
     const handleVolumeChange = (event) => {
