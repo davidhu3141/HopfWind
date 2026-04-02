@@ -30,8 +30,8 @@ void main() {
     float x = centered.x;
     float y = centered.y;
     vec2 oldField = vec2(-y + x, x + y) * 0.05;
-    float t = (cos(x) + cos(y) + 4.0) / 8.0;
-    t = pow(t, 0.051);
+    float t = (cos(x) + cos(y) + 2.0) / 4.0;
+    t = pow(t, 0.18);
     vec2 mv1 = -vec2(-sin(x), -sin(y));
     vec2 mv2 = vec2(sin(y), -sin(x));
     vec2 newField = mv1 * (1.0 - t) + mv2 * t;
