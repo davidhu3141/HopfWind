@@ -1,8 +1,0 @@
-There are serval configuration that can make beautiful patterns. And I choosed only one as default.
-
-Must-try settings:
-- high Hopf latitude + Clifford rotation auto + atan cap
-- view angle
-- tori go to party
-
-*** Please adjust the lightness scale if your eyes are tired or flashed ***  
