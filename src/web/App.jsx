@@ -53,6 +53,37 @@ function loadPersistedProperties(definition) {
     }
 }
 
+function groupPropertyDescriptors(descriptors) {
+    const sections = [];
+    let currentSection = {
+        id: 'default',
+        label: 'General',
+        items: [],
+    };
+
+    for (const descriptor of descriptors) {
+        if (descriptor.type === 'group') {
+            if (currentSection.items.length > 0 || currentSection.id !== 'default') {
+                sections.push(currentSection);
+            }
+            currentSection = {
+                id: descriptor.id,
+                label: descriptor.label,
+                items: [],
+            };
+            continue;
+        }
+
+        currentSection.items.push(descriptor);
+    }
+
+    if (currentSection.items.length > 0 || currentSection.id !== 'default') {
+        sections.push(currentSection);
+    }
+
+    return sections;
+}
+
 function formatTime(seconds) {
     if (!Number.isFinite(seconds)) {
         return '00:00';
@@ -68,6 +99,10 @@ export function App() {
     const definition = useMemo(
         () => definitions.find((item) => item.id === selectedWallpaperId) ?? definitions[0],
         [selectedWallpaperId],
+    );
+    const propertySections = useMemo(
+        () => groupPropertyDescriptors(definition.properties),
+        [definition],
     );
     const [properties, setProperties] = useState(() => loadPersistedProperties(definition));
     const [audioInfo, setAudioInfo] = useState({ currentTime: 0, duration: 0, paused: true, hasFile: false });
@@ -323,13 +358,20 @@ export function App() {
                         <button type="button" className="ghost-button" onClick={resetProperties}>Reset</button>
                     </div>
                     <div className="property-grid">
-                        {definition.properties.map((descriptor) => (
-                            <PropertyField
-                                key={descriptor.id}
-                                descriptor={descriptor}
-                                value={properties[descriptor.id]}
-                                onChange={(value) => updateProperty(descriptor.id, value)}
-                            />
+                        {propertySections.map((section, index) => (
+                            <details key={section.id} className="property-group" open={index === 0}>
+                                <summary className="property-group-summary">{section.label}</summary>
+                                <div className="property-group-body">
+                                    {section.items.map((descriptor) => (
+                                        <PropertyField
+                                            key={descriptor.id}
+                                            descriptor={descriptor}
+                                            value={properties[descriptor.id]}
+                                            onChange={(value) => updateProperty(descriptor.id, value)}
+                                        />
+                                    ))}
+                                </div>
+                            </details>
                         ))}
                     </div>
                 </div>

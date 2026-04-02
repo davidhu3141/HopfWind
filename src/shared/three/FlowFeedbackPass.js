@@ -111,17 +111,26 @@ export class FlowFeedbackPass extends Pass {
     }
 
     setFilter(filter) {
+        if (this._filter === filter) {
+            return;
+        }
         this._filter = filter;
         this.createRenderTargets(filter);
     }
 
     setShadeFront(value) {
+        if (this._shadeFront === value) {
+            return;
+        }
         this._shadeFront = value;
         this.material.fragmentShader = makeFragmentShader(this._shadeFront, this._waterfall);
         this.material.needsUpdate = true;
     }
 
     setWaterfall(value) {
+        if (this._waterfall === value) {
+            return;
+        }
         this._waterfall = value;
         this.material.fragmentShader = makeFragmentShader(this._shadeFront, this._waterfall);
         this.material.needsUpdate = true;
@@ -163,10 +172,15 @@ export class FlowFeedbackPass extends Pass {
     }
 
     setSize(width, height) {
-        this.width = Math.max(1, Math.round(width));
-        this.height = Math.max(1, Math.round(height));
-        this.uniforms.width.value = this.width;
-        this.uniforms.height.value = this.height;
+        const nextWidth = Math.max(1, Math.round(width));
+        const nextHeight = Math.max(1, Math.round(height));
+        if (this.width === nextWidth && this.height === nextHeight) {
+            return;
+        }
+        this.width = nextWidth;
+        this.height = nextHeight;
+        this.uniforms.width.value = nextWidth;
+        this.uniforms.height.value = nextHeight;
         this.createRenderTargets(this._filter);
     }
 

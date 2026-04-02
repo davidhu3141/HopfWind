@@ -1,0 +1,646 @@
+{
+	"contentrating" : "Everyone",
+	"description" : "(2025.8.24 update)\n\nFixed a 2d rotation bug. The bug: 2d rotation might be reset after setting canvas position and after restart, and affected 2d xy position.\n\nAlso added a slight glow to the clock.\n\n(2025.8.19 initial submit)\n\nThere are lots of setting I defined to make this as playable as possible. I had to tell my self not to add more settings to this wallpaper, otherwise there wouldn't be a day for this wallpaper to be published.\n\nMust-try settings:\n- Bar Colors: hue\n\nThe \"Waterfall\" settings might only look good if the flow goes down, otherwise idk what would happen. These settings are for a preset that I will publish very soon, which is called \"Spectrum Audio Visualizer But It's Waterfall\".\n\nWhen anti-aliasing is off for the flow, the flow only goes from a pixel to another, in other words, from a lattice point to another. In this case, if the flow velocity is small, the possible flow directions are limited. For example, for the flow to follow a 45 degree direction, it requires a velocity vector from (0,0) to (1,1), so the velocity should be at least of norm >= sqrt(2).\n\nWhen first developing this wallpaper, all rotations are zero and the flow goes directly up. Such setup makes the audio visualizer become a spectrum visualizer and this is what I intended to make. But after playing with it I decided to publish the wallpaper with a default preset that make it look like the buildings in a night city because it's cute. Maybe the hue and bg color need some tweak but I think I would just leave it as is.",
+	"file" : "index.html",
+	"general" : 
+	{
+		"properties" : 
+		{
+			"_24hourclock" : 
+			{
+				"condition" : "",
+				"index" : 35,
+				"order" : 135,
+				"text" : "24-hour clock",
+				"type" : "bool",
+				"value" : false
+			},
+			"_2doffsetx" : 
+			{
+				"fraction" : true,
+				"index" : 23,
+				"max" : 1,
+				"min" : -1,
+				"order" : 123,
+				"precision" : 4,
+				"step" : 0.001,
+				"text" : "2D offset X",
+				"type" : "slider",
+				"value" : 0.159
+			},
+			"_2doffsety" : 
+			{
+				"fraction" : true,
+				"index" : 24,
+				"max" : 1,
+				"min" : -1,
+				"order" : 124,
+				"precision" : 4,
+				"step" : 0.001,
+				"text" : "2D offset Y",
+				"type" : "slider",
+				"value" : -0.48
+			},
+			"_2drotation" : 
+			{
+				"fraction" : false,
+				"index" : 22,
+				"max" : 179,
+				"min" : -180,
+				"order" : 122,
+				"text" : "2D rotation",
+				"type" : "slider",
+				"value" : 0
+			},
+			"_3drotation" : 
+			{
+				"fraction" : false,
+				"index" : 20,
+				"max" : 179,
+				"min" : -180,
+				"order" : 120,
+				"text" : "3D rotation X",
+				"type" : "slider",
+				"value" : 46
+			},
+			"_3drotationy" : 
+			{
+				"fraction" : false,
+				"index" : 21,
+				"max" : 85,
+				"min" : -85,
+				"order" : 121,
+				"text" : "3D rotation Y",
+				"type" : "slider",
+				"value" : -13
+			},
+			"antialiasingwillcauseblur" : 
+			{
+				"index" : 32,
+				"order" : 132,
+				"text" : "anti-aliasing (will cause blur)",
+				"type" : "bool",
+				"value" : false
+			},
+			"applyfadingpernframes" : 
+			{
+				"fraction" : false,
+				"index" : 30,
+				"max" : 5,
+				"min" : 1,
+				"order" : 130,
+				"text" : "apply fading per 'n' frames",
+				"type" : "slider",
+				"value" : 3
+			},
+			"backgroundcolor" : 
+			{
+				"index" : 4,
+				"order" : 104,
+				"text" : "background color",
+				"type" : "color",
+				"value" : "0.14901960784313725 0.16862745098039217 0.19607843137254902"
+			},
+			"barcolor" : 
+			{
+				"condition" : "usesinglecolor.value",
+				"index" : 7,
+				"order" : 107,
+				"text" : "bar color",
+				"type" : "color",
+				"value" : "1 1 1"
+			},
+			"bardistance" : 
+			{
+				"fraction" : true,
+				"index" : 19,
+				"max" : 1,
+				"min" : 0,
+				"order" : 119,
+				"precision" : 3,
+				"step" : 0.01,
+				"text" : "bar distance",
+				"type" : "slider",
+				"value" : 0.33
+			},
+			"bars" : 
+			{
+				"index" : 14,
+				"order" : 114,
+				"text" : "Bar Geometries",
+				"type" : "group",
+				"value" : ""
+			},
+			"barsflip" : 
+			{
+				"index" : 15,
+				"order" : 115,
+				"text" : "bars flip",
+				"type" : "bool",
+				"value" : false
+			},
+			"barslengthchangebysound" : 
+			{
+				"fraction" : true,
+				"index" : 17,
+				"max" : 5,
+				"min" : 0,
+				"order" : 117,
+				"precision" : 3,
+				"step" : 0.01,
+				"text" : "bars length change by sound",
+				"type" : "slider",
+				"value" : 0.6
+			},
+			"barslengthinitial" : 
+			{
+				"fraction" : true,
+				"index" : 16,
+				"max" : 1,
+				"min" : 0,
+				"order" : 116,
+				"precision" : 4,
+				"step" : 0.001,
+				"text" : "bars length initial",
+				"type" : "slider",
+				"value" : 0.03
+			},
+			"barwidth" : 
+			{
+				"fraction" : true,
+				"index" : 18,
+				"max" : 1,
+				"min" : 0,
+				"order" : 118,
+				"precision" : 3,
+				"step" : 0.01,
+				"text" : "bar width",
+				"type" : "slider",
+				"value" : 0.31
+			},
+			"bluepxxshiftfactor" : 
+			{
+				"condition" : "usewaterfallsettings.value",
+				"fraction" : true,
+				"index" : 51,
+				"max" : 5,
+				"min" : 0,
+				"order" : 151,
+				"precision" : 3,
+				"step" : 0.01,
+				"text" : "non-blue px x shift factor",
+				"type" : "slider",
+				"value" : 1.8
+			},
+			"canvasshrink" : 
+			{
+				"fraction" : true,
+				"index" : 55,
+				"max" : 1,
+				"min" : 0,
+				"order" : 155,
+				"precision" : 2,
+				"step" : 0.1,
+				"text" : "canvas shrink",
+				"type" : "slider",
+				"value" : 0
+			},
+			"clockcolor" : 
+			{
+				"index" : 40,
+				"order" : 140,
+				"text" : "clock color",
+				"type" : "color",
+				"value" : "1 1 1"
+			},
+			"clockdate" : 
+			{
+				"index" : 33,
+				"order" : 133,
+				"text" : "Clock",
+				"type" : "group",
+				"value" : ""
+			},
+			"clockpositionx" : 
+			{
+				"condition" : "",
+				"fraction" : true,
+				"index" : 36,
+				"max" : 100,
+				"min" : 0,
+				"order" : 136,
+				"precision" : 2,
+				"step" : 0.1,
+				"text" : "clock position X",
+				"type" : "slider",
+				"value" : 19
+			},
+			"clockpositiony" : 
+			{
+				"condition" : "",
+				"fraction" : true,
+				"index" : 37,
+				"max" : 100,
+				"min" : 0,
+				"order" : 137,
+				"precision" : 2,
+				"step" : 0.1,
+				"text" : "clock position -Y",
+				"type" : "slider",
+				"value" : 55.6
+			},
+			"clockshadowcolor" : 
+			{
+				"index" : 41,
+				"order" : 141,
+				"text" : "clock glow color",
+				"type" : "color",
+				"value" : "0.6 0.47843137254901963 0.7333333333333333"
+			},
+			"clocksizea" : 
+			{
+				"fraction" : true,
+				"index" : 38,
+				"max" : 10,
+				"min" : 0.1,
+				"order" : 138,
+				"precision" : 2,
+				"step" : 0.1,
+				"text" : "clock size A",
+				"type" : "slider",
+				"value" : 3.1
+			},
+			"clocksizeb" : 
+			{
+				"fraction" : true,
+				"index" : 39,
+				"max" : 10,
+				"min" : 0.1,
+				"order" : 139,
+				"precision" : 2,
+				"step" : 0.1,
+				"text" : "clock size B",
+				"type" : "slider",
+				"value" : 1.2
+			},
+			"colors" : 
+			{
+				"index" : 5,
+				"order" : 105,
+				"text" : "Bar Colors",
+				"type" : "group",
+				"value" : ""
+			},
+			"customimage" : 
+			{
+				"condition" : "usecustomimage.value",
+				"index" : 1,
+				"order" : 101,
+				"text" : "custom image",
+				"type" : "file",
+				"value" : ""
+			},
+			"fade" : 
+			{
+				"fraction" : false,
+				"index" : 29,
+				"max" : 255,
+				"min" : 0,
+				"order" : 129,
+				"text" : "fade",
+				"type" : "slider",
+				"value" : 1
+			},
+			"flow" : 
+			{
+				"index" : 25,
+				"order" : 125,
+				"text" : "Flow",
+				"type" : "group",
+				"value" : ""
+			},
+			"flowbeforebars" : 
+			{
+				"index" : 31,
+				"order" : 131,
+				"text" : "flow before bars",
+				"type" : "bool",
+				"value" : false
+			},
+			"flowdirection" : 
+			{
+				"fraction" : false,
+				"index" : 27,
+				"max" : 179,
+				"min" : -180,
+				"order" : 127,
+				"text" : "flow direction (small velocity limits direction possibility)",
+				"type" : "slider",
+				"value" : -35
+			},
+			"flowopacitylimit" : 
+			{
+				"fraction" : true,
+				"index" : 28,
+				"max" : 1,
+				"min" : 0,
+				"order" : 128,
+				"precision" : 3,
+				"step" : 0.01,
+				"text" : "flow opacity limit",
+				"type" : "slider",
+				"value" : 0.8
+			},
+			"flowvelocity" : 
+			{
+				"fraction" : true,
+				"index" : 26,
+				"max" : 30,
+				"min" : 1,
+				"order" : 126,
+				"precision" : 3,
+				"step" : 0.01,
+				"text" : "flow velocity",
+				"type" : "slider",
+				"value" : 5
+			},
+			"huechangebysound" : 
+			{
+				"condition" : "!usesinglecolor.value",
+				"fraction" : true,
+				"index" : 9,
+				"max" : 3,
+				"min" : -3,
+				"order" : 109,
+				"precision" : 4,
+				"step" : 0.001,
+				"text" : "bar hue change by sound",
+				"type" : "slider",
+				"value" : 0.04
+			},
+			"hueinitial" : 
+			{
+				"condition" : "!usesinglecolor.value",
+				"fraction" : false,
+				"index" : 8,
+				"max" : 359,
+				"min" : -10,
+				"order" : 108,
+				"text" : "bar hue initial (larger negative means faster rainbow)",
+				"type" : "slider",
+				"value" : 242
+			},
+			"lightness" : 
+			{
+				"condition" : "!usesinglecolor.value",
+				"fraction" : false,
+				"index" : 11,
+				"max" : 100,
+				"min" : 0,
+				"order" : 111,
+				"text" : "bar lightness",
+				"type" : "slider",
+				"value" : 83
+			},
+			"misc" : 
+			{
+				"index" : 52,
+				"order" : 152,
+				"text" : "Misc",
+				"type" : "group",
+				"value" : ""
+			},
+			"offsetx" : 
+			{
+				"fraction" : true,
+				"index" : 53,
+				"max" : 1,
+				"min" : -1,
+				"order" : 153,
+				"precision" : 4,
+				"step" : 0.001,
+				"text" : "canvas offset X",
+				"type" : "slider",
+				"value" : 0
+			},
+			"offsety" : 
+			{
+				"fraction" : true,
+				"index" : 54,
+				"max" : 1,
+				"min" : -1,
+				"order" : 154,
+				"precision" : 4,
+				"step" : 0.001,
+				"text" : "canvas offset Y",
+				"type" : "slider",
+				"value" : 0
+			},
+			"opacitychangebysound" : 
+			{
+				"fraction" : true,
+				"index" : 13,
+				"max" : 1,
+				"min" : 0,
+				"order" : 113,
+				"precision" : 3,
+				"step" : 0.01,
+				"text" : "bar opacity change by sound",
+				"type" : "slider",
+				"value" : 0.31
+			},
+			"opacityinitial" : 
+			{
+				"fraction" : true,
+				"index" : 12,
+				"max" : 1,
+				"min" : 0,
+				"order" : 112,
+				"precision" : 3,
+				"step" : 0.01,
+				"text" : "bar opacity initial",
+				"type" : "slider",
+				"value" : 0.37
+			},
+			"overallmagnitude" : 
+			{
+				"fraction" : true,
+				"index" : 2,
+				"max" : 20,
+				"min" : 1,
+				"order" : 102,
+				"precision" : 2,
+				"step" : 0.1,
+				"text" : "overall magnitude",
+				"type" : "slider",
+				"value" : 2
+			},
+			"pixelated" : 
+			{
+				"fraction" : false,
+				"index" : 56,
+				"max" : 5,
+				"min" : 1,
+				"order" : 156,
+				"text" : "pixelated",
+				"type" : "slider",
+				"value" : 1
+			},
+			"reduceframerate" : 
+			{
+				"index" : 3,
+				"order" : 103,
+				"text" : "stop animation if no sound and no text in 600 frames",
+				"type" : "bool",
+				"value" : true
+			},
+			"saturation" : 
+			{
+				"condition" : "!usesinglecolor.value",
+				"fraction" : false,
+				"index" : 10,
+				"max" : 100,
+				"min" : 0,
+				"order" : 110,
+				"text" : "bar saturation",
+				"type" : "slider",
+				"value" : 100
+			},
+			"schemecolor" : 
+			{
+				"order" : 0,
+				"text" : "ui_browse_properties_scheme_color",
+				"type" : "color",
+				"value" : "0 0 0"
+			},
+			"showclock" : 
+			{
+				"index" : 34,
+				"order" : 134,
+				"text" : "show clock",
+				"type" : "bool",
+				"value" : true
+			},
+			"showtext" : 
+			{
+				"index" : 43,
+				"order" : 143,
+				"text" : "show text when no sound",
+				"type" : "bool",
+				"value" : false
+			},
+			"text" : 
+			{
+				"condition" : "",
+				"index" : 44,
+				"order" : 144,
+				"text" : "text",
+				"type" : "textinput",
+				"value" : "1 2 3 A B C"
+			},
+			"text1" : 
+			{
+				"index" : 42,
+				"order" : 142,
+				"text" : "Text",
+				"type" : "group",
+				"value" : ""
+			},
+			"textflip" : 
+			{
+				"index" : 46,
+				"order" : 146,
+				"text" : "text flip",
+				"type" : "bool",
+				"value" : false
+			},
+			"textmagnitude" : 
+			{
+				"condition" : "",
+				"fraction" : true,
+				"index" : 45,
+				"max" : 3,
+				"min" : 0.1,
+				"order" : 145,
+				"precision" : 2,
+				"step" : 0.1,
+				"text" : "text relative magnitude",
+				"type" : "slider",
+				"value" : 0.7
+			},
+			"usecustomimage" : 
+			{
+				"index" : 0,
+				"order" : 100,
+				"text" : "use custom image",
+				"type" : "bool",
+				"value" : false
+			},
+			"usesinglecolor" : 
+			{
+				"index" : 6,
+				"order" : 106,
+				"text" : "use single bar color",
+				"type" : "bool",
+				"value" : false
+			},
+			"usewaterfallsettings" : 
+			{
+				"index" : 48,
+				"order" : 148,
+				"text" : "use waterfall settings",
+				"type" : "bool",
+				"value" : false
+			},
+			"waterfallgravity" : 
+			{
+				"condition" : "usewaterfallsettings.value",
+				"fraction" : true,
+				"index" : 49,
+				"max" : 5,
+				"min" : 0,
+				"order" : 149,
+				"precision" : 3,
+				"step" : 0.01,
+				"text" : "gravity",
+				"type" : "slider",
+				"value" : 2.5
+			},
+			"waterfallspecific" : 
+			{
+				"index" : 47,
+				"order" : 147,
+				"text" : "Waterfall specific (see description)",
+				"type" : "group",
+				"value" : ""
+			},
+			"whitepixelsdropspeedfactor" : 
+			{
+				"condition" : "usewaterfallsettings.value",
+				"fraction" : true,
+				"index" : 50,
+				"max" : 1,
+				"min" : 0,
+				"order" : 150,
+				"precision" : 3,
+				"step" : 0.01,
+				"text" : "white px drop speed factor",
+				"type" : "slider",
+				"value" : 0.8
+			}
+		},
+		"supportsaudioprocessing" : true
+	},
+	"preview" : "preview.gif",
+	"ratingsex" : "none",
+	"ratingviolence" : "none",
+	"snapshotformat" : 0,
+	"snapshotoverlay" : "",
+	"tags" : [ "Technology" ],
+	"title" : "Spectrum City Audio Visualizer",
+	"type" : "web",
+	"version" : 5,
+	"visibility" : "public",
+	"workshopid" : "3551997868",
+	"workshopurl" : "steam://url/CommunityFilePage/3551997868"
+}

@@ -116,21 +116,67 @@ export class SpecEntityWallpaper {
     }
 
     applyProperties(nextValues) {
+        const previousValues = this.currentValues;
+        const shouldRefreshAll = Object.keys(previousValues).length === 0;
+        const hasChanged = (...keys) => shouldRefreshAll || keys.some((key) => previousValues[key] !== nextValues[key]);
+
         this.currentValues = { ...nextValues };
-        this.currentColor = new THREE.Color(rgbTripletToCss(this.currentValues.barcolor));
-        if (this.currentValues.usesinglecolor) {
+        if (hasChanged('barcolor')) {
+            this.currentColor = new THREE.Color(rgbTripletToCss(this.currentValues.barcolor));
+        }
+
+        if (hasChanged('barcolor', 'usesinglecolor') && this.currentValues.usesinglecolor) {
             this.bars.forEach((bar) => {
                 bar.material.color = this.currentColor;
             });
         }
 
-        this.textArray = rasterizeTextToTransposedMatrix(`${this.currentValues.text || ' '} `);
-        this.updateBackground();
-        this.updateBarGeometry();
-        this.updateSceneTransform();
-        this.updateFlowSettings();
-        this.updateClock();
-        this.updateCanvas();
+        if (hasChanged('text')) {
+            this.textArray = rasterizeTextToTransposedMatrix(`${this.currentValues.text || ' '} `);
+        }
+        if (hasChanged('backgroundcolor', 'usecustomimage', 'customimage')) {
+            this.updateBackground();
+        }
+        if (hasChanged('barwidth', 'bardistance')) {
+            this.updateBarGeometry();
+        }
+        if (hasChanged('_2doffsetx', '_2doffsety', '_2drotation', '_3drotation')) {
+            this.updateSceneTransform();
+        }
+        if (
+            hasChanged(
+                'antialiasingwillcauseblur',
+                'applyfadingpernframes',
+                'fade',
+                'flowdirection',
+                'flowvelocity',
+                'flowopacitylimit',
+                'flowbeforebars',
+                'usewaterfallsettings',
+                'waterfallgravity',
+                'bluepxxshiftfactor',
+                'whitepixelsdropspeedfactor',
+            )
+        ) {
+            this.updateFlowSettings();
+        }
+        if (
+            hasChanged(
+                'showclock',
+                'clocksizea',
+                'clocksizeb',
+                'clockpositionx',
+                'clockpositiony',
+                '_24hourclock',
+                'clockcolor',
+                'clockshadowcolor',
+            )
+        ) {
+            this.updateClock();
+        }
+        if (hasChanged('pixelated', 'canvasshrink', 'offsetx', 'offsety', '_3drotationy')) {
+            this.updateCanvas();
+        }
         this.idleCountdown = IDLE_COUNTDOWN_FRAMES;
     }
 
