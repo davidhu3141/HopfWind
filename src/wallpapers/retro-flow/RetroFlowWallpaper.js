@@ -6,7 +6,6 @@ import { createClockOverlay } from '../../shared/features/clockOverlay.js';
 import { RetroFlowPass } from '../../shared/three/RetroFlowPass.js';
 import { createThreeCanvasApp } from '../../shared/three/createThreeCanvasApp.js';
 import { rgbTripletToCss } from '../../shared/utils/color.js';
-import { rasterizeTextToTransposedMatrix } from '../../shared/utils/rasterizeText.js';
 
 const IDLE_COUNTDOWN_FRAMES = 600;
 
@@ -36,7 +35,6 @@ export class RetroFlowWallpaper {
 
         this.currentValues = {};
         this.idleCountdown = IDLE_COUNTDOWN_FRAMES;
-        this.textArray = rasterizeTextToTransposedMatrix(' ');
         this.currentColor = new THREE.Color(1, 1, 1);
         this.bars = [];
         this.light = new THREE.HemisphereLight(0xffffff, 0x080808, 1);
@@ -85,7 +83,6 @@ export class RetroFlowWallpaper {
     updateSceneTransform() {
         this.scene.position.x = this.currentValues._2doffsetx * 20;
         this.scene.position.y = this.currentValues._2doffsety * 20 * 0.73;
-        this.scene.rotation.y = (this.currentValues._3drotation / 180) * Math.PI;
     }
 
     updateFlowSettings() {
@@ -94,12 +91,9 @@ export class RetroFlowWallpaper {
         this.flowPass.setFadeAmount(this.currentValues.fade / 255);
         this.flowPass.setMoveDir((this.currentValues.flowdirection / 180) * Math.PI + Math.PI / 2);
         this.flowPass.setMoveVelocity(this.currentValues.flowvelocity / 5);
+        this.flowPass.setFieldMix(this.currentValues.flowfieldmix);
         this.flowPass.setFlowOpacityLimit(this.currentValues.flowopacitylimit);
         this.flowPass.setShadeFront(this.currentValues.flowbeforebars);
-        this.flowPass.setWaterfall(this.currentValues.usewaterfallsettings);
-        this.flowPass.setWaterfallGravity(this.currentValues.waterfallgravity);
-        this.flowPass.setNonBlueShift(this.currentValues.bluepxxshiftfactor);
-        this.flowPass.setWhitePxDrop(this.currentValues.whitepixelsdropspeedfactor);
     }
 
     updateCanvas() {
@@ -108,7 +102,7 @@ export class RetroFlowWallpaper {
             canvasScale: this.currentValues.canvasshrink + 1,
             offsetX: this.currentValues.offsetx,
             offsetY: this.currentValues.offsety,
-            viewAngle: (this.currentValues._3drotationy / 180) * Math.PI,
+            viewAngle: 0,
         });
         this.composer.setSize(metrics.renderWidth, metrics.renderHeight);
         this.flowPass.setSize(metrics.renderWidth, metrics.renderHeight);
@@ -130,16 +124,13 @@ export class RetroFlowWallpaper {
             });
         }
 
-        if (hasChanged('text')) {
-            this.textArray = rasterizeTextToTransposedMatrix(`${this.currentValues.text || ' '} `);
-        }
         if (hasChanged('backgroundcolor', 'usecustomimage', 'customimage')) {
             this.updateBackground();
         }
         if (hasChanged('barwidth', 'bardistance')) {
             this.updateBarGeometry();
         }
-        if (hasChanged('_2doffsetx', '_2doffsety', '_3drotation')) {
+        if (hasChanged('_2doffsetx', '_2doffsety')) {
             this.updateSceneTransform();
         }
         if (
@@ -149,12 +140,9 @@ export class RetroFlowWallpaper {
                 'fade',
                 'flowdirection',
                 'flowvelocity',
+                'flowfieldmix',
                 'flowopacitylimit',
                 'flowbeforebars',
-                'usewaterfallsettings',
-                'waterfallgravity',
-                'bluepxxshiftfactor',
-                'whitepixelsdropspeedfactor',
             )
         ) {
             this.updateFlowSettings();
@@ -173,7 +161,7 @@ export class RetroFlowWallpaper {
         ) {
             this.updateClock();
         }
-        if (hasChanged('pixelated', 'canvasshrink', 'offsetx', 'offsety', '_3drotationy')) {
+        if (hasChanged('pixelated', 'canvasshrink', 'offsetx', 'offsety')) {
             this.updateCanvas();
         }
         this.idleCountdown = IDLE_COUNTDOWN_FRAMES;
@@ -196,17 +184,8 @@ export class RetroFlowWallpaper {
 
         const allZero = incomingAudioSamples.every((value) => value === 0);
         let audioSamples = incomingAudioSamples;
-        const useText = this.currentValues.showtext && allZero;
 
-        if (useText) {
-            audioSamples = audioSamples.map((_, index) => {
-                const canvasHeight = this.textArray[0]?.length ?? 0;
-                const shift = Math.max(0, Math.floor((this.sampleSize - canvasHeight) / 2));
-                return index >= shift && index - shift <= canvasHeight - 1
-                    ? this.textArray[frame % this.textArray.length][canvasHeight - 1 - (index - shift)] * (this.currentValues.textmagnitude / 24)
-                    : 0;
-            });
-        } else if (allZero && this.currentValues.reduceframerate) {
+        if (allZero && this.currentValues.reduceframerate) {
             if (this.idleCountdown === 0) {
                 return;
             }
@@ -215,7 +194,7 @@ export class RetroFlowWallpaper {
             audioSamples = audioSamples.map((value) => value * this.currentValues.overallmagnitude);
         }
 
-        if (this.currentValues.showtext || !allZero) {
+        if (!allZero) {
             this.idleCountdown = IDLE_COUNTDOWN_FRAMES;
         }
 
@@ -224,11 +203,9 @@ export class RetroFlowWallpaper {
         const magnitudeFactor = 40 * (this.currentValues.barsflip ? -1 : 1);
 
         for (let index = 0; index < this.sampleSize; index += 1) {
-            const mirroredIndex = useText
-                ? (this.currentValues.textflip ? this.sampleSize - 1 - index : index)
-                : index >= this.sampleSize / 2
-                    ? (this.sampleSize / 2) * 3 - index - 1
-                    : index;
+            const mirroredIndex = index >= this.sampleSize / 2
+                ? (this.sampleSize / 2) * 3 - index - 1
+                : index;
             const sample = audioSamples[mirroredIndex] ?? 0;
             const bar = this.bars[index];
             const material = bar.material;

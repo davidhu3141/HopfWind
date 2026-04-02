@@ -10,8 +10,7 @@ void main() {
 }`;
 }
 
-function makeFragmentShader(shadeFront = false, waterfall = false) {
-    const defineTex0 = waterfall ? 'vec4 tex0 = texture2D(tDiffuse2, vUV);' : '';
+function makeFragmentShader(shadeFront = false) {
     const frontJudge = shadeFront ? 'tex2.a <= 0.0' : 'tex1.a >= tex2.a';
 
     return /* glsl */`
@@ -21,21 +20,23 @@ varying vec2 vUV;
 uniform sampler2D tDiffuse;
 uniform sampler2D tDiffuse2;
 uniform float moveVelocityX;
-uniform float moveVelocityY;
 uniform float shouldDecline;
 uniform float fadeAmount;
 uniform float flowOpacityLimit;
-uniform float waterfallGravity;
-uniform float nonBlueShift;
-uniform float whitePxDrop;
+uniform float fieldMix;
 
 void main() {
-    ${defineTex0}
-    vec2 centered = (vUV - vec2(0.5, 0.5)) * 90.0;
+    vec2 centered = (vUV - vec2(0.5, 0.5)) * 55.0;
     float x = centered.x;
     float y = centered.y;
-    vec2 swirl = vec2(-y + x, x + y) * 0.05;
-    vec2 vUV2 = vUV - moveVelocityX * swirl;
+    vec2 oldField = vec2(-y + x, x + y) * 0.05;
+    float t = (cos(x) + cos(y) + 4.0) / 8.0;
+    t = pow(t, 0.051);
+    vec2 mv1 = -vec2(-sin(x), -sin(y));
+    vec2 mv2 = vec2(sin(y), -sin(x));
+    vec2 newField = mv1 * (1.0 - t) + mv2 * t;
+    vec2 flowField = mix(oldField, newField, fieldMix);
+    vec2 vUV2 = vUV - moveVelocityX * flowField;
 
     vec4 tex1 = texture2D(tDiffuse, vUV);
     vec4 tex2 = texture2D(tDiffuse2, vUV2);
@@ -61,7 +62,6 @@ export class RetroFlowPass extends Pass {
         this._applyFadingPerNFrames = 1;
         this._filter = THREE.NearestFilter;
         this._shadeFront = false;
-        this._waterfall = false;
 
         this.uniforms = THREE.UniformsUtils.clone({
             tDiffuse: { value: null },
@@ -69,20 +69,17 @@ export class RetroFlowPass extends Pass {
             width: { value: width },
             height: { value: height },
             moveVelocityX: { value: 0 },
-            moveVelocityY: { value: 1 / 255 },
             shouldDecline: { value: 1 },
             fadeAmount: { value: 0.0025 },
             flowOpacityLimit: { value: 0.9 },
-            waterfallGravity: { value: 0 },
-            nonBlueShift: { value: 0 },
-            whitePxDrop: { value: 0 },
+            fieldMix: { value: 0 },
         });
 
         this.material = new THREE.ShaderMaterial({
             transparent: true,
             uniforms: this.uniforms,
             vertexShader: makeVertexShader(),
-            fragmentShader: makeFragmentShader(this._shadeFront, this._waterfall),
+            fragmentShader: makeFragmentShader(this._shadeFront),
         });
         this.fsQuad = new FullScreenQuad(this.material);
         this.createRenderTargets(this._filter);
@@ -124,35 +121,13 @@ export class RetroFlowPass extends Pass {
             return;
         }
         this._shadeFront = value;
-        this.material.fragmentShader = makeFragmentShader(this._shadeFront, this._waterfall);
+        this.material.fragmentShader = makeFragmentShader(this._shadeFront);
         this.material.needsUpdate = true;
-    }
-
-    setWaterfall(value) {
-        if (this._waterfall === value) {
-            return;
-        }
-        this._waterfall = value;
-        this.material.fragmentShader = makeFragmentShader(this._shadeFront, this._waterfall);
-        this.material.needsUpdate = true;
-    }
-
-    setWaterfallGravity(value) {
-        this.uniforms.waterfallGravity.value = value;
-    }
-
-    setNonBlueShift(value) {
-        this.uniforms.nonBlueShift.value = value;
-    }
-
-    setWhitePxDrop(value) {
-        this.uniforms.whitePxDrop.value = value;
     }
 
     setMoveDir(value) {
         this._moveDir = value;
         this.uniforms.moveVelocityX.value = this._velocity * Math.cos(this._moveDir);
-        this.uniforms.moveVelocityY.value = this._velocity * Math.sin(this._moveDir);
     }
 
     setMoveVelocity(value) {
@@ -166,6 +141,10 @@ export class RetroFlowPass extends Pass {
 
     setFlowOpacityLimit(value) {
         this.uniforms.flowOpacityLimit.value = value;
+    }
+
+    setFieldMix(value) {
+        this.uniforms.fieldMix.value = value;
     }
 
     setApplyFadingPerNFrames(value) {
