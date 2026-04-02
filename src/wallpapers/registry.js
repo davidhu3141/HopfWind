@@ -1,7 +1,9 @@
-﻿import { specEntityDefinition } from './spec-entity/definition.js';
+﻿import { hopfWindDefinition } from './hopf-wind/definition.js';
+import { specEntityDefinition } from './spec-entity/definition.js';
 
 const definitions = [
     specEntityDefinition,
+    hopfWindDefinition,
 ];
 
 const definitionMap = new Map(definitions.map((definition) => [definition.id, definition]));

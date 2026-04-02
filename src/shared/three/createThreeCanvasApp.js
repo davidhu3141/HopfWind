@@ -59,9 +59,9 @@ function updatePerspectiveCamera(camera, fov, viewZ, viewport, viewAngle, showHa
 export function createThreeCanvasApp(host, options = {}) {
     const {
         cameraType = 'orthographic',
-        viewZ = 60,
-        showHalf = false,
-        fov = 30,
+        viewZ: initialViewZ = 60,
+        showHalf: initialShowHalf = false,
+        fov: initialFov = 30,
         alpha = true,
         antialias = true,
         sortObjects = false,
@@ -69,8 +69,8 @@ export function createThreeCanvasApp(host, options = {}) {
 
     const scene = new THREE.Scene();
     const camera = cameraType === 'orthographic'
-        ? new THREE.OrthographicCamera(-1, 1, 1, -1, 1, viewZ * 2)
-        : new THREE.PerspectiveCamera(fov, 1, 1, viewZ * 2);
+        ? new THREE.OrthographicCamera(-1, 1, 1, -1, 1, initialViewZ * 2)
+        : new THREE.PerspectiveCamera(initialFov, 1, 1, initialViewZ * 2);
 
     const renderer = new THREE.WebGLRenderer({
         alpha,
@@ -86,6 +86,9 @@ export function createThreeCanvasApp(host, options = {}) {
         offsetX: 0,
         offsetY: 0,
         viewAngle: 0,
+        viewZ: initialViewZ,
+        showHalf: initialShowHalf,
+        fov: initialFov,
     };
 
     const resize = (nextViewportState = viewportState) => {
@@ -102,9 +105,22 @@ export function createThreeCanvasApp(host, options = {}) {
         applyCanvasStyle(renderer.domElement, metrics);
 
         if (cameraType === 'orthographic') {
-            updateOrthographicCamera(camera, viewZ, metrics, viewportState.viewAngle, showHalf);
+            updateOrthographicCamera(
+                camera,
+                viewportState.viewZ,
+                metrics,
+                viewportState.viewAngle,
+                viewportState.showHalf,
+            );
         } else {
-            updatePerspectiveCamera(camera, fov / viewportState.canvasScale, viewZ, metrics, viewportState.viewAngle, showHalf);
+            updatePerspectiveCamera(
+                camera,
+                viewportState.fov / viewportState.canvasScale,
+                viewportState.viewZ,
+                metrics,
+                viewportState.viewAngle,
+                viewportState.showHalf,
+            );
         }
 
         return metrics;
