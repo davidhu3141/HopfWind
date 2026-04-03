@@ -83,7 +83,7 @@ export const retroFlowProperties = [
     slider('applyfadingpernframes', 'Fade Every N Frames', 1, 8, 1),
     slider('fade', 'Trail Fade', 0, 32, 1, { step: 0.1, fraction: true, precision: 2 }),
     slider('flowdirection', 'Flow Direction', 0, 360, 0),
-    slider('flowvelocity', 'Flow Velocity', 0, 10, 1, { step: 0.1, fraction: true, precision: 2 }),
+    slider('flowvelocity', 'Flow Velocity', 0, 100, 1, { step: 0.1, fraction: true, precision: 2 }),
     slider('flowfieldmix', 'Flow Field Mix', 0, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
     slider('flowopacitylimit', 'Flow Opacity Limit', 0, 1, 0.9, { step: 0.01, fraction: true, precision: 2 }),
     bool('flowbeforebars', 'Flow Before Bars', false),

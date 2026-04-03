@@ -21,8 +21,8 @@ void main() {
     centered.x *= aspect;
 
     float r = length(centered);
-    float k = 30.0;
-    float sampleR = r + sin(k * r) / k;
+    float k = 17.0;
+    float sampleR = r + sin(k * r) / k * 1.5;
 
     vec2 direction = r > 0.0001 ? centered / r : vec2(0.0);
     vec2 warped = direction * sampleR;
