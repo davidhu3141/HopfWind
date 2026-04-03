@@ -21,11 +21,13 @@ void main() {
     centered.x *= aspect;
 
     float r = length(centered);
+    float theta = atan(centered.y, centered.x);
     float k = 17.0;
-    float sampleR = r + sin(k * r) / k * 1.5;
+    float k2 = 27.0;
+    float sampleR = r + sin(k * r) / k;
+    float sampleTheta = theta + sin(k2 * theta) / k2;
 
-    vec2 direction = r > 0.0001 ? centered / r : vec2(0.0);
-    vec2 warped = direction * sampleR;
+    vec2 warped = vec2(cos(sampleTheta), sin(sampleTheta)) * sampleR;
     warped.x /= aspect;
     vec2 sampleUv = warped * 0.5 + vec2(0.5);
 

@@ -19,6 +19,8 @@ function makeFragmentShader(shadeFront = false) {
 varying vec2 vUV;
 uniform sampler2D tDiffuse;
 uniform sampler2D tDiffuse2;
+uniform float width;
+uniform float height;
 uniform float moveVelocityX;
 uniform float shouldDecline;
 uniform float fadeAmount;
@@ -26,7 +28,9 @@ uniform float flowOpacityLimit;
 uniform float fieldMix;
 
 void main() {
+    float aspect = width / max(height, 1.0);
     vec2 centered = (vUV - vec2(0.5, 0.5)) * 55.0;
+    centered.x *= aspect;
     float x = centered.x;
     float y = centered.y;
     vec2 oldField = vec2(y, -x) * 0.05;
@@ -36,6 +40,7 @@ void main() {
     vec2 mv2 = vec2(sin(y), -sin(x));
     vec2 newField = mv1 * (1.0 - t) + mv2 * t;
     vec2 flowField = mix(oldField, newField, fieldMix);
+    flowField.x /= aspect;
     vec2 vUV2 = vUV - moveVelocityX * flowField;
 
     vec4 tex1 = texture2D(tDiffuse, vUV);

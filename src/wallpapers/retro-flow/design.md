@@ -1,0 +1,1 @@
+retro flow 預計設計成一個多種 visulaizer 的輪播系統，像是古早的 window media player (WMP) 一樣
