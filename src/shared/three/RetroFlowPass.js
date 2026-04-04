@@ -45,6 +45,7 @@ void main() {
 
     vec4 tex1 = texture2D(tDiffuse, vUV);
     vec4 tex2 = texture2D(tDiffuse2, vUV2);
+    tex1.a = min(tex1.a, 1.);
     tex2.rgb /= max(tex2.a, 0.0001);
     tex2.a = min(tex2.a, flowOpacityLimit) - (shouldDecline > 0.0 ? fadeAmount : 0.0);
     gl_FragColor = ${frontJudge}
