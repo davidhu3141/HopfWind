@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass.js';
+import { WARP_RADIAL_TYPE, WARP_TWIST_TYPE } from '../../wallpapers/retro-flow/constants.js';
 
 function makeVertexShader() {
     return /* glsl */`
@@ -16,23 +17,54 @@ varying vec2 vUV;
 uniform sampler2D tDiffuse;
 uniform float aspect;
 uniform vec2 center;
+uniform float warpFromType;
+uniform float warpToType;
+uniform float warpTypeMix;
+uniform float radialFrequency;
+uniform float thetaFrequency;
+uniform float twistAmount;
+uniform float twistDecay;
+uniform float twistRadialFrequency;
+uniform float twistRadialAmplitude;
 
 #define EDGE_FADE 0.08
+
+float safeWave(float x, float k) {
+    return abs(k) < 0.0001 ? 0.0 : sin(k * x) / k;
+}
+
+vec2 radialWarp(vec2 centered) {
+    float r = length(centered);
+    float theta = atan(centered.y, centered.x);
+    float sampleR = r + safeWave(r, radialFrequency);
+    float sampleTheta = theta + safeWave(theta, thetaFrequency);
+    return vec2(cos(sampleTheta), sin(sampleTheta)) * sampleR;
+}
+
+vec2 twistWarp(vec2 centered) {
+    float r = length(centered);
+    float theta = atan(centered.y, centered.x);
+    float sampleTheta = theta + twistAmount * exp(-twistDecay * r * r);
+    float sampleR = r + sin(twistRadialFrequency * r) * twistRadialAmplitude;
+    return vec2(cos(sampleTheta), sin(sampleTheta)) * sampleR;
+}
+
+vec2 getWarpUv(float typeId, vec2 centered) {
+    vec2 warped = typeId < 0.5
+        ? radialWarp(centered)
+        : twistWarp(centered);
+    warped.x /= aspect;
+    return warped * 0.5 + center;
+}
 
 void main() {
     vec2 centered = (vUV - center) * 2.0;
     centered.x *= aspect;
 
-    float r = length(centered);
-    float theta = atan(centered.y, centered.x);
-    float k = 27.0;
-    float k2 = 27.0;
-    float sampleR = r + sin(k * r) / k;
-    float sampleTheta = theta + sin(k2 * theta) / k2;
+    vec2 fromUv = getWarpUv(warpFromType, centered);
+    vec2 toUv = getWarpUv(warpToType, centered);
+    vec2 sampleUv = mix(fromUv, toUv, warpTypeMix);
 
-    vec2 warped = vec2(cos(sampleTheta), sin(sampleTheta)) * sampleR;
-    warped.x /= aspect;
-    vec2 sampleUv = warped * 0.5 + center;
     float edge = min(min(vUV.x, vUV.y), min(1.0 - vUV.x, 1.0 - vUV.y));
     float safe = smoothstep(0.0, EDGE_FADE, edge);
     sampleUv = mix(vUV, sampleUv, safe);
@@ -46,6 +78,16 @@ void main() {
 }`;
 }
 
+function getWarpTypeId(type) {
+    switch (type) {
+    case WARP_TWIST_TYPE:
+        return 1;
+    case WARP_RADIAL_TYPE:
+    default:
+        return 0;
+    }
+}
+
 export class RetroRadialWarpPass extends Pass {
     constructor(width, height) {
         super();
@@ -56,6 +98,15 @@ export class RetroRadialWarpPass extends Pass {
             tDiffuse: { value: null },
             aspect: { value: 1 },
             center: { value: new THREE.Vector2(0.5, 0.5) },
+            warpFromType: { value: 0 },
+            warpToType: { value: 0 },
+            warpTypeMix: { value: 0 },
+            radialFrequency: { value: 27 },
+            thetaFrequency: { value: 27 },
+            twistAmount: { value: 0.9 },
+            twistDecay: { value: 1.8 },
+            twistRadialFrequency: { value: 8 },
+            twistRadialAmplitude: { value: 0.08 },
         };
         this.material = new THREE.ShaderMaterial({
             uniforms: this.uniforms,
@@ -74,6 +125,36 @@ export class RetroRadialWarpPass extends Pass {
 
     setCenter(x, y) {
         this.uniforms.center.value.set(x, y);
+    }
+
+    setWarpInterpolation(fromType, toType, mix) {
+        this.uniforms.warpFromType.value = getWarpTypeId(fromType);
+        this.uniforms.warpToType.value = getWarpTypeId(toType);
+        this.uniforms.warpTypeMix.value = mix;
+    }
+
+    setRadialFrequency(value) {
+        this.uniforms.radialFrequency.value = value;
+    }
+
+    setThetaFrequency(value) {
+        this.uniforms.thetaFrequency.value = value;
+    }
+
+    setTwistAmount(value) {
+        this.uniforms.twistAmount.value = value;
+    }
+
+    setTwistDecay(value) {
+        this.uniforms.twistDecay.value = value;
+    }
+
+    setTwistRadialFrequency(value) {
+        this.uniforms.twistRadialFrequency.value = value;
+    }
+
+    setTwistRadialAmplitude(value) {
+        this.uniforms.twistRadialAmplitude.value = value;
     }
 
     render(renderer, writeBuffer, readBuffer) {

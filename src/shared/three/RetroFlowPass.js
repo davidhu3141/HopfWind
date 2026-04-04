@@ -1,5 +1,6 @@
-﻿import * as THREE from 'three';
+import * as THREE from 'three';
 import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass.js';
+import { FLOW_SINE_TYPE, FLOW_SWIRL_TYPE, FLOW_VORTEX_TYPE } from '../../wallpapers/retro-flow/constants.js';
 
 function makeVertexShader() {
     return /* glsl */`
@@ -27,30 +28,73 @@ uniform float moveVelocityX;
 uniform float shouldDecline;
 uniform float fadeAmount;
 uniform float flowOpacityLimit;
-uniform float fieldMix;
+uniform float flowFromType;
+uniform float flowToType;
+uniform float flowTypeMix;
+uniform float swirlBlend;
+uniform float swirlDensity;
+uniform float sineFrequency;
+uniform float sineStrength;
+uniform float vortexFrequency;
+uniform float vortexStrength;
 
-void main() {
-    float aspect = width / max(height, 1.0);
-    vec2 centered = (vUV - center) * 55.0;
-    centered.x *= aspect;
+vec2 swirlField(vec2 centered) {
     float x = centered.x;
     float y = centered.y;
-    vec2 oldField = vec2(y+.5*x, -x+.5*y) * 0.1;
+    vec2 oldField = vec2(y + 0.5 * x, -x + 0.5 * y) * 0.1;
     float t = (cos(x) + cos(y) + 2.0) / 4.0;
     t = pow(t, 0.18);
     vec2 mv1 = -vec2(-sin(x), -sin(y));
     vec2 mv2 = vec2(sin(y), -sin(x));
     vec2 newField = mv1 * (1.0 - t) + mv2 * t;
-    vec2 flowField = mix(oldField, newField, fieldMix);
+    return mix(oldField, newField, swirlBlend);
+}
+
+vec2 sineField(vec2 centered) {
+    return vec2(
+        sin(centered.y * sineFrequency),
+        -sin(centered.x * sineFrequency)
+    ) * sineStrength;
+}
+
+vec2 vortexField(vec2 centered) {
+    float radius = max(length(centered), 0.4);
+    vec2 orbit = vec2(-centered.y, centered.x) / radius;
+    vec2 ripple = vec2(
+        cos(centered.y * vortexFrequency),
+        sin(centered.x * vortexFrequency)
+    );
+    return (orbit + 0.35 * ripple) * vortexStrength;
+}
+
+vec2 getFlowField(float typeId, vec2 centered) {
+    if (typeId < 0.5) {
+        return swirlField(centered);
+    }
+    if (typeId < 1.5) {
+        return sineField(centered);
+    }
+    return vortexField(centered);
+}
+
+void main() {
+    float aspect = width / max(height, 1.0);
+    vec2 centered = (vUV - center) * swirlDensity;
+    centered.x *= aspect;
+
+    vec2 fromField = getFlowField(flowFromType, centered);
+    vec2 toField = getFlowField(flowToType, centered);
+    vec2 flowField = mix(fromField, toField, flowTypeMix);
     flowField.x /= aspect;
     vec2 vUV2 = vUV - moveVelocityX * flowField;
+
     float edge = min(min(vUV.x, vUV.y), min(1.0 - vUV.x, 1.0 - vUV.y));
     float safe = smoothstep(0.0, EDGE_FADE, edge);
     vUV2 = mix(vUV, vUV2, safe);
 
     vec4 tex1 = texture2D(tDiffuse, vUV);
     vec4 tex2 = texture2D(tDiffuse2, vUV2);
-    tex1.a = min(tex1.a, 1.);
+    tex1.a = min(tex1.a, 1.0);
     tex2.rgb /= max(tex2.a, 0.0001);
     tex2.a = min(tex2.a, flowOpacityLimit) - (shouldDecline > 0.0 ? fadeAmount : 0.0);
     gl_FragColor = ${frontJudge}
@@ -59,6 +103,18 @@ void main() {
             ? tex1
             : tex2;
 }`;
+}
+
+function getFlowTypeId(type) {
+    switch (type) {
+    case FLOW_SINE_TYPE:
+        return 1;
+    case FLOW_VORTEX_TYPE:
+        return 2;
+    case FLOW_SWIRL_TYPE:
+    default:
+        return 0;
+    }
 }
 
 export class RetroFlowPass extends Pass {
@@ -84,7 +140,15 @@ export class RetroFlowPass extends Pass {
             shouldDecline: { value: 1 },
             fadeAmount: { value: 0.0025 },
             flowOpacityLimit: { value: 0.9 },
-            fieldMix: { value: 0 },
+            flowFromType: { value: 0 },
+            flowToType: { value: 0 },
+            flowTypeMix: { value: 0 },
+            swirlBlend: { value: 0 },
+            swirlDensity: { value: 55 },
+            sineFrequency: { value: 1.2 },
+            sineStrength: { value: 0.35 },
+            vortexFrequency: { value: 1.5 },
+            vortexStrength: { value: 0.6 },
         });
 
         this.material = new THREE.ShaderMaterial({
@@ -155,8 +219,34 @@ export class RetroFlowPass extends Pass {
         this.uniforms.flowOpacityLimit.value = value;
     }
 
-    setFieldMix(value) {
-        this.uniforms.fieldMix.value = value;
+    setFlowInterpolation(fromType, toType, mix) {
+        this.uniforms.flowFromType.value = getFlowTypeId(fromType);
+        this.uniforms.flowToType.value = getFlowTypeId(toType);
+        this.uniforms.flowTypeMix.value = mix;
+    }
+
+    setSwirlBlend(value) {
+        this.uniforms.swirlBlend.value = value;
+    }
+
+    setSwirlDensity(value) {
+        this.uniforms.swirlDensity.value = value;
+    }
+
+    setSineFrequency(value) {
+        this.uniforms.sineFrequency.value = value;
+    }
+
+    setSineStrength(value) {
+        this.uniforms.sineStrength.value = value;
+    }
+
+    setVortexFrequency(value) {
+        this.uniforms.vortexFrequency.value = value;
+    }
+
+    setVortexStrength(value) {
+        this.uniforms.vortexStrength.value = value;
     }
 
     setApplyFadingPerNFrames(value) {

@@ -43,7 +43,21 @@ retro flow 預計設計成讓各種視覺效果可以輪播
 - flow pass type
 - warp pass type
 
-輪播切換時會隨機選一種來切換
+不另外提供固定的 bars geometry / flow / warp type selector。
+目前顯示的 type 完全由 cycle settings 決定：
+- 若某一類只勾選一種 type，就固定顯示那一種
+- 若某一類勾選多種 type，切換時才有機會輪到那一類
+- 若某一類完全沒勾，則顯示 3 秒 toast 提示會回退到預設
+
+預設如下
+- bars geometry default: Circle
+- flow default: Swirl
+- warp default: Radial
+
+輪播切換時會隨機選一個 domain 來切換
+- 有時切 bars geometry
+- 有時切 flow pass
+- 有時切 warp pass
 
 #### interpolation
 
@@ -68,6 +82,9 @@ flow pass, warp pass 一樣可以有 interpolate 功能
         - range x = 60~100
 - number: 設定值 x
 - number: interpolate 時長(秒)
+- bool: 各 geometry type 是否參與 cycle
+- bool: 各 flow type 是否參與 cycle
+- bool: 各 warp type 是否參與 cycle
 
 #### (note) combo 的撰寫方式
 
@@ -211,8 +228,16 @@ bars geometry settings
     - 依照能量調整 size 的程度
     - range: -10~10 (%)
     - 實際套用到幾何上要先乘以一個 k 值來做某些補償，先試試看 k=10
-- bool: Just bars 參與輪播
-- bool: Circle 參與輪播
+
+
+flow pass types
+---------------
+
+目前 flow types 先共用同一支 shader，type 切換時由 shader 內插值。
+
+- Swirl
+- Sine
+- Vortex
 
 
 flow pass 輪播
@@ -224,4 +249,7 @@ flow pass 輪播
 warp pass 輪播
 --------------
 
-目前只有一種，你來設計另一種。
+目前 warp types 先共用同一支 shader，type 切換時由 shader 內插值。
+
+- Radial
+- Twist

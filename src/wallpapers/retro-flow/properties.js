@@ -1,4 +1,4 @@
-﻿const slider = (id, label, min, max, defaultValue, extra = {}) => ({
+const slider = (id, label, min, max, defaultValue, extra = {}) => ({
     id,
     label,
     type: 'slider',
@@ -66,26 +66,24 @@ export const retroFlowProperties = [
     file('customimage', 'Custom Image', '', { accept: 'image/*' }),
 
     group('barsgroup', 'Bars Group'),
-    combo('barsgeometrytype', 'Geometry Type', 'just-bars', [
-        { label: 'Just Bars', value: 'just-bars' },
-        { label: 'Circle', value: 'circle' },
-        { label: 'Slab', value: 'slab' },
-        { label: 'Circle-Slab', value: 'circle-slab' },
-    ]),
     slider('geometryrotationhz', 'Geometry Rotation Speed (Hz)', 0, 1, 0.05, { step: 0.01, fraction: true, precision: 2 }),
     bool('geometryreverse', 'Reverse Rotation', false),
     slider('geometrysizebyenergy', 'Size By Energy', -100, 100, 0, { step: 0.1, fraction: true, precision: 1 }),
     slider('_2doffsetx', '2D Offset X', -1, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
     slider('_2doffsety', '2D Offset Y', -1, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
 
-    group('geometrycycle', 'Geometry Cycle'),
-    bool('enablegeometrycycle', 'Enable Geometry Cycle', false),
-    slider('geometrycycleinterval', 'Cycle Interval (sec)', 1, 60, 8, { step: 0.1, fraction: true, precision: 1 }),
-    slider('geometryinterpolateduration', 'Interpolate Duration (sec)', 0, 10, 1, { step: 0.1, fraction: true, precision: 1 }),
-    bool('cyclejustbars', 'Cycle Just Bars', true),
-    bool('cyclecircle', 'Cycle Circle', true),
-    bool('cycleslab', 'Cycle Slab', true),
-    bool('cyclecircleslab', 'Cycle Circle-Slab', true),
+    group('cycle', 'Cycle'),
+    slider('cycleinterval', 'Cycle Interval (sec)', 1, 60, 8, { step: 0.1, fraction: true, precision: 1 }),
+    slider('cycleinterpolateduration', 'Interpolate Duration (sec)', 0, 10, 1, { step: 0.1, fraction: true, precision: 1 }),
+    bool('cyclegeometryjustbars', 'Cycle Just Bars', false),
+    bool('cyclegeometrycircle', 'Cycle Circle', true),
+    bool('cyclegeometryslab', 'Cycle Slab', false),
+    bool('cyclegeometrycircleslab', 'Cycle Circle-Slab', false),
+    bool('cycleflowswirl', 'Cycle Flow Swirl', true),
+    bool('cycleflowsine', 'Cycle Flow Sine', false),
+    bool('cycleflowvortex', 'Cycle Flow Vortex', false),
+    bool('cyclewarpradial', 'Cycle Warp Radial', true),
+    bool('cyclewarptwist', 'Cycle Warp Twist', false),
 
     group('justbars', 'Just Bars'),
     combo('justbarsshape', 'Just Bars Shape', 'shapeE', [
@@ -94,62 +92,52 @@ export const retroFlowProperties = [
         { label: 'Single Up / Up', value: 'shapeC' },
         { label: 'Single Down / Down', value: 'shapeD' },
         { label: 'Two-Sided', value: 'shapeE' },
-    ], { condition: "barsgeometrytype.value == 'just-bars'" }),
+    ]),
     slider('justbarsdistance', 'Bar Distance', 0.05, 1.5, 0.25, {
         step: 0.01,
         fraction: true,
         precision: 2,
-        condition: "barsgeometrytype.value == 'just-bars'",
     }),
     slider('justbarswidth', 'Bar Width', 0, 150, 100, {
         step: 1,
         precision: 0,
-        condition: "barsgeometrytype.value == 'just-bars'",
     }),
     slider('justbarslengthchangebysound', 'Bar Length By Sound', 0, 25, 1, {
         step: 0.1,
         fraction: true,
         precision: 2,
-        condition: "barsgeometrytype.value == 'just-bars'",
     }),
     slider('justbarslengthinitial', 'Bar Length Initial', 0, 10, 0, {
         step: 0.1,
         fraction: true,
         precision: 2,
-        condition: "barsgeometrytype.value == 'just-bars'",
     }),
 
     group('circle', 'Circle'),
     combo('circleshape', 'Circle Shape', 'two-sided', [
         { label: 'Single-Sided', value: 'single-sided' },
         { label: 'Two-Sided', value: 'two-sided' },
-    ], { condition: "barsgeometrytype.value == 'circle'" }),
+    ]),
     slider('circleradius', 'Circle Radius', 1, 40, 12, {
         step: 0.1,
         fraction: true,
         precision: 1,
-        condition: "barsgeometrytype.value == 'circle'",
     }),
     slider('circlebarwidth', 'Bar Width', 0, 150, 100, {
         step: 1,
         precision: 0,
-        condition: "barsgeometrytype.value == 'circle'",
     }),
     slider('circlelengthchangebysound', 'Bar Length By Sound', 0, 25, 1, {
         step: 0.1,
         fraction: true,
         precision: 2,
-        condition: "barsgeometrytype.value == 'circle'",
     }),
     slider('circlelengthinitial', 'Bar Length Initial', 0, 10, 0, {
         step: 0.1,
         fraction: true,
         precision: 2,
-        condition: "barsgeometrytype.value == 'circle'",
     }),
-    slider('circlethetashift', 'Circle Theta Shift', 0, 359, 0, {
-        condition: "barsgeometrytype.value == 'circle'",
-    }),
+    slider('circlethetashift', 'Circle Theta Shift', 0, 359, 0),
 
     group('slab', 'Slab'),
     combo('slabshape', 'Slab Shape', 'shapeE', [
@@ -158,68 +146,57 @@ export const retroFlowProperties = [
         { label: 'Single Up / Up', value: 'shapeC' },
         { label: 'Single Down / Down', value: 'shapeD' },
         { label: 'Two-Sided', value: 'shapeE' },
-    ], { condition: "barsgeometrytype.value == 'slab'" }),
+    ]),
     slider('slabdistance', 'Bar Distance', 0.05, 1.5, 0.25, {
         step: 0.01,
         fraction: true,
         precision: 2,
-        condition: "barsgeometrytype.value == 'slab'",
     }),
     slider('slabwidth', 'Bar Width', 0, 150, 100, {
         step: 1,
         precision: 0,
-        condition: "barsgeometrytype.value == 'slab'",
     }),
     slider('slabheightchangebysound', 'Bar Height By Sound', 0, 25, 1, {
         step: 0.1,
         fraction: true,
         precision: 2,
-        condition: "barsgeometrytype.value == 'slab'",
     }),
     slider('slabheightinitial', 'Bar Height Initial', 0, 10, 0, {
         step: 0.1,
         fraction: true,
         precision: 2,
-        condition: "barsgeometrytype.value == 'slab'",
     }),
     slider('slabthickness', 'Thickness', 0, 5, 0.2, {
         step: 0.01,
         fraction: true,
         precision: 2,
-        condition: "barsgeometrytype.value == 'slab'",
     }),
 
     group('circleslab', 'Circle-Slab'),
     combo('circleslabshape', 'Circle-Slab Shape', 'two-sided', [
         { label: 'Single-Sided', value: 'single-sided' },
         { label: 'Two-Sided', value: 'two-sided' },
-    ], { condition: "barsgeometrytype.value == 'circle-slab'" }),
+    ]),
     slider('circleslabradius', 'Circle Radius', 1, 40, 25, {
         step: 0.1,
         fraction: true,
         precision: 1,
-        condition: "barsgeometrytype.value == 'circle-slab'",
     }),
     slider('circleslabbarwidth', 'Bar Width', 0, 150, 100, {
         step: 1,
         precision: 0,
-        condition: "barsgeometrytype.value == 'circle-slab'",
     }),
     slider('circleslabheightchangebysound', 'Bar Height By Sound', 0, 25, 1, {
         step: 0.1,
         fraction: true,
         precision: 2,
-        condition: "barsgeometrytype.value == 'circle-slab'",
     }),
     slider('circleslabthickness', 'Thickness', 0, 5, 0.2, {
         step: 0.01,
         fraction: true,
         precision: 2,
-        condition: "barsgeometrytype.value == 'circle-slab'",
     }),
-    slider('circleslabthetashift', 'Circle Theta Shift', 0, 359, 0, {
-        condition: "barsgeometrytype.value == 'circle-slab'",
-    }),
+    slider('circleslabthetashift', 'Circle Theta Shift', 0, 359, 0),
 
     group('colors', 'Bar Colors'),
     color('backgroundcolor', 'Background Color', '0 0 0'),
@@ -238,9 +215,32 @@ export const retroFlowProperties = [
     slider('applyfadingpernframes', 'Fade Every N Frames', 1, 8, 1),
     slider('fade', 'Trail Fade', 0, 32, 1, { step: 0.1, fraction: true, precision: 2 }),
     slider('flowvelocity', 'Flow Velocity', 0, 100, 1, { step: 0.1, fraction: true, precision: 2 }),
-    slider('flowfieldmix', 'Flow Field Mix', 0, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
     slider('flowopacitylimit', 'Flow Opacity Limit', 0, 1, 0.9, { step: 0.01, fraction: true, precision: 2 }),
+
+    group('flowswirl', 'Flow Swirl'),
+    slider('flowfieldmix', 'Swirl Blend', 0, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
+    slider('flowswirldensity', 'Swirl Density', 10, 100, 55, { step: 0.1, fraction: true, precision: 1 }),
+
+    group('flowsine', 'Flow Sine'),
+    slider('flowsinefrequency', 'Sine Frequency', 0, 8, 1.2, { step: 0.01, fraction: true, precision: 2 }),
+    slider('flowsinestrength', 'Sine Strength', 0, 2, 0.35, { step: 0.01, fraction: true, precision: 2 }),
+
+    group('flowvortex', 'Flow Vortex'),
+    slider('flowvortexfrequency', 'Vortex Frequency', 0, 8, 1.5, { step: 0.01, fraction: true, precision: 2 }),
+    slider('flowvortexstrength', 'Vortex Strength', 0, 2, 0.6, { step: 0.01, fraction: true, precision: 2 }),
+
+    group('warp', 'Warp'),
     bool('usepostwarp', 'Use Post Warp', true),
+
+    group('warpradial', 'Warp Radial'),
+    slider('warpradialfrequency', 'Radial Frequency', 0, 40, 27, { step: 0.1, fraction: true, precision: 1 }),
+    slider('warpthetafrequency', 'Theta Frequency', 0, 40, 27, { step: 0.1, fraction: true, precision: 1 }),
+
+    group('warptwist', 'Warp Twist'),
+    slider('warptwistamount', 'Twist Amount', 0, 3, 0.9, { step: 0.01, fraction: true, precision: 2 }),
+    slider('warptwistdecay', 'Twist Decay', 0, 5, 1.8, { step: 0.01, fraction: true, precision: 2 }),
+    slider('warptwistradialfrequency', 'Twist Radial Frequency', 0, 20, 8, { step: 0.1, fraction: true, precision: 1 }),
+    slider('warptwistradialamplitude', 'Twist Radial Amplitude', 0, 1, 0.08, { step: 0.01, fraction: true, precision: 2 }),
 
     group('energy', 'Energy'),
     bool('useenergylow', 'Use Low Energy', true),

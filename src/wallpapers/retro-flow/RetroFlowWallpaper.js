@@ -1,14 +1,15 @@
-﻿import * as THREE from 'three';
+import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { applyBackground } from '../../shared/features/background.js';
 import { createClockOverlay } from '../../shared/features/clockOverlay.js';
+import { createToastOverlay } from '../../shared/features/toastOverlay.js';
 import { RetroFlowPass } from '../../shared/three/RetroFlowPass.js';
 import { RetroRadialWarpPass } from '../../shared/three/RetroRadialWarpPass.js';
 import { createThreeCanvasApp } from '../../shared/three/createThreeCanvasApp.js';
 import { rgbTripletToCss } from '../../shared/utils/color.js';
-import { createGeometryCycleState, updateGeometryCycleState } from './geometryCycle.js';
-import { DEFAULT_FLOW_DIRECTION, IDLE_COUNTDOWN_FRAMES, JUST_BARS_TYPE } from './constants.js';
+import { createCycleState, resetCycleState, resolveCycleTypes, updateCycleState } from './cycle.js';
+import { IDLE_COUNTDOWN_FRAMES } from './constants.js';
 import { computeEnergyBands, computeSelectedEnergy, getGeometryScale } from './energy.js';
 import { buildGeometryPoints, createBarEntry, getMirroredIndex, mixGeometrySet, setBarGeometry } from './geometry.js';
 
@@ -16,6 +17,20 @@ function makeHslColor(hue, saturation, lightness) {
     const wrapped = hue >= 0 ? hue : hue + 360;
     return `hsl(${wrapped}, ${saturation}%, ${lightness}%)`;
 }
+
+const CYCLE_SELECTION_KEYS = [
+    'cyclegeometryjustbars',
+    'cyclegeometrycircle',
+    'cyclegeometryslab',
+    'cyclegeometrycircleslab',
+    'cycleflowswirl',
+    'cycleflowsine',
+    'cycleflowvortex',
+    'cyclewarpradial',
+    'cyclewarptwist',
+];
+
+const CYCLE_TIMING_KEYS = ['cycleinterval', 'cycleinterpolateduration'];
 
 export class RetroFlowWallpaper {
     constructor({ host, audioBinCount }) {
@@ -30,6 +45,7 @@ export class RetroFlowWallpaper {
         this.camera = this.canvas.camera;
         this.renderer = this.canvas.renderer;
         this.clock = createClockOverlay(host);
+        this.toast = createToastOverlay(host);
         this.composer = new EffectComposer(this.renderer);
         this.renderPass = new RenderPass(this.scene, this.camera);
         this.flowPass = new RetroFlowPass(1, 1);
@@ -43,7 +59,9 @@ export class RetroFlowWallpaper {
         this.energyBands = { low: 0, mid: 0, high: 0 };
         this.selectedEnergy = 0;
         this.currentColor = new THREE.Color(1, 1, 1);
-        this.geometryCycleState = createGeometryCycleState(JUST_BARS_TYPE);
+        this.cycleState = createCycleState();
+        this.resolvedCycleTypes = resolveCycleTypes({});
+        this.lastFrame = 0;
         this.bars = [];
         this.barsGroup = new THREE.Group();
         this.light = new THREE.HemisphereLight(0xffffff, 0x080808, 1);
@@ -97,12 +115,23 @@ export class RetroFlowWallpaper {
         this.flowPass.setFilter(this.currentValues.antialiasingwillcauseblur ? THREE.LinearFilter : THREE.NearestFilter);
         this.flowPass.setApplyFadingPerNFrames(this.currentValues.applyfadingpernframes);
         this.flowPass.setFadeAmount(this.currentValues.fade / 255);
-        this.flowPass.setMoveDir(DEFAULT_FLOW_DIRECTION);
         this.flowPass.setMoveVelocity(this.currentValues.flowvelocity / 5);
-        this.flowPass.setFieldMix(this.currentValues.flowfieldmix);
         this.flowPass.setFlowOpacityLimit(this.currentValues.flowopacitylimit);
         this.flowPass.setShadeFront(false);
+        this.flowPass.setSwirlBlend(this.currentValues.flowfieldmix);
+        this.flowPass.setSwirlDensity(this.currentValues.flowswirldensity);
+        this.flowPass.setSineFrequency(this.currentValues.flowsinefrequency);
+        this.flowPass.setSineStrength(this.currentValues.flowsinestrength);
+        this.flowPass.setVortexFrequency(this.currentValues.flowvortexfrequency);
+        this.flowPass.setVortexStrength(this.currentValues.flowvortexstrength);
+
         this.postWarpPass.enabled = this.currentValues.usepostwarp;
+        this.postWarpPass.setRadialFrequency(this.currentValues.warpradialfrequency);
+        this.postWarpPass.setThetaFrequency(this.currentValues.warpthetafrequency);
+        this.postWarpPass.setTwistAmount(this.currentValues.warptwistamount);
+        this.postWarpPass.setTwistDecay(this.currentValues.warptwistdecay);
+        this.postWarpPass.setTwistRadialFrequency(this.currentValues.warptwistradialfrequency);
+        this.postWarpPass.setTwistRadialAmplitude(this.currentValues.warptwistradialamplitude);
     }
 
     updateCanvas() {
@@ -119,27 +148,47 @@ export class RetroFlowWallpaper {
         this.updatePassCenters();
     }
 
+    updateResolvedCycleTypes() {
+        this.resolvedCycleTypes = resolveCycleTypes(this.currentValues);
+    }
+
+    notifyCycleFallbacks() {
+        const messages = [];
+        if (this.resolvedCycleTypes.geometry.fallbackUsed) {
+            messages.push('No bars geometry type selected. Using default Circle.');
+        }
+        if (this.resolvedCycleTypes.flow.fallbackUsed) {
+            messages.push('No flow type selected. Using default Swirl.');
+        }
+        if (this.resolvedCycleTypes.warp.fallbackUsed) {
+            messages.push('No warp type selected. Using default Radial.');
+        }
+        if (messages.length > 0) {
+            this.toast.show(messages.join('\n'), 3000);
+        }
+    }
+
+    resetCycleState() {
+        resetCycleState(
+            this.cycleState,
+            this.resolvedCycleTypes,
+            this.currentValues.cycleinterval ?? 8,
+            this.lastFrame / 60,
+        );
+    }
+
     applyProperties(nextValues) {
         const previousValues = this.currentValues;
         const shouldRefreshAll = Object.keys(previousValues).length === 0;
         const hasChanged = (...keys) => shouldRefreshAll || keys.some((key) => previousValues[key] !== nextValues[key]);
 
         this.currentValues = { ...nextValues };
-        if (
-            hasChanged(
-                'barsgeometrytype',
-                'enablegeometrycycle',
-                'geometrycycleinterval',
-                'geometryinterpolateduration',
-                'cyclejustbars',
-                'cyclecircle',
-                'cycleslab',
-                'cyclecircleslab',
-            )
-        ) {
-            this.geometryCycleState.selectedType = this.currentValues.barsgeometrytype;
-            this.geometryCycleState.enabledSignature = '';
-            this.geometryCycleState = createGeometryCycleState(this.currentValues.barsgeometrytype);
+        if (hasChanged(...CYCLE_SELECTION_KEYS, ...CYCLE_TIMING_KEYS)) {
+            this.updateResolvedCycleTypes();
+            this.resetCycleState();
+        }
+        if (hasChanged(...CYCLE_SELECTION_KEYS)) {
+            this.notifyCycleFallbacks();
         }
         if (hasChanged('barcolor')) {
             this.currentColor = new THREE.Color(rgbTripletToCss(this.currentValues.barcolor));
@@ -147,8 +196,8 @@ export class RetroFlowWallpaper {
 
         if (hasChanged('barcolor', 'usesinglecolor') && this.currentValues.usesinglecolor) {
             this.bars.forEach((bar) => {
-                bar.primary.material.color = this.currentColor;
-                bar.secondary.material.color = this.currentColor;
+                bar.primary.material.color.copy(this.currentColor);
+                bar.secondary.material.color.copy(this.currentColor);
             });
         }
 
@@ -164,9 +213,20 @@ export class RetroFlowWallpaper {
                 'applyfadingpernframes',
                 'fade',
                 'flowvelocity',
-                'flowfieldmix',
                 'flowopacitylimit',
+                'flowfieldmix',
+                'flowswirldensity',
+                'flowsinefrequency',
+                'flowsinestrength',
+                'flowvortexfrequency',
+                'flowvortexstrength',
                 'usepostwarp',
+                'warpradialfrequency',
+                'warpthetafrequency',
+                'warptwistamount',
+                'warptwistdecay',
+                'warptwistradialfrequency',
+                'warptwistradialamplitude',
             )
         ) {
             this.updateFlowSettings();
@@ -206,6 +266,7 @@ export class RetroFlowWallpaper {
     }
 
     render(frame, incomingAudioSamples) {
+        this.lastFrame = frame;
         this.scene.rotation.z = 0;
 
         const allZero = incomingAudioSamples.every((value) => value === 0);
@@ -227,7 +288,9 @@ export class RetroFlowWallpaper {
         }
 
         this.barsGroup.scale.setScalar(getGeometryScale(this.currentValues, this.selectedEnergy));
-        const geometryState = updateGeometryCycleState(this.geometryCycleState, this.currentValues, frame);
+        const cyclePhases = updateCycleState(this.cycleState, this.resolvedCycleTypes, this.currentValues, frame);
+        this.flowPass.setFlowInterpolation(cyclePhases.flow.fromType, cyclePhases.flow.toType, cyclePhases.flow.mix);
+        this.postWarpPass.setWarpInterpolation(cyclePhases.warp.fromType, cyclePhases.warp.toType, cyclePhases.warp.mix);
 
         for (let index = 0; index < this.sampleSize; index += 1) {
             const mirroredIndex = getMirroredIndex(index);
@@ -238,8 +301,8 @@ export class RetroFlowWallpaper {
 
             if (!this.currentValues.usesinglecolor) {
                 const nextColor = new THREE.Color(this.colorForBar(sample));
-                primaryMaterial.color = nextColor;
-                secondaryMaterial.color = nextColor;
+                primaryMaterial.color.copy(nextColor);
+                secondaryMaterial.color.copy(nextColor);
             }
             const opacity = THREE.MathUtils.clamp(
                 this.currentValues.opacityinitial + sample * 100 * this.currentValues.opacitychangebysound,
@@ -251,12 +314,26 @@ export class RetroFlowWallpaper {
             primaryMaterial.needsUpdate = true;
             secondaryMaterial.needsUpdate = true;
 
-            const fromGeometry = buildGeometryPoints(this.currentValues, this.sampleSize, index, sample, frame, geometryState.fromType);
-            const geometry = geometryState.mix > 0
+            const fromGeometry = buildGeometryPoints(
+                this.currentValues,
+                this.sampleSize,
+                index,
+                sample,
+                frame,
+                cyclePhases.geometry.fromType,
+            );
+            const geometry = cyclePhases.geometry.mix > 0
                 ? mixGeometrySet(
                     fromGeometry,
-                    buildGeometryPoints(this.currentValues, this.sampleSize, index, sample, frame, geometryState.toType),
-                    geometryState.mix,
+                    buildGeometryPoints(
+                        this.currentValues,
+                        this.sampleSize,
+                        index,
+                        sample,
+                        frame,
+                        cyclePhases.geometry.toType,
+                    ),
+                    cyclePhases.geometry.mix,
                 )
                 : fromGeometry;
             setBarGeometry(bar, geometry.primary, geometry.secondary);
@@ -267,6 +344,7 @@ export class RetroFlowWallpaper {
 
     destroy() {
         this.clock.destroy();
+        this.toast.destroy();
         this.composer.dispose();
         this.flowPass.dispose();
         this.postWarpPass.dispose();
