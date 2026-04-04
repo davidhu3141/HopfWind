@@ -17,6 +17,8 @@ uniform sampler2D tDiffuse;
 uniform float aspect;
 uniform vec2 center;
 
+#define EDGE_FADE 0.08
+
 void main() {
     vec2 centered = (vUV - center) * 2.0;
     centered.x *= aspect;
@@ -31,6 +33,9 @@ void main() {
     vec2 warped = vec2(cos(sampleTheta), sin(sampleTheta)) * sampleR;
     warped.x /= aspect;
     vec2 sampleUv = warped * 0.5 + center;
+    float edge = min(min(vUV.x, vUV.y), min(1.0 - vUV.x, 1.0 - vUV.y));
+    float safe = smoothstep(0.0, EDGE_FADE, edge);
+    sampleUv = mix(vUV, sampleUv, safe);
 
     if (sampleUv.x < 0.0 || sampleUv.x > 1.0 || sampleUv.y < 0.0 || sampleUv.y > 1.0) {
         gl_FragColor = texture2D(tDiffuse, vUV);

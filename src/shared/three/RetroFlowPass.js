@@ -15,6 +15,7 @@ function makeFragmentShader(shadeFront = false) {
 
     return /* glsl */`
 #define ETH 0.0025
+#define EDGE_FADE 0.08
 
 varying vec2 vUV;
 uniform sampler2D tDiffuse;
@@ -43,6 +44,9 @@ void main() {
     vec2 flowField = mix(oldField, newField, fieldMix);
     flowField.x /= aspect;
     vec2 vUV2 = vUV - moveVelocityX * flowField;
+    float edge = min(min(vUV.x, vUV.y), min(1.0 - vUV.x, 1.0 - vUV.y));
+    float safe = smoothstep(0.0, EDGE_FADE, edge);
+    vUV2 = mix(vUV, vUV2, safe);
 
     vec4 tex1 = texture2D(tDiffuse, vUV);
     vec4 tex2 = texture2D(tDiffuse2, vUV2);
