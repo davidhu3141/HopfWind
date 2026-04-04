@@ -78,6 +78,15 @@ export const retroFlowProperties = [
     slider('_2doffsetx', '2D Offset X', -1, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
     slider('_2doffsety', '2D Offset Y', -1, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
 
+    group('geometrycycle', 'Geometry Cycle'),
+    bool('enablegeometrycycle', 'Enable Geometry Cycle', false),
+    slider('geometrycycleinterval', 'Cycle Interval (sec)', 1, 60, 8, { step: 0.1, fraction: true, precision: 1 }),
+    slider('geometryinterpolateduration', 'Interpolate Duration (sec)', 0, 10, 1, { step: 0.1, fraction: true, precision: 1 }),
+    bool('cyclejustbars', 'Cycle Just Bars', true),
+    bool('cyclecircle', 'Cycle Circle', true),
+    bool('cycleslab', 'Cycle Slab', true),
+    bool('cyclecircleslab', 'Cycle Circle-Slab', true),
+
     group('justbars', 'Just Bars'),
     combo('justbarsshape', 'Just Bars Shape', 'shapeE', [
         { label: 'Single Up / Down', value: 'shapeA' },
@@ -97,7 +106,7 @@ export const retroFlowProperties = [
         precision: 0,
         condition: "barsgeometrytype.value == 'just-bars'",
     }),
-    slider('justbarslengthchangebysound', 'Bar Length By Sound', 0, 6, 1, {
+    slider('justbarslengthchangebysound', 'Bar Length By Sound', 0, 25, 1, {
         step: 0.1,
         fraction: true,
         precision: 2,
@@ -126,7 +135,7 @@ export const retroFlowProperties = [
         precision: 0,
         condition: "barsgeometrytype.value == 'circle'",
     }),
-    slider('circlelengthchangebysound', 'Bar Length By Sound', 0, 12, 1, {
+    slider('circlelengthchangebysound', 'Bar Length By Sound', 0, 25, 1, {
         step: 0.1,
         fraction: true,
         precision: 2,
@@ -161,7 +170,7 @@ export const retroFlowProperties = [
         precision: 0,
         condition: "barsgeometrytype.value == 'slab'",
     }),
-    slider('slabheightchangebysound', 'Bar Height By Sound', 0, 6, 1, {
+    slider('slabheightchangebysound', 'Bar Height By Sound', 0, 25, 1, {
         step: 0.1,
         fraction: true,
         precision: 2,
@@ -185,7 +194,7 @@ export const retroFlowProperties = [
         { label: 'Single-Sided', value: 'single-sided' },
         { label: 'Two-Sided', value: 'two-sided' },
     ], { condition: "barsgeometrytype.value == 'circle-slab'" }),
-    slider('circleslabradius', 'Circle Radius', 1, 40, 12, {
+    slider('circleslabradius', 'Circle Radius', 1, 40, 25, {
         step: 0.1,
         fraction: true,
         precision: 1,
@@ -196,7 +205,7 @@ export const retroFlowProperties = [
         precision: 0,
         condition: "barsgeometrytype.value == 'circle-slab'",
     }),
-    slider('circleslabheightchangebysound', 'Bar Height By Sound', 0, 6, 1, {
+    slider('circleslabheightchangebysound', 'Bar Height By Sound', 0, 25, 1, {
         step: 0.1,
         fraction: true,
         precision: 2,

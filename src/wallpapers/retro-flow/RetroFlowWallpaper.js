@@ -47,6 +47,15 @@ export class RetroFlowWallpaper {
         this.energyBands = { low: 0, mid: 0, high: 0 };
         this.selectedEnergy = 0;
         this.currentColor = new THREE.Color(1, 1, 1);
+        this.geometryCycleState = {
+            currentType: JUST_BARS_TYPE,
+            targetType: JUST_BARS_TYPE,
+            transitionFromType: JUST_BARS_TYPE,
+            transitionStartSeconds: 0,
+            nextSwitchSeconds: Infinity,
+            enabledSignature: '',
+            selectedType: JUST_BARS_TYPE,
+        };
         this.bars = [];
         this.barsGroup = new THREE.Group();
         this.light = new THREE.HemisphereLight(0xffffff, 0x080808, 1);
@@ -139,12 +148,36 @@ export class RetroFlowWallpaper {
         this.updatePassCenters();
     }
 
+    resetGeometryCycleState(currentType = this.currentValues.barsgeometrytype ?? JUST_BARS_TYPE, nowSeconds = 0) {
+        this.geometryCycleState.currentType = currentType;
+        this.geometryCycleState.targetType = currentType;
+        this.geometryCycleState.transitionFromType = currentType;
+        this.geometryCycleState.transitionStartSeconds = nowSeconds;
+        this.geometryCycleState.nextSwitchSeconds = nowSeconds + (this.currentValues.geometrycycleinterval ?? 8);
+    }
+
     applyProperties(nextValues) {
         const previousValues = this.currentValues;
         const shouldRefreshAll = Object.keys(previousValues).length === 0;
         const hasChanged = (...keys) => shouldRefreshAll || keys.some((key) => previousValues[key] !== nextValues[key]);
 
         this.currentValues = { ...nextValues };
+        if (
+            hasChanged(
+                'barsgeometrytype',
+                'enablegeometrycycle',
+                'geometrycycleinterval',
+                'geometryinterpolateduration',
+                'cyclejustbars',
+                'cyclecircle',
+                'cycleslab',
+                'cyclecircleslab',
+            )
+        ) {
+            this.geometryCycleState.selectedType = this.currentValues.barsgeometrytype;
+            this.geometryCycleState.enabledSignature = '';
+            this.resetGeometryCycleState(this.currentValues.barsgeometrytype);
+        }
         if (hasChanged('barcolor')) {
             this.currentColor = new THREE.Color(rgbTripletToCss(this.currentValues.barcolor));
         }
@@ -293,6 +326,140 @@ export class RetroFlowWallpaper {
         positionAttribute.needsUpdate = true;
     }
 
+    getEnabledGeometryTypes() {
+        const enabled = [];
+        if (this.currentValues.cyclejustbars) {
+            enabled.push(JUST_BARS_TYPE);
+        }
+        if (this.currentValues.cyclecircle) {
+            enabled.push(CIRCLE_TYPE);
+        }
+        if (this.currentValues.cycleslab) {
+            enabled.push(SLAB_TYPE);
+        }
+        if (this.currentValues.cyclecircleslab) {
+            enabled.push(CIRCLE_SLAB_TYPE);
+        }
+        return enabled.length > 0 ? enabled : [this.currentValues.barsgeometrytype];
+    }
+
+    chooseNextGeometryType(enabledTypes, currentType) {
+        const candidates = enabledTypes.filter((type) => type !== currentType);
+        if (candidates.length === 0) {
+            return currentType;
+        }
+        const index = Math.floor(Math.random() * candidates.length);
+        return candidates[index];
+    }
+
+    updateGeometryCycle(frame) {
+        const nowSeconds = frame / 60;
+        const enabledTypes = this.getEnabledGeometryTypes();
+        const enabledSignature = enabledTypes.join('|');
+        const selectedType = this.currentValues.barsgeometrytype;
+
+        if (
+            this.geometryCycleState.enabledSignature !== enabledSignature
+            || this.geometryCycleState.selectedType !== selectedType
+        ) {
+            const nextType = enabledTypes.includes(selectedType) ? selectedType : enabledTypes[0];
+            this.geometryCycleState.enabledSignature = enabledSignature;
+            this.geometryCycleState.selectedType = selectedType;
+            this.resetGeometryCycleState(nextType, nowSeconds);
+        }
+
+        if (!this.currentValues.enablegeometrycycle || enabledTypes.length < 2) {
+            this.geometryCycleState.currentType = selectedType;
+            this.geometryCycleState.targetType = selectedType;
+            this.geometryCycleState.transitionFromType = selectedType;
+            return {
+                fromType: selectedType,
+                toType: selectedType,
+                mix: 0,
+            };
+        }
+
+        const duration = Math.max(0, this.currentValues.geometryinterpolateduration);
+        if (this.geometryCycleState.currentType !== this.geometryCycleState.targetType) {
+            const progress = duration <= 0
+                ? 1
+                : (nowSeconds - this.geometryCycleState.transitionStartSeconds) / duration;
+            const mix = THREE.MathUtils.clamp(progress, 0, 1);
+            if (mix >= 1) {
+                this.geometryCycleState.currentType = this.geometryCycleState.targetType;
+                this.geometryCycleState.transitionFromType = this.geometryCycleState.targetType;
+                this.geometryCycleState.transitionStartSeconds = nowSeconds;
+                this.geometryCycleState.nextSwitchSeconds = nowSeconds + this.currentValues.geometrycycleinterval;
+                return {
+                    fromType: this.geometryCycleState.currentType,
+                    toType: this.geometryCycleState.currentType,
+                    mix: 0,
+                };
+            }
+            return {
+                fromType: this.geometryCycleState.transitionFromType,
+                toType: this.geometryCycleState.targetType,
+                mix,
+            };
+        }
+
+        if (nowSeconds >= this.geometryCycleState.nextSwitchSeconds) {
+            const nextType = this.chooseNextGeometryType(enabledTypes, this.geometryCycleState.currentType);
+            this.geometryCycleState.transitionFromType = this.geometryCycleState.currentType;
+            this.geometryCycleState.targetType = nextType;
+            this.geometryCycleState.transitionStartSeconds = nowSeconds;
+            if (duration <= 0) {
+                this.geometryCycleState.currentType = nextType;
+                this.geometryCycleState.transitionFromType = nextType;
+                this.geometryCycleState.nextSwitchSeconds = nowSeconds + this.currentValues.geometrycycleinterval;
+                return {
+                    fromType: nextType,
+                    toType: nextType,
+                    mix: 0,
+                };
+            }
+            return {
+                fromType: this.geometryCycleState.transitionFromType,
+                toType: nextType,
+                mix: 0,
+            };
+        }
+
+        return {
+            fromType: this.geometryCycleState.currentType,
+            toType: this.geometryCycleState.currentType,
+            mix: 0,
+        };
+    }
+
+    createCollapsedPoints(points) {
+        const centroid = points.reduce(
+            (sum, point) => sum.add(point),
+            new THREE.Vector2(0, 0),
+        ).multiplyScalar(1 / points.length);
+        return Array.from({ length: 4 }, () => centroid.clone());
+    }
+
+    mixPointSets(fromPoints, toPoints, mix) {
+        return fromPoints.map((point, index) => point.clone().lerp(toPoints[index], mix));
+    }
+
+    mixGeometrySet(fromGeometry, toGeometry, mix) {
+        const primary = this.mixPointSets(fromGeometry.primary, toGeometry.primary, mix);
+
+        const hasSecondary = Boolean(fromGeometry.secondary || toGeometry.secondary);
+        if (!hasSecondary) {
+            return { primary };
+        }
+
+        const fromSecondary = fromGeometry.secondary ?? this.createCollapsedPoints(toGeometry.secondary ?? fromGeometry.primary);
+        const toSecondary = toGeometry.secondary ?? this.createCollapsedPoints(fromGeometry.secondary ?? toGeometry.primary);
+        return {
+            primary,
+            secondary: this.mixPointSets(fromSecondary, toSecondary, mix),
+        };
+    }
+
     setBarGeometry(bar, primaryPoints, secondaryPoints = null) {
         this.setQuadPositions(bar.primary.geometry.attributes.position, primaryPoints);
         bar.primary.visible = true;
@@ -430,15 +597,15 @@ export class RetroFlowWallpaper {
         };
     }
 
-    buildGeometryPoints(index, sample, frame) {
+    buildGeometryPoints(index, sample, frame, geometryType) {
         const rotationAngle = this.getGeometryRotation(frame);
-        if (this.currentValues.barsgeometrytype === CIRCLE_TYPE) {
+        if (geometryType === CIRCLE_TYPE) {
             return { primary: this.buildCirclePoints(index, sample, rotationAngle) };
         }
-        if (this.currentValues.barsgeometrytype === SLAB_TYPE) {
+        if (geometryType === SLAB_TYPE) {
             return this.buildSlabGeometry(index, sample, rotationAngle);
         }
-        if (this.currentValues.barsgeometrytype === CIRCLE_SLAB_TYPE) {
+        if (geometryType === CIRCLE_SLAB_TYPE) {
             return this.buildCircleSlabGeometry(index, sample, rotationAngle);
         }
         return { primary: this.buildJustBarsPoints(index, sample, rotationAngle) };
@@ -466,6 +633,7 @@ export class RetroFlowWallpaper {
         }
 
         this.barsGroup.scale.setScalar(this.getGeometryScale());
+        const geometryState = this.updateGeometryCycle(frame);
 
         for (let index = 0; index < this.sampleSize; index += 1) {
             const mirroredIndex = this.getMirroredIndex(index);
@@ -489,7 +657,14 @@ export class RetroFlowWallpaper {
             primaryMaterial.needsUpdate = true;
             secondaryMaterial.needsUpdate = true;
 
-            const geometry = this.buildGeometryPoints(index, sample, frame);
+            const fromGeometry = this.buildGeometryPoints(index, sample, frame, geometryState.fromType);
+            const geometry = geometryState.mix > 0
+                ? this.mixGeometrySet(
+                    fromGeometry,
+                    this.buildGeometryPoints(index, sample, frame, geometryState.toType),
+                    geometryState.mix,
+                )
+                : fromGeometry;
             this.setBarGeometry(bar, geometry.primary, geometry.secondary);
         }
 
