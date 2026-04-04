@@ -27,8 +27,6 @@ uniform float twistDecay;
 uniform float twistRadialFrequency;
 uniform float twistRadialAmplitude;
 
-#define EDGE_FADE 0.08
-
 float safeWave(float x, float k) {
     return abs(k) < 0.0001 ? 0.0 : sin(k * x) / k;
 }
@@ -63,17 +61,7 @@ void main() {
 
     vec2 fromUv = getWarpUv(warpFromType, centered);
     vec2 toUv = getWarpUv(warpToType, centered);
-    vec2 sampleUv = mix(fromUv, toUv, warpTypeMix);
-
-    float edge = min(min(vUV.x, vUV.y), min(1.0 - vUV.x, 1.0 - vUV.y));
-    float safe = smoothstep(0.0, EDGE_FADE, edge);
-    sampleUv = mix(vUV, sampleUv, safe);
-
-    if (sampleUv.x < 0.0 || sampleUv.x > 1.0 || sampleUv.y < 0.0 || sampleUv.y > 1.0) {
-        gl_FragColor = texture2D(tDiffuse, vUV);
-        return;
-    }
-
+    vec2 sampleUv = fract(mix(fromUv, toUv, warpTypeMix));
     gl_FragColor = texture2D(tDiffuse, sampleUv);
 }`;
 }

@@ -16,7 +16,6 @@ function makeFragmentShader(shadeFront = false) {
 
     return /* glsl */`
 #define ETH 0.0025
-#define EDGE_FADE 0.08
 
 varying vec2 vUV;
 uniform sampler2D tDiffuse;
@@ -86,22 +85,14 @@ void main() {
     vec2 toField = getFlowField(flowToType, centered);
     vec2 flowField = mix(fromField, toField, flowTypeMix);
     flowField.x /= aspect;
-    vec2 vUV2 = vUV - moveVelocityX * flowField;
-
-    float edge = min(min(vUV.x, vUV.y), min(1.0 - vUV.x, 1.0 - vUV.y));
-    float safe = smoothstep(0.0, EDGE_FADE, edge);
-    vUV2 = mix(vUV, vUV2, safe);
+    vec2 vUV2 = fract(vUV - moveVelocityX * flowField);
 
     vec4 tex1 = texture2D(tDiffuse, vUV);
     vec4 tex2 = texture2D(tDiffuse2, vUV2);
     tex1.a = min(tex1.a, 1.0);
     tex2.rgb /= max(tex2.a, 0.0001);
     tex2.a = min(tex2.a, flowOpacityLimit) - (shouldDecline > 0.0 ? fadeAmount : 0.0);
-    gl_FragColor = ${frontJudge}
-        || min(vUV.x, vUV.y) < ETH
-        || max(vUV.x, vUV.y) > 1.0 - ETH
-            ? tex1
-            : tex2;
+    gl_FragColor = ${frontJudge} ? tex1 : tex2;
 }`;
 }
 
