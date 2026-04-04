@@ -19,6 +19,7 @@ function makeFragmentShader(shadeFront = false) {
 varying vec2 vUV;
 uniform sampler2D tDiffuse;
 uniform sampler2D tDiffuse2;
+uniform vec2 center;
 uniform float width;
 uniform float height;
 uniform float moveVelocityX;
@@ -29,7 +30,7 @@ uniform float fieldMix;
 
 void main() {
     float aspect = width / max(height, 1.0);
-    vec2 centered = (vUV - vec2(0.5, 0.5)) * 55.0;
+    vec2 centered = (vUV - center) * 55.0;
     centered.x *= aspect;
     float x = centered.x;
     float y = centered.y;
@@ -72,6 +73,7 @@ export class RetroFlowPass extends Pass {
         this.uniforms = THREE.UniformsUtils.clone({
             tDiffuse: { value: null },
             tDiffuse2: { value: null },
+            center: { value: new THREE.Vector2(0.5, 0.5) },
             width: { value: width },
             height: { value: height },
             moveVelocityX: { value: 0 },
@@ -155,6 +157,10 @@ export class RetroFlowPass extends Pass {
 
     setApplyFadingPerNFrames(value) {
         this._applyFadingPerNFrames = Math.max(1, Math.round(value));
+    }
+
+    setCenter(x, y) {
+        this.uniforms.center.value.set(x, y);
     }
 
     setSize(width, height) {

@@ -4,7 +4,7 @@ Design
 retro flow 預計設計成讓各種視覺效果可以輪播
 
 
-目前功能調整
+舊功能調整
 -----------
 
 - 拔掉 Flow Before Bars 與 flow direction 功能
