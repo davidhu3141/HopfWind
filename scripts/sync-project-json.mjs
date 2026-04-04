@@ -1,9 +1,12 @@
-﻿import fs from 'node:fs/promises';
+import fs from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { buildWpeProjectProperties } from '../src/shared/utils/propertySchema.js';
 import { getWallpaperDefinition } from '../src/wallpapers/registry.js';
 
 const [, , wallpaperId, projectPathArg] = process.argv;
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(scriptDir, '..');
 
 if (!wallpaperId) {
     console.error('Usage: npm run sync:project -- <wallpaper-id> [project-path]');
@@ -11,12 +14,12 @@ if (!wallpaperId) {
 }
 
 const definition = getWallpaperDefinition(wallpaperId);
-const configPath = path.resolve('wallpaper-configs', wallpaperId, 'config.json');
+const configPath = path.resolve(repoRoot, 'wallpaper-configs', wallpaperId, 'config.json');
 let projectPath = projectPathArg;
 
 try {
     const raw = await fs.readFile(configPath, 'utf8');
-    const config = JSON.parse(raw);
+    const config = JSON.parse(raw.replace(/^\uFEFF/, ''));
     projectPath ||= config.buildDestination;
 } catch {
     // Optional local config.
@@ -27,7 +30,8 @@ if (!projectPath) {
     process.exit(1);
 }
 
-const projectJsonPath = path.join(path.resolve(projectPath), 'project.json');
+const resolvedProjectPath = path.resolve(projectPath);
+const projectJsonPath = path.join(resolvedProjectPath, 'project.json');
 const project = JSON.parse(await fs.readFile(projectJsonPath, 'utf8'));
 project.general ??= {};
 project.general.properties = buildWpeProjectProperties(definition.properties);
