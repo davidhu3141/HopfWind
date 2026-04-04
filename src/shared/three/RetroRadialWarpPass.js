@@ -25,7 +25,7 @@ void main() {
 
     float r = length(centered);
     float theta = atan(centered.y, centered.x);
-    float k = 17.0;
+    float k = 27.0;
     float k2 = 27.0;
     float sampleR = r + sin(k * r) / k;
     float sampleTheta = theta + sin(k2 * theta) / k2;
