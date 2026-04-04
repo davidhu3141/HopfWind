@@ -69,6 +69,8 @@ export const retroFlowProperties = [
     combo('barsgeometrytype', 'Geometry Type', 'just-bars', [
         { label: 'Just Bars', value: 'just-bars' },
         { label: 'Circle', value: 'circle' },
+        { label: 'Slab', value: 'slab' },
+        { label: 'Circle-Slab', value: 'circle-slab' },
     ]),
     slider('geometryrotationhz', 'Geometry Rotation Speed (Hz)', 0, 1, 0.05, { step: 0.01, fraction: true, precision: 2 }),
     bool('geometryreverse', 'Reverse Rotation', false),
@@ -138,6 +140,76 @@ export const retroFlowProperties = [
     }),
     slider('circlethetashift', 'Circle Theta Shift', 0, 359, 0, {
         condition: "barsgeometrytype.value == 'circle'",
+    }),
+
+    group('slab', 'Slab'),
+    combo('slabshape', 'Slab Shape', 'shapeE', [
+        { label: 'Single Up / Down', value: 'shapeA' },
+        { label: 'Single Down / Up', value: 'shapeB' },
+        { label: 'Single Up / Up', value: 'shapeC' },
+        { label: 'Single Down / Down', value: 'shapeD' },
+        { label: 'Two-Sided', value: 'shapeE' },
+    ], { condition: "barsgeometrytype.value == 'slab'" }),
+    slider('slabdistance', 'Bar Distance', 0.05, 1.5, 0.25, {
+        step: 0.01,
+        fraction: true,
+        precision: 2,
+        condition: "barsgeometrytype.value == 'slab'",
+    }),
+    slider('slabwidth', 'Bar Width', 0, 150, 100, {
+        step: 1,
+        precision: 0,
+        condition: "barsgeometrytype.value == 'slab'",
+    }),
+    slider('slabheightchangebysound', 'Bar Height By Sound', 0, 6, 1, {
+        step: 0.1,
+        fraction: true,
+        precision: 2,
+        condition: "barsgeometrytype.value == 'slab'",
+    }),
+    slider('slabheightinitial', 'Bar Height Initial', 0, 10, 0, {
+        step: 0.1,
+        fraction: true,
+        precision: 2,
+        condition: "barsgeometrytype.value == 'slab'",
+    }),
+    slider('slabthickness', 'Thickness', 0, 5, 0.2, {
+        step: 0.01,
+        fraction: true,
+        precision: 2,
+        condition: "barsgeometrytype.value == 'slab'",
+    }),
+
+    group('circleslab', 'Circle-Slab'),
+    combo('circleslabshape', 'Circle-Slab Shape', 'two-sided', [
+        { label: 'Single-Sided', value: 'single-sided' },
+        { label: 'Two-Sided', value: 'two-sided' },
+    ], { condition: "barsgeometrytype.value == 'circle-slab'" }),
+    slider('circleslabradius', 'Circle Radius', 1, 40, 12, {
+        step: 0.1,
+        fraction: true,
+        precision: 1,
+        condition: "barsgeometrytype.value == 'circle-slab'",
+    }),
+    slider('circleslabbarwidth', 'Bar Width', 0, 150, 100, {
+        step: 1,
+        precision: 0,
+        condition: "barsgeometrytype.value == 'circle-slab'",
+    }),
+    slider('circleslabheightchangebysound', 'Bar Height By Sound', 0, 6, 1, {
+        step: 0.1,
+        fraction: true,
+        precision: 2,
+        condition: "barsgeometrytype.value == 'circle-slab'",
+    }),
+    slider('circleslabthickness', 'Thickness', 0, 5, 0.2, {
+        step: 0.01,
+        fraction: true,
+        precision: 2,
+        condition: "barsgeometrytype.value == 'circle-slab'",
+    }),
+    slider('circleslabthetashift', 'Circle Theta Shift', 0, 359, 0, {
+        condition: "barsgeometrytype.value == 'circle-slab'",
     }),
 
     group('colors', 'Bar Colors'),

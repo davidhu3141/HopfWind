@@ -13,6 +13,8 @@ const DEFAULT_FLOW_DIRECTION = Math.PI / 2;
 const SAMPLE_SIZE_HALF = 64;
 const JUST_BARS_TYPE = 'just-bars';
 const CIRCLE_TYPE = 'circle';
+const SLAB_TYPE = 'slab';
+const CIRCLE_SLAB_TYPE = 'circle-slab';
 
 function makeHslColor(hue, saturation, lightness) {
     const wrapped = hue >= 0 ? hue : hue + 360;
@@ -52,9 +54,10 @@ export class RetroFlowWallpaper {
         this.scene.add(this.barsGroup);
 
         for (let index = 0; index < this.sampleSize; index += 1) {
-            const mesh = this.createBarMesh();
-            this.barsGroup.add(mesh);
-            this.bars.push(mesh);
+            const bar = this.createBarEntry();
+            this.barsGroup.add(bar.primary);
+            this.barsGroup.add(bar.secondary);
+            this.bars.push(bar);
         }
     }
 
@@ -66,6 +69,13 @@ export class RetroFlowWallpaper {
         const mesh = new THREE.Mesh(geometry, material);
         mesh.frustumCulled = false;
         return mesh;
+    }
+
+    createBarEntry() {
+        const primary = this.createBarMesh();
+        const secondary = this.createBarMesh();
+        secondary.visible = false;
+        return { primary, secondary };
     }
 
     updateClock() {
@@ -141,7 +151,8 @@ export class RetroFlowWallpaper {
 
         if (hasChanged('barcolor', 'usesinglecolor') && this.currentValues.usesinglecolor) {
             this.bars.forEach((bar) => {
-                bar.material.color = this.currentColor;
+                bar.primary.material.color = this.currentColor;
+                bar.secondary.material.color = this.currentColor;
             });
         }
 
@@ -267,11 +278,31 @@ export class RetroFlowWallpaper {
         return this.currentValues.circlebarwidth / 100;
     }
 
+    getSlabWidthRatio() {
+        return this.currentValues.slabwidth / 100;
+    }
+
+    getCircleSlabWidthRatio() {
+        return this.currentValues.circleslabbarwidth / 100;
+    }
+
     setQuadPositions(positionAttribute, points) {
         for (let index = 0; index < points.length; index += 1) {
             positionAttribute.setXYZ(index, points[index].x, points[index].y, 0);
         }
         positionAttribute.needsUpdate = true;
+    }
+
+    setBarGeometry(bar, primaryPoints, secondaryPoints = null) {
+        this.setQuadPositions(bar.primary.geometry.attributes.position, primaryPoints);
+        bar.primary.visible = true;
+
+        if (secondaryPoints) {
+            this.setQuadPositions(bar.secondary.geometry.attributes.position, secondaryPoints);
+            bar.secondary.visible = true;
+        } else {
+            bar.secondary.visible = false;
+        }
     }
 
     buildJustBarsPoints(index, sample, rotationAngle) {
@@ -327,12 +358,90 @@ export class RetroFlowWallpaper {
         ];
     }
 
+    buildSlabQuad(index, shape, height, thickness, rotationAngle) {
+        const widthRatio = this.getSlabWidthRatio();
+        const centerX = (index - 63.5) * this.currentValues.slabdistance;
+        const halfWidth = (widthRatio * this.currentValues.slabdistance) / 2;
+        const localPoints = [
+            new THREE.Vector2(centerX - halfWidth, shape === 'up' ? height - thickness : -height),
+            new THREE.Vector2(centerX + halfWidth, shape === 'up' ? height - thickness : -height),
+            new THREE.Vector2(centerX + halfWidth, shape === 'up' ? height : -height + thickness),
+            new THREE.Vector2(centerX - halfWidth, shape === 'up' ? height : -height + thickness),
+        ];
+
+        if (rotationAngle === 0) {
+            return localPoints;
+        }
+
+        return localPoints.map((point) => point.clone().rotateAround(new THREE.Vector2(0, 0), rotationAngle));
+    }
+
+    buildSlabGeometry(index, sample, rotationAngle) {
+        const height = this.currentValues.slabheightinitial / 30 + this.currentValues.slabheightchangebysound * sample;
+        const thickness = Math.max(0, Math.min(height, this.currentValues.slabthickness));
+        const shape = this.currentValues.slabshape;
+        const isUp = shape === 'shapeC' || (shape === 'shapeA' && index < SAMPLE_SIZE_HALF) || (shape === 'shapeB' && index >= SAMPLE_SIZE_HALF);
+        const isDown = shape === 'shapeD' || (shape === 'shapeB' && index < SAMPLE_SIZE_HALF) || (shape === 'shapeA' && index >= SAMPLE_SIZE_HALF);
+
+        if (shape === 'shapeE') {
+            return {
+                primary: this.buildSlabQuad(index, 'up', height, thickness, rotationAngle),
+                secondary: this.buildSlabQuad(index, 'down', height, thickness, rotationAngle),
+            };
+        }
+
+        return {
+            primary: this.buildSlabQuad(index, isUp ? 'up' : 'down', height, thickness, rotationAngle),
+        };
+    }
+
+    buildCircleSlabSegment(theta0, theta1, innerRadius, thickness) {
+        const outerRadius = innerRadius + thickness;
+        return [
+            new THREE.Vector2(Math.cos(theta0) * innerRadius, Math.sin(theta0) * innerRadius),
+            new THREE.Vector2(Math.cos(theta1) * innerRadius, Math.sin(theta1) * innerRadius),
+            new THREE.Vector2(Math.cos(theta1) * outerRadius, Math.sin(theta1) * outerRadius),
+            new THREE.Vector2(Math.cos(theta0) * outerRadius, Math.sin(theta0) * outerRadius),
+        ];
+    }
+
+    buildCircleSlabGeometry(index, sample, rotationAngle) {
+        const height = this.currentValues.circleslabheightchangebysound * sample;
+        const radius = this.currentValues.circleslabradius;
+        const thickness = Math.max(0, Math.min(height, this.currentValues.circleslabthickness));
+        const thetaShift = THREE.MathUtils.degToRad(this.currentValues.circleslabthetashift);
+        const thetaStep = (2 * Math.PI) / this.sampleSize;
+        const thetaCenter = Math.PI / 2 + thetaShift + rotationAngle + thetaStep * (index + 0.5);
+        const thetaHalfWidth = (thetaStep * this.getCircleSlabWidthRatio()) / 2;
+        const theta0 = thetaCenter - thetaHalfWidth;
+        const theta1 = thetaCenter + thetaHalfWidth;
+
+        const outwardInner = Math.max(0, radius + height - thickness);
+        if (this.currentValues.circleslabshape === 'single-sided') {
+            return {
+                primary: this.buildCircleSlabSegment(theta0, theta1, outwardInner, thickness),
+            };
+        }
+
+        const inwardInner = Math.max(0, radius - height);
+        return {
+            primary: this.buildCircleSlabSegment(theta0, theta1, outwardInner, thickness),
+            secondary: this.buildCircleSlabSegment(theta0, theta1, inwardInner, thickness),
+        };
+    }
+
     buildGeometryPoints(index, sample, frame) {
         const rotationAngle = this.getGeometryRotation(frame);
         if (this.currentValues.barsgeometrytype === CIRCLE_TYPE) {
-            return this.buildCirclePoints(index, sample, rotationAngle);
+            return { primary: this.buildCirclePoints(index, sample, rotationAngle) };
         }
-        return this.buildJustBarsPoints(index, sample, rotationAngle);
+        if (this.currentValues.barsgeometrytype === SLAB_TYPE) {
+            return this.buildSlabGeometry(index, sample, rotationAngle);
+        }
+        if (this.currentValues.barsgeometrytype === CIRCLE_SLAB_TYPE) {
+            return this.buildCircleSlabGeometry(index, sample, rotationAngle);
+        }
+        return { primary: this.buildJustBarsPoints(index, sample, rotationAngle) };
     }
 
     render(frame, incomingAudioSamples) {
@@ -362,20 +471,26 @@ export class RetroFlowWallpaper {
             const mirroredIndex = this.getMirroredIndex(index);
             const sample = audioSamples[mirroredIndex] ?? 0;
             const bar = this.bars[index];
-            const material = bar.material;
+            const primaryMaterial = bar.primary.material;
+            const secondaryMaterial = bar.secondary.material;
 
             if (!this.currentValues.usesinglecolor) {
-                material.color = new THREE.Color(this.colorForBar(sample));
+                const nextColor = new THREE.Color(this.colorForBar(sample));
+                primaryMaterial.color = nextColor;
+                secondaryMaterial.color = nextColor;
             }
-            material.opacity = THREE.MathUtils.clamp(
+            const opacity = THREE.MathUtils.clamp(
                 this.currentValues.opacityinitial + sample * 100 * this.currentValues.opacitychangebysound,
                 0,
                 1,
             );
-            material.needsUpdate = true;
+            primaryMaterial.opacity = opacity;
+            secondaryMaterial.opacity = opacity;
+            primaryMaterial.needsUpdate = true;
+            secondaryMaterial.needsUpdate = true;
 
-            const positions = bar.geometry.attributes.position;
-            this.setQuadPositions(positions, this.buildGeometryPoints(index, sample, frame));
+            const geometry = this.buildGeometryPoints(index, sample, frame);
+            this.setBarGeometry(bar, geometry.primary, geometry.secondary);
         }
 
         this.composer.render();
@@ -387,9 +502,12 @@ export class RetroFlowWallpaper {
         this.flowPass.dispose();
         this.postWarpPass.dispose();
         this.bars.forEach((bar) => {
-            bar.geometry.dispose();
-            bar.material.dispose();
-            this.barsGroup.remove(bar);
+            bar.primary.geometry.dispose();
+            bar.primary.material.dispose();
+            bar.secondary.geometry.dispose();
+            bar.secondary.material.dispose();
+            this.barsGroup.remove(bar.primary);
+            this.barsGroup.remove(bar.secondary);
         });
         this.scene.remove(this.barsGroup);
         this.canvas.dispose();
