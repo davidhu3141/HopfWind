@@ -34,7 +34,7 @@ void main() {
     centered.x *= aspect;
     float x = centered.x;
     float y = centered.y;
-    vec2 oldField = vec2(y, -x) * 0.05;
+    vec2 oldField = vec2(y+.5*x, -x+.5*y) * 0.1;
     float t = (cos(x) + cos(y) + 2.0) / 4.0;
     t = pow(t, 0.18);
     vec2 mv1 = -vec2(-sin(x), -sin(y));
@@ -135,7 +135,7 @@ export class RetroFlowPass extends Pass {
 
     setMoveDir(value) {
         this._moveDir = value;
-        this.uniforms.moveVelocityX.value = this._velocity * Math.cos(this._moveDir);
+        this.uniforms.moveVelocityX.value = this._velocity * 1;
     }
 
     setMoveVelocity(value) {

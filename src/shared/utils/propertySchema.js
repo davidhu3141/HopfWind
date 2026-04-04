@@ -52,6 +52,10 @@ export function buildWpeProjectProperties(schema) {
                 }
             }
 
+            if (descriptor.type === 'combo') {
+                base.options = descriptor.options ?? [];
+            }
+
             if (descriptor.condition) {
                 base.condition = descriptor.condition;
             }

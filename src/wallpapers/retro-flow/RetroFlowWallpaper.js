@@ -10,6 +10,9 @@ import { rgbTripletToCss } from '../../shared/utils/color.js';
 
 const IDLE_COUNTDOWN_FRAMES = 600;
 const DEFAULT_FLOW_DIRECTION = Math.PI / 2;
+const SAMPLE_SIZE_HALF = 64;
+const JUST_BARS_TYPE = 'just-bars';
+const CIRCLE_TYPE = 'circle';
 
 function makeHslColor(hue, saturation, lightness) {
     const wrapped = hue >= 0 ? hue : hue + 360;
@@ -43,18 +46,26 @@ export class RetroFlowWallpaper {
         this.selectedEnergy = 0;
         this.currentColor = new THREE.Color(1, 1, 1);
         this.bars = [];
+        this.barsGroup = new THREE.Group();
         this.light = new THREE.HemisphereLight(0xffffff, 0x080808, 1);
         this.scene.add(this.light);
+        this.scene.add(this.barsGroup);
 
         for (let index = 0; index < this.sampleSize; index += 1) {
-            const geometry = new THREE.PlaneGeometry(0.4, 0.03, 1, 1);
-            const material = new THREE.MeshBasicMaterial({ transparent: true, side: THREE.DoubleSide });
-            const mesh = new THREE.Mesh(geometry, material);
-            mesh.matrixAutoUpdate = false;
-            mesh.matrix.setPosition((40 * index) / this.sampleSize - 20, 0, 0);
-            this.scene.add(mesh);
+            const mesh = this.createBarMesh();
+            this.barsGroup.add(mesh);
             this.bars.push(mesh);
         }
+    }
+
+    createBarMesh() {
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(12), 3));
+        geometry.setIndex([0, 1, 2, 0, 2, 3]);
+        const material = new THREE.MeshBasicMaterial({ transparent: true, side: THREE.DoubleSide });
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.frustumCulled = false;
+        return mesh;
     }
 
     updateClock() {
@@ -77,26 +88,17 @@ export class RetroFlowWallpaper {
         });
     }
 
-    updateBarGeometry() {
-        this.bars.forEach((bar, index) => {
-            const previousHeight = bar.geometry.parameters.height;
-            bar.geometry.dispose();
-            bar.geometry = new THREE.PlaneGeometry(this.currentValues.barwidth, previousHeight, 1, 1);
-            bar.matrix.setPosition(this.currentValues.bardistance * (index - this.sampleSize / 2), 0, 0);
-        });
-    }
-
     updateSceneTransform() {
-        this.scene.position.x = this.currentValues._2doffsetx * 20;
-        this.scene.position.y = this.currentValues._2doffsety * 20 * 0.73;
+        this.barsGroup.position.x = this.currentValues._2doffsetx * 20;
+        this.barsGroup.position.y = this.currentValues._2doffsety * 20 * 0.73;
         this.updatePassCenters();
     }
 
     updatePassCenters() {
         const cameraWidth = this.camera.right - this.camera.left;
         const cameraHeight = this.camera.top - this.camera.bottom;
-        const centerX = THREE.MathUtils.clamp(0.5 + this.scene.position.x / cameraWidth, 0, 1);
-        const centerY = THREE.MathUtils.clamp(0.5 + this.scene.position.y / cameraHeight, 0, 1);
+        const centerX = THREE.MathUtils.clamp(0.5 + this.barsGroup.position.x / cameraWidth, 0, 1);
+        const centerY = THREE.MathUtils.clamp(0.5 + this.barsGroup.position.y / cameraHeight, 0, 1);
         this.flowPass.setCenter(centerX, centerY);
         this.postWarpPass.setCenter(centerX, centerY);
     }
@@ -145,9 +147,6 @@ export class RetroFlowWallpaper {
 
         if (hasChanged('backgroundcolor', 'usecustomimage', 'customimage')) {
             this.updateBackground();
-        }
-        if (hasChanged('barwidth', 'bardistance')) {
-            this.updateBarGeometry();
         }
         if (hasChanged('_2doffsetx', '_2doffsety')) {
             this.updateSceneTransform();
@@ -229,8 +228,115 @@ export class RetroFlowWallpaper {
         return total;
     }
 
+    getMirroredIndex(index) {
+        return index >= SAMPLE_SIZE_HALF
+            ? SAMPLE_SIZE_HALF * 3 - index - 1
+            : index;
+    }
+
+    getActiveEnergySampleCount() {
+        let count = 0;
+        if (this.currentValues.useenergylow) {
+            count += 8;
+        }
+        if (this.currentValues.useenergymid) {
+            count += 84;
+        }
+        if (this.currentValues.useenergyhigh) {
+            count += 36;
+        }
+        return count;
+    }
+
+    getGeometryScale() {
+        const activeSampleCount = this.getActiveEnergySampleCount();
+        const normalizedEnergy = activeSampleCount > 0 ? this.selectedEnergy / activeSampleCount : 0;
+        return Math.max(0.05, 1 + this.currentValues.geometrysizebyenergy * 0.1 * normalizedEnergy);
+    }
+
+    getGeometryRotation(frame) {
+        const direction = this.currentValues.geometryreverse ? -1 : 1;
+        return direction * frame * ((2 * Math.PI * this.currentValues.geometryrotationhz) / 60);
+    }
+
+    getJustBarsWidthRatio() {
+        return this.currentValues.justbarswidth / 100;
+    }
+
+    getCircleWidthRatio() {
+        return this.currentValues.circlebarwidth / 100;
+    }
+
+    setQuadPositions(positionAttribute, points) {
+        for (let index = 0; index < points.length; index += 1) {
+            positionAttribute.setXYZ(index, points[index].x, points[index].y, 0);
+        }
+        positionAttribute.needsUpdate = true;
+    }
+
+    buildJustBarsPoints(index, sample, rotationAngle) {
+        const height = this.currentValues.justbarslengthinitial / 30 + this.currentValues.justbarslengthchangebysound * sample;
+        const widthRatio = this.getJustBarsWidthRatio();
+        const centerX = (index - 63.5) * this.currentValues.justbarsdistance;
+        const halfWidth = (widthRatio * this.currentValues.justbarsdistance) / 2;
+
+        let p = -height;
+        let q = height;
+        const shape = this.currentValues.justbarsshape;
+        const isUp = shape === 'shapeC' || (shape === 'shapeA' && index < SAMPLE_SIZE_HALF) || (shape === 'shapeB' && index >= SAMPLE_SIZE_HALF);
+        const isDown = shape === 'shapeD' || (shape === 'shapeB' && index < SAMPLE_SIZE_HALF) || (shape === 'shapeA' && index >= SAMPLE_SIZE_HALF);
+
+        if (shape !== 'shapeE') {
+            p = isUp ? 0 : -height;
+            q = isDown ? 0 : height;
+        }
+
+        const localPoints = [
+            new THREE.Vector2(centerX - halfWidth, p),
+            new THREE.Vector2(centerX + halfWidth, p),
+            new THREE.Vector2(centerX + halfWidth, q),
+            new THREE.Vector2(centerX - halfWidth, q),
+        ];
+
+        if (rotationAngle === 0) {
+            return localPoints;
+        }
+
+        return localPoints.map((point) => point.clone().rotateAround(new THREE.Vector2(0, 0), rotationAngle));
+    }
+
+    buildCirclePoints(index, sample, rotationAngle) {
+        const height = this.currentValues.circlelengthinitial / 30 + this.currentValues.circlelengthchangebysound * sample;
+        const radius = this.currentValues.circleradius;
+        const thetaShift = THREE.MathUtils.degToRad(this.currentValues.circlethetashift);
+        const thetaStep = (2 * Math.PI) / this.sampleSize;
+        const thetaCenter = Math.PI / 2 + thetaShift + rotationAngle + thetaStep * (index + 0.5);
+        const thetaHalfWidth = (thetaStep * this.getCircleWidthRatio()) / 2;
+        const theta0 = thetaCenter - thetaHalfWidth;
+        const theta1 = thetaCenter + thetaHalfWidth;
+        const innerRadius = this.currentValues.circleshape === 'two-sided'
+            ? Math.max(0, radius - height)
+            : radius;
+        const outerRadius = radius + height;
+
+        return [
+            new THREE.Vector2(Math.cos(theta0) * innerRadius, Math.sin(theta0) * innerRadius),
+            new THREE.Vector2(Math.cos(theta1) * innerRadius, Math.sin(theta1) * innerRadius),
+            new THREE.Vector2(Math.cos(theta1) * outerRadius, Math.sin(theta1) * outerRadius),
+            new THREE.Vector2(Math.cos(theta0) * outerRadius, Math.sin(theta0) * outerRadius),
+        ];
+    }
+
+    buildGeometryPoints(index, sample, frame) {
+        const rotationAngle = this.getGeometryRotation(frame);
+        if (this.currentValues.barsgeometrytype === CIRCLE_TYPE) {
+            return this.buildCirclePoints(index, sample, rotationAngle);
+        }
+        return this.buildJustBarsPoints(index, sample, rotationAngle);
+    }
+
     render(frame, incomingAudioSamples) {
-        this.scene.rotation.z += 0.005;
+        this.scene.rotation.z = 0;
 
         const allZero = incomingAudioSamples.every((value) => value === 0);
         let audioSamples = incomingAudioSamples;
@@ -250,14 +356,10 @@ export class RetroFlowWallpaper {
             this.idleCountdown = IDLE_COUNTDOWN_FRAMES;
         }
 
-        const topVertex = this.currentValues.barsflip ? 2 : 0;
-        const bottomVertex = this.currentValues.barsflip ? 3 : 1;
-        const magnitudeFactor = 40 * (this.currentValues.barsflip ? -1 : 1);
+        this.barsGroup.scale.setScalar(this.getGeometryScale());
 
         for (let index = 0; index < this.sampleSize; index += 1) {
-            const mirroredIndex = index >= this.sampleSize / 2
-                ? (this.sampleSize / 2) * 3 - index - 1
-                : index;
+            const mirroredIndex = this.getMirroredIndex(index);
             const sample = audioSamples[mirroredIndex] ?? 0;
             const bar = this.bars[index];
             const material = bar.material;
@@ -265,14 +367,15 @@ export class RetroFlowWallpaper {
             if (!this.currentValues.usesinglecolor) {
                 material.color = new THREE.Color(this.colorForBar(sample));
             }
-            material.opacity = this.currentValues.opacityinitial + sample * 100 * this.currentValues.opacitychangebysound;
+            material.opacity = THREE.MathUtils.clamp(
+                this.currentValues.opacityinitial + sample * 100 * this.currentValues.opacitychangebysound,
+                0,
+                1,
+            );
             material.needsUpdate = true;
 
             const positions = bar.geometry.attributes.position;
-            const nextHeight = (this.currentValues.barslengthinitial / 30 + this.currentValues.barslengthchangebysound * sample) * magnitudeFactor;
-            positions.setY(topVertex, nextHeight);
-            positions.setY(bottomVertex, nextHeight);
-            positions.needsUpdate = true;
+            this.setQuadPositions(positions, this.buildGeometryPoints(index, sample, frame));
         }
 
         this.composer.render();
@@ -286,8 +389,9 @@ export class RetroFlowWallpaper {
         this.bars.forEach((bar) => {
             bar.geometry.dispose();
             bar.material.dispose();
-            this.scene.remove(bar);
+            this.barsGroup.remove(bar);
         });
+        this.scene.remove(this.barsGroup);
         this.canvas.dispose();
     }
 }

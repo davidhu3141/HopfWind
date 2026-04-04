@@ -69,6 +69,19 @@ export function PropertyField({ descriptor, value, onChange }) {
         );
     }
 
+    if (descriptor.type === 'combo') {
+        return (
+            <label className="field" htmlFor={id}>
+                <span>{descriptor.label}</span>
+                <select id={id} value={value} onChange={(event) => onChange(event.target.value)}>
+                    {(descriptor.options ?? []).map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                </select>
+            </label>
+        );
+    }
+
     return (
         <label className="field" htmlFor={id}>
             <span>{descriptor.label}</span>
