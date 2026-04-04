@@ -28,6 +28,8 @@ const CYCLE_SELECTION_KEYS = [
     'cycleflowvortex',
     'cyclewarpradial',
     'cyclewarptwist',
+    'cyclewarpwave',
+    'cyclewarpflower',
 ];
 
 const CYCLE_TIMING_KEYS = ['cycleinterval', 'cycleinterpolateduration'];
@@ -132,6 +134,13 @@ export class RetroFlowWallpaper {
         this.postWarpPass.setTwistDecay(this.currentValues.warptwistdecay);
         this.postWarpPass.setTwistRadialFrequency(this.currentValues.warptwistradialfrequency);
         this.postWarpPass.setTwistRadialAmplitude(this.currentValues.warptwistradialamplitude);
+        this.postWarpPass.setWaveXFrequency(this.currentValues.warpwavexfrequency);
+        this.postWarpPass.setWaveYFrequency(this.currentValues.warpwaveyfrequency);
+        this.postWarpPass.setWaveXAmplitude(this.currentValues.warpwavexamplitude);
+        this.postWarpPass.setWaveYAmplitude(this.currentValues.warpwaveyamplitude);
+        this.postWarpPass.setFlowerPetals(this.currentValues.warpflowerpetals);
+        this.postWarpPass.setFlowerAmplitude(this.currentValues.warpfloweramplitude);
+        this.postWarpPass.setFlowerDecay(this.currentValues.warpflowerdecay);
     }
 
     updateCanvas() {
@@ -227,6 +236,13 @@ export class RetroFlowWallpaper {
                 'warptwistdecay',
                 'warptwistradialfrequency',
                 'warptwistradialamplitude',
+                'warpwavexfrequency',
+                'warpwaveyfrequency',
+                'warpwavexamplitude',
+                'warpwaveyamplitude',
+                'warpflowerpetals',
+                'warpfloweramplitude',
+                'warpflowerdecay',
             )
         ) {
             this.updateFlowSettings();

@@ -10,8 +10,10 @@ import {
     FLOW_VORTEX_TYPE,
     JUST_BARS_TYPE,
     SLAB_TYPE,
+    WARP_FLOWER_TYPE,
     WARP_RADIAL_TYPE,
     WARP_TWIST_TYPE,
+    WARP_WAVE_TYPE,
 } from './constants.js';
 
 function createDomainState(defaultType) {
@@ -83,6 +85,12 @@ export function resolveCycleTypes(currentValues) {
     }
     if (currentValues.cyclewarptwist) {
         warpEnabled.push(WARP_TWIST_TYPE);
+    }
+    if (currentValues.cyclewarpwave) {
+        warpEnabled.push(WARP_WAVE_TYPE);
+    }
+    if (currentValues.cyclewarpflower) {
+        warpEnabled.push(WARP_FLOWER_TYPE);
     }
 
     return {

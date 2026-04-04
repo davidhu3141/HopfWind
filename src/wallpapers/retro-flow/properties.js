@@ -84,6 +84,8 @@ export const retroFlowProperties = [
     bool('cycleflowvortex', 'Cycle Flow Vortex', false),
     bool('cyclewarpradial', 'Cycle Warp Radial', true),
     bool('cyclewarptwist', 'Cycle Warp Twist', false),
+    bool('cyclewarpwave', 'Cycle Warp Wave', false),
+    bool('cyclewarpflower', 'Cycle Warp Flower', false),
 
     group('justbars', 'Just Bars'),
     combo('justbarsshape', 'Just Bars Shape', 'shapeE', [
@@ -241,6 +243,17 @@ export const retroFlowProperties = [
     slider('warptwistdecay', 'Twist Decay', 0, 5, 1.8, { step: 0.01, fraction: true, precision: 2 }),
     slider('warptwistradialfrequency', 'Twist Radial Frequency', 0, 20, 8, { step: 0.1, fraction: true, precision: 1 }),
     slider('warptwistradialamplitude', 'Twist Radial Amplitude', 0, 1, 0.08, { step: 0.01, fraction: true, precision: 2 }),
+
+    group('warpwave', 'Warp Wave'),
+    slider('warpwavexfrequency', 'Wave X Frequency', 0, 20, 4, { step: 0.1, fraction: true, precision: 1 }),
+    slider('warpwaveyfrequency', 'Wave Y Frequency', 0, 20, 5, { step: 0.1, fraction: true, precision: 1 }),
+    slider('warpwavexamplitude', 'Wave X Amplitude', 0, 1, 0.18, { step: 0.01, fraction: true, precision: 2 }),
+    slider('warpwaveyamplitude', 'Wave Y Amplitude', 0, 1, 0.12, { step: 0.01, fraction: true, precision: 2 }),
+
+    group('warpflower', 'Warp Flower'),
+    slider('warpflowerpetals', 'Flower Petals', 0, 20, 6, { step: 0.1, fraction: true, precision: 1 }),
+    slider('warpfloweramplitude', 'Flower Amplitude', 0, 1, 0.22, { step: 0.01, fraction: true, precision: 2 }),
+    slider('warpflowerdecay', 'Flower Decay', 0, 5, 0.9, { step: 0.01, fraction: true, precision: 2 }),
 
     group('energy', 'Energy'),
     bool('useenergylow', 'Use Low Energy', true),
