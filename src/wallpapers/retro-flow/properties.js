@@ -70,9 +70,9 @@ export const retroFlowProperties = [
         { label: 'Just Bars', value: 'just-bars' },
         { label: 'Circle', value: 'circle' },
     ]),
-    slider('geometryrotationhz', 'Geometry Rotation (Hz)', 0, 1, 0.05, { step: 0.01, fraction: true, precision: 2 }),
+    slider('geometryrotationhz', 'Geometry Rotation Speed (Hz)', 0, 1, 0.05, { step: 0.01, fraction: true, precision: 2 }),
     bool('geometryreverse', 'Reverse Rotation', false),
-    slider('geometrysizebyenergy', 'Size By Energy', -10, 10, 0, { step: 0.1, fraction: true, precision: 1 }),
+    slider('geometrysizebyenergy', 'Size By Energy', -100, 100, 0, { step: 0.1, fraction: true, precision: 1 }),
     slider('_2doffsetx', '2D Offset X', -1, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
     slider('_2doffsety', '2D Offset Y', -1, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
 
@@ -124,7 +124,7 @@ export const retroFlowProperties = [
         precision: 0,
         condition: "barsgeometrytype.value == 'circle'",
     }),
-    slider('circlelengthchangebysound', 'Bar Length By Sound', 0, 6, 1, {
+    slider('circlelengthchangebysound', 'Bar Length By Sound', 0, 12, 1, {
         step: 0.1,
         fraction: true,
         precision: 2,
