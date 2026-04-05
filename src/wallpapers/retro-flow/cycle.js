@@ -7,11 +7,10 @@ import {
     DEFAULT_WARP_TYPE,
     DOUBLE_CIRCLE_SLAB_TYPE,
     DOUBLE_CIRCLE_TYPE,
-    FLOW_PINCH_TYPE,
+    FLOW_GRID_TYPE,
     FLOW_SADDLE_TYPE,
     FLOW_SINE_TYPE,
     FLOW_SWIRL_TYPE,
-    FLOW_VORTEX_TYPE,
     JUST_BARS_TYPE,
     SLAB_TYPE,
     WARP_FLOWER_TYPE,
@@ -86,11 +85,8 @@ export function resolveCycleTypes(currentValues) {
     if (currentValues.cycleflowsine) {
         flowEnabled.push(FLOW_SINE_TYPE);
     }
-    if (currentValues.cycleflowvortex) {
-        flowEnabled.push(FLOW_VORTEX_TYPE);
-    }
-    if (currentValues.cycleflowpinch) {
-        flowEnabled.push(FLOW_PINCH_TYPE);
+    if (currentValues.cycleflowgrid) {
+        flowEnabled.push(FLOW_GRID_TYPE);
     }
     if (currentValues.cycleflowsaddle) {
         flowEnabled.push(FLOW_SADDLE_TYPE);

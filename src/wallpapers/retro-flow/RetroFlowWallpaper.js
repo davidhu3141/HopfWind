@@ -32,8 +32,7 @@ const CYCLE_SELECTION_KEYS = [
     'cyclegeometrydoublecircleslab',
     'cycleflowswirl',
     'cycleflowsine',
-    'cycleflowvortex',
-    'cycleflowpinch',
+    'cycleflowgrid',
     'cycleflowsaddle',
     'cyclewarpnone',
     'cyclewarpradial',
@@ -144,10 +143,10 @@ export class RetroFlowWallpaper {
         this.flowPass.setSineXFrequency(this.currentValues.flowsinexfrequency);
         this.flowPass.setSineYFrequency(this.currentValues.flowsineyfrequency);
         this.flowPass.setSineStrength(this.currentValues.flowsinestrength);
-        this.flowPass.setVortexFrequency(this.currentValues.flowvortexfrequency);
-        this.flowPass.setVortexStrength(this.currentValues.flowvortexstrength);
-        this.flowPass.setPinchFrequency(this.currentValues.flowpinchfrequency);
-        this.flowPass.setPinchStrength(this.currentValues.flowpinchstrength);
+        this.flowPass.setGridXFrequency(this.currentValues.flowgridxfrequency);
+        this.flowPass.setGridYFrequency(this.currentValues.flowgridyfrequency);
+        this.flowPass.setGridSharpness(this.currentValues.flowgridsharpness);
+        this.flowPass.setGridStrength(this.currentValues.flowgridstrength);
         this.flowPass.setSaddleFrequency(this.currentValues.flowsaddlefrequency);
         this.flowPass.setSaddleStrength(this.currentValues.flowsaddlestrength);
 
@@ -248,10 +247,10 @@ export class RetroFlowWallpaper {
                 'flowsinexfrequency',
                 'flowsineyfrequency',
                 'flowsinestrength',
-                'flowvortexfrequency',
-                'flowvortexstrength',
-                'flowpinchfrequency',
-                'flowpinchstrength',
+                'flowgridxfrequency',
+                'flowgridyfrequency',
+                'flowgridsharpness',
+                'flowgridstrength',
                 'flowsaddlefrequency',
                 'flowsaddlestrength',
                 'usepostwarp',

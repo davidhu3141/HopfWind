@@ -1,11 +1,10 @@
 import * as THREE from 'three';
 import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass.js';
 import {
-    FLOW_PINCH_TYPE,
+    FLOW_GRID_TYPE,
     FLOW_SADDLE_TYPE,
     FLOW_SINE_TYPE,
     FLOW_SWIRL_TYPE,
-    FLOW_VORTEX_TYPE,
 } from '../../wallpapers/retro-flow/constants.js';
 
 function makeVertexShader() {
@@ -38,10 +37,10 @@ uniform float swirlDensity;
 uniform float sineXFrequency;
 uniform float sineYFrequency;
 uniform float sineStrength;
-uniform float vortexFrequency;
-uniform float vortexStrength;
-uniform float pinchFrequency;
-uniform float pinchStrength;
+uniform float gridXFrequency;
+uniform float gridYFrequency;
+uniform float gridSharpness;
+uniform float gridStrength;
 uniform float saddleFrequency;
 uniform float saddleStrength;
 
@@ -64,24 +63,16 @@ vec2 sineField(vec2 centered) {
     ) * sineStrength;
 }
 
-vec2 vortexField(vec2 centered) {
-    float radius = max(length(centered), 0.4);
-    vec2 orbit = vec2(-centered.y, centered.x) / radius;
-    vec2 ripple = vec2(
-        cos(centered.y * vortexFrequency),
-        sin(centered.x * vortexFrequency)
-    );
-    return (orbit + 0.35 * ripple) * vortexStrength;
+float gridLane(float value, float frequency, float sharpness) {
+    float wave = sin(value * frequency);
+    float magnitude = pow(abs(wave), max(sharpness, 0.0001));
+    return sign(wave) * magnitude;
 }
 
-vec2 pinchField(vec2 centered) {
-    float radius = max(length(centered), 0.4);
-    vec2 radial = -centered / radius;
-    vec2 ripple = vec2(
-        cos(radius * pinchFrequency),
-        sin(radius * pinchFrequency)
-    );
-    return (radial + 0.3 * ripple) * pinchStrength;
+vec2 gridField(vec2 centered) {
+    float laneX = gridLane(centered.x, gridXFrequency, gridSharpness);
+    float laneY = gridLane(centered.y, gridYFrequency, gridSharpness);
+    return vec2(laneY, -laneX) * gridStrength;
 }
 
 vec2 saddleField(vec2 centered) {
@@ -102,10 +93,7 @@ vec2 getFlowField(float typeId, vec2 centered) {
         return sineField(centered);
     }
     if (typeId < 2.5) {
-        return vortexField(centered);
-    }
-    if (typeId < 3.5) {
-        return pinchField(centered);
+        return gridField(centered);
     }
     return saddleField(centered);
 }
@@ -134,12 +122,10 @@ function getFlowTypeId(type) {
     switch (type) {
         case FLOW_SINE_TYPE:
             return 1;
-        case FLOW_VORTEX_TYPE:
+        case FLOW_GRID_TYPE:
             return 2;
-        case FLOW_PINCH_TYPE:
-            return 3;
         case FLOW_SADDLE_TYPE:
-            return 4;
+            return 3;
         case FLOW_SWIRL_TYPE:
         default:
             return 0;
@@ -175,10 +161,10 @@ export class RetroFlowPass extends Pass {
             sineXFrequency: { value: 1.2 },
             sineYFrequency: { value: 1.2 },
             sineStrength: { value: 0.35 },
-            vortexFrequency: { value: 1.5 },
-            vortexStrength: { value: 0.6 },
-            pinchFrequency: { value: 1.8 },
-            pinchStrength: { value: 0.55 },
+            gridXFrequency: { value: 1.7 },
+            gridYFrequency: { value: 1.7 },
+            gridSharpness: { value: 0.22 },
+            gridStrength: { value: 0.45 },
             saddleFrequency: { value: 1.6 },
             saddleStrength: { value: 0.5 },
         });
@@ -277,20 +263,20 @@ export class RetroFlowPass extends Pass {
         this.uniforms.sineStrength.value = value;
     }
 
-    setVortexFrequency(value) {
-        this.uniforms.vortexFrequency.value = value;
+    setGridXFrequency(value) {
+        this.uniforms.gridXFrequency.value = value;
     }
 
-    setVortexStrength(value) {
-        this.uniforms.vortexStrength.value = value;
+    setGridYFrequency(value) {
+        this.uniforms.gridYFrequency.value = value;
     }
 
-    setPinchFrequency(value) {
-        this.uniforms.pinchFrequency.value = value;
+    setGridSharpness(value) {
+        this.uniforms.gridSharpness.value = value;
     }
 
-    setPinchStrength(value) {
-        this.uniforms.pinchStrength.value = value;
+    setGridStrength(value) {
+        this.uniforms.gridStrength.value = value;
     }
 
     setSaddleFrequency(value) {
