@@ -1,6 +1,12 @@
 import * as THREE from 'three';
 import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass.js';
-import { FLOW_SINE_TYPE, FLOW_SWIRL_TYPE, FLOW_VORTEX_TYPE } from '../../wallpapers/retro-flow/constants.js';
+import {
+    FLOW_PINCH_TYPE,
+    FLOW_SADDLE_TYPE,
+    FLOW_SINE_TYPE,
+    FLOW_SWIRL_TYPE,
+    FLOW_VORTEX_TYPE,
+} from '../../wallpapers/retro-flow/constants.js';
 
 function makeVertexShader() {
     return /* glsl */`
@@ -34,6 +40,10 @@ uniform float sineYFrequency;
 uniform float sineStrength;
 uniform float vortexFrequency;
 uniform float vortexStrength;
+uniform float pinchFrequency;
+uniform float pinchStrength;
+uniform float saddleFrequency;
+uniform float saddleStrength;
 
 vec2 swirlField(vec2 centered) {
     float x = centered.x;
@@ -64,6 +74,26 @@ vec2 vortexField(vec2 centered) {
     return (orbit + 0.35 * ripple) * vortexStrength;
 }
 
+vec2 pinchField(vec2 centered) {
+    float radius = max(length(centered), 0.4);
+    vec2 radial = -centered / radius;
+    vec2 ripple = vec2(
+        cos(radius * pinchFrequency),
+        sin(radius * pinchFrequency)
+    );
+    return (radial + 0.3 * ripple) * pinchStrength;
+}
+
+vec2 saddleField(vec2 centered) {
+    float radius = max(length(centered), 0.6);
+    vec2 base = vec2(centered.x, -centered.y) / radius;
+    vec2 ripple = vec2(
+        sin(centered.x * saddleFrequency),
+        sin(centered.y * saddleFrequency)
+    );
+    return (base + 0.25 * ripple) * saddleStrength;
+}
+
 vec2 getFlowField(float typeId, vec2 centered) {
     if (typeId < 0.5) {
         return swirlField(centered);
@@ -71,7 +101,13 @@ vec2 getFlowField(float typeId, vec2 centered) {
     if (typeId < 1.5) {
         return sineField(centered);
     }
-    return vortexField(centered);
+    if (typeId < 2.5) {
+        return vortexField(centered);
+    }
+    if (typeId < 3.5) {
+        return pinchField(centered);
+    }
+    return saddleField(centered);
 }
 
 void main() {
@@ -100,6 +136,10 @@ function getFlowTypeId(type) {
             return 1;
         case FLOW_VORTEX_TYPE:
             return 2;
+        case FLOW_PINCH_TYPE:
+            return 3;
+        case FLOW_SADDLE_TYPE:
+            return 4;
         case FLOW_SWIRL_TYPE:
         default:
             return 0;
@@ -137,6 +177,10 @@ export class RetroFlowPass extends Pass {
             sineStrength: { value: 0.35 },
             vortexFrequency: { value: 1.5 },
             vortexStrength: { value: 0.6 },
+            pinchFrequency: { value: 1.8 },
+            pinchStrength: { value: 0.55 },
+            saddleFrequency: { value: 1.6 },
+            saddleStrength: { value: 0.5 },
         });
 
         this.material = new THREE.ShaderMaterial({
@@ -239,6 +283,22 @@ export class RetroFlowPass extends Pass {
 
     setVortexStrength(value) {
         this.uniforms.vortexStrength.value = value;
+    }
+
+    setPinchFrequency(value) {
+        this.uniforms.pinchFrequency.value = value;
+    }
+
+    setPinchStrength(value) {
+        this.uniforms.pinchStrength.value = value;
+    }
+
+    setSaddleFrequency(value) {
+        this.uniforms.saddleFrequency.value = value;
+    }
+
+    setSaddleStrength(value) {
+        this.uniforms.saddleStrength.value = value;
     }
 
     setCenter(x, y) {

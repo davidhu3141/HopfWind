@@ -7,6 +7,8 @@ import {
     DEFAULT_WARP_TYPE,
     DOUBLE_CIRCLE_SLAB_TYPE,
     DOUBLE_CIRCLE_TYPE,
+    FLOW_PINCH_TYPE,
+    FLOW_SADDLE_TYPE,
     FLOW_SINE_TYPE,
     FLOW_SWIRL_TYPE,
     FLOW_VORTEX_TYPE,
@@ -86,6 +88,12 @@ export function resolveCycleTypes(currentValues) {
     }
     if (currentValues.cycleflowvortex) {
         flowEnabled.push(FLOW_VORTEX_TYPE);
+    }
+    if (currentValues.cycleflowpinch) {
+        flowEnabled.push(FLOW_PINCH_TYPE);
+    }
+    if (currentValues.cycleflowsaddle) {
+        flowEnabled.push(FLOW_SADDLE_TYPE);
     }
 
     const warpEnabled = [];

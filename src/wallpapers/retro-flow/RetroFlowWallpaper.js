@@ -33,6 +33,8 @@ const CYCLE_SELECTION_KEYS = [
     'cycleflowswirl',
     'cycleflowsine',
     'cycleflowvortex',
+    'cycleflowpinch',
+    'cycleflowsaddle',
     'cyclewarpnone',
     'cyclewarpradial',
     'cyclewarptwist',
@@ -144,6 +146,10 @@ export class RetroFlowWallpaper {
         this.flowPass.setSineStrength(this.currentValues.flowsinestrength);
         this.flowPass.setVortexFrequency(this.currentValues.flowvortexfrequency);
         this.flowPass.setVortexStrength(this.currentValues.flowvortexstrength);
+        this.flowPass.setPinchFrequency(this.currentValues.flowpinchfrequency);
+        this.flowPass.setPinchStrength(this.currentValues.flowpinchstrength);
+        this.flowPass.setSaddleFrequency(this.currentValues.flowsaddlefrequency);
+        this.flowPass.setSaddleStrength(this.currentValues.flowsaddlestrength);
 
         this.postWarpPass.enabled = this.currentValues.usepostwarp;
         this.postWarpPass.setRadialFrequency(this.currentValues.warpradialfrequency);
@@ -244,6 +250,10 @@ export class RetroFlowWallpaper {
                 'flowsinestrength',
                 'flowvortexfrequency',
                 'flowvortexstrength',
+                'flowpinchfrequency',
+                'flowpinchstrength',
+                'flowsaddlefrequency',
+                'flowsaddlestrength',
                 'usepostwarp',
                 'warpradialfrequency',
                 'warpthetafrequency',

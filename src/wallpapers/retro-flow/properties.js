@@ -85,6 +85,8 @@ export const retroFlowProperties = [
     bool('cycleflowswirl', 'Cycle Flow Swirl', true),
     bool('cycleflowsine', 'Cycle Flow Sine', false),
     bool('cycleflowvortex', 'Cycle Flow Vortex', false),
+    bool('cycleflowpinch', 'Cycle Flow Pinch', false),
+    bool('cycleflowsaddle', 'Cycle Flow Saddle', false),
     bool('cyclewarpnone', 'Cycle Warp None', false),
     bool('cyclewarpradial', 'Cycle Warp Radial', true),
     bool('cyclewarptwist', 'Cycle Warp Twist', false),
@@ -291,6 +293,14 @@ export const retroFlowProperties = [
     group('flowvortex', 'Flow Vortex'),
     slider('flowvortexfrequency', 'Vortex Frequency', 0, 8, 1.5, { step: 0.01, fraction: true, precision: 2 }),
     slider('flowvortexstrength', 'Vortex Strength', 0, 2, 0.6, { step: 0.01, fraction: true, precision: 2 }),
+
+    group('flowpinch', 'Flow Pinch'),
+    slider('flowpinchfrequency', 'Pinch Frequency', 0, 8, 1.8, { step: 0.01, fraction: true, precision: 2 }),
+    slider('flowpinchstrength', 'Pinch Strength', 0, 2, 0.55, { step: 0.01, fraction: true, precision: 2 }),
+
+    group('flowsaddle', 'Flow Saddle'),
+    slider('flowsaddlefrequency', 'Saddle Frequency', 0, 8, 1.6, { step: 0.01, fraction: true, precision: 2 }),
+    slider('flowsaddlestrength', 'Saddle Strength', 0, 2, 0.5, { step: 0.01, fraction: true, precision: 2 }),
 
     group('warp', 'Warp'),
     bool('usepostwarp', 'Use Post Warp', true),
