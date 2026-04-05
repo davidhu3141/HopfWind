@@ -104,6 +104,8 @@ export class RetroFlowWallpaper {
             twentyFourHour: this.currentValues._24hourclock,
             color: rgbTripletToCss(this.currentValues.clockcolor),
             shadowColor: rgbTripletToCss(this.currentValues.clockshadowcolor),
+            backdropColor: rgbTripletToCss(this.currentValues.clockbackdropcolor),
+            backdropOpacity: this.currentValues.clockbackdropopacity,
         });
     }
 
@@ -270,6 +272,8 @@ export class RetroFlowWallpaper {
                 '_24hourclock',
                 'clockcolor',
                 'clockshadowcolor',
+                'clockbackdropcolor',
+                'clockbackdropopacity',
             )
         ) {
             this.updateClock();
