@@ -68,7 +68,7 @@ export const retroFlowProperties = [
     group('barsgroup', 'Bars Group'),
     slider('geometryrotationhz', 'Geometry Rotation Speed (Hz)', 0, 1, 0.05, { step: 0.01, fraction: true, precision: 2 }),
     bool('geometryreverse', 'Reverse Rotation', false),
-    slider('geometrysizebyenergy', 'Size By Energy', -100, 100, 0, { step: 0.1, fraction: true, precision: 1 }),
+    slider('geometrysizebyenergy', 'Size By Energy', -700, 700, 0, { step: 0.1, fraction: true, precision: 1 }),
     slider('_2doffsetx', '2D Offset X', -1, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
     slider('_2doffsety', '2D Offset Y', -1, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
 
@@ -204,14 +204,11 @@ export const retroFlowProperties = [
     group('colors', 'Bar Colors'),
     color('backgroundcolor', 'Background Color', '0 0 0'),
     color('barcolor', 'Bar Color', '1 1 1'),
-    bool('usesinglecolor', 'Use Single Color', false),
     slider('huechangebysound', 'Hue By Sound', -2, 2, 0, { step: 0.01, fraction: true, precision: 2 }),
-    slider('hueinitial', 'Hue Initial', 0, 360, 40),
-    slider('saturation', 'Saturation', 0, 100, 50),
-    slider('lightness', 'Lightness', 0, 100, 50),
+    slider('saturationchangebysound', 'Saturation By Sound', -10, 10, 0, { step: 0.01, fraction: true, precision: 2 }),
     slider('lightnesschangebysound', 'Lightness By Sound', -10, 10, 0, { step: 0.01, fraction: true, precision: 2 }),
-    slider('opacitychangebysound', 'Opacity By Sound', 0, 5, 1, { step: 0.01, fraction: true, precision: 2 }),
     slider('opacityinitial', 'Opacity Initial', 0, 1, 1, { step: 0.01, fraction: true, precision: 2 }),
+    slider('opacitychangebysound', 'Opacity By Sound', 0, 5, 1, { step: 0.01, fraction: true, precision: 2 }),
 
     group('flow', 'Flow'),
     bool('antialiasingwillcauseblur', 'Allow Blur Filter', false),
@@ -225,7 +222,8 @@ export const retroFlowProperties = [
     slider('flowswirldensity', 'Swirl Density', 10, 100, 55, { step: 0.1, fraction: true, precision: 1 }),
 
     group('flowsine', 'Flow Sine'),
-    slider('flowsinefrequency', 'Sine Frequency', 0, 8, 1.2, { step: 0.01, fraction: true, precision: 2 }),
+    slider('flowsinexfrequency', 'Sine X Frequency', 0, 8, 1.2, { step: 0.01, fraction: true, precision: 2 }),
+    slider('flowsineyfrequency', 'Sine Y Frequency', 0, 8, 1.2, { step: 0.01, fraction: true, precision: 2 }),
     slider('flowsinestrength', 'Sine Strength', 0, 2, 0.35, { step: 0.01, fraction: true, precision: 2 }),
 
     group('flowvortex', 'Flow Vortex'),

@@ -32,7 +32,8 @@ uniform float flowToType;
 uniform float flowTypeMix;
 uniform float swirlBlend;
 uniform float swirlDensity;
-uniform float sineFrequency;
+uniform float sineXFrequency;
+uniform float sineYFrequency;
 uniform float sineStrength;
 uniform float vortexFrequency;
 uniform float vortexStrength;
@@ -51,8 +52,8 @@ vec2 swirlField(vec2 centered) {
 
 vec2 sineField(vec2 centered) {
     return vec2(
-        sin(centered.y * sineFrequency),
-        -sin(centered.x * sineFrequency)
+        sin(centered.y * sineYFrequency),
+        -sin(centered.x * sineXFrequency)
     ) * sineStrength;
 }
 
@@ -136,7 +137,8 @@ export class RetroFlowPass extends Pass {
             flowTypeMix: { value: 0 },
             swirlBlend: { value: 0 },
             swirlDensity: { value: 55 },
-            sineFrequency: { value: 1.2 },
+            sineXFrequency: { value: 1.2 },
+            sineYFrequency: { value: 1.2 },
             sineStrength: { value: 0.35 },
             vortexFrequency: { value: 1.5 },
             vortexStrength: { value: 0.6 },
@@ -224,8 +226,12 @@ export class RetroFlowPass extends Pass {
         this.uniforms.swirlDensity.value = value;
     }
 
-    setSineFrequency(value) {
-        this.uniforms.sineFrequency.value = value;
+    setSineXFrequency(value) {
+        this.uniforms.sineXFrequency.value = value;
+    }
+
+    setSineYFrequency(value) {
+        this.uniforms.sineYFrequency.value = value;
     }
 
     setSineStrength(value) {

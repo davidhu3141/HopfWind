@@ -13,9 +13,14 @@ import { IDLE_COUNTDOWN_FRAMES } from './constants.js';
 import { computeEnergyBands, computeSelectedEnergy, getGeometryScale } from './energy.js';
 import { buildGeometryPoints, createBarEntry, getMirroredIndex, mixGeometrySet, setBarGeometry } from './geometry.js';
 
-function makeHslColor(hue, saturation, lightness) {
-    const wrapped = hue >= 0 ? hue : hue + 360;
-    return `hsl(${wrapped}, ${saturation}%, ${lightness}%)`;
+function parseRgbTriplet(value) {
+    const channels = String(value ?? '1 1 1')
+        .trim()
+        .split(/\s+/)
+        .map((channel) => Number.parseFloat(channel))
+        .map((channel) => (Number.isFinite(channel) ? THREE.MathUtils.clamp(channel, 0, 1) : 1));
+    const [r = 1, g = 1, b = 1] = channels;
+    return { r, g, b };
 }
 
 const CYCLE_SELECTION_KEYS = [
@@ -61,7 +66,8 @@ export class RetroFlowWallpaper {
         this.idleCountdown = IDLE_COUNTDOWN_FRAMES;
         this.energyBands = { low: 0, mid: 0, high: 0 };
         this.selectedEnergy = 0;
-        this.currentColor = new THREE.Color(1, 1, 1);
+        this.currentBarColor = new THREE.Color(1, 1, 1);
+        this.currentBarHsl = { h: 0, s: 0, l: 1 };
         this.cycleState = createCycleState();
         this.resolvedCycleTypes = resolveCycleTypes({});
         this.lastFrame = 0;
@@ -123,7 +129,8 @@ export class RetroFlowWallpaper {
         this.flowPass.setShadeFront(false);
         this.flowPass.setSwirlBlend(this.currentValues.flowfieldmix);
         this.flowPass.setSwirlDensity(this.currentValues.flowswirldensity);
-        this.flowPass.setSineFrequency(this.currentValues.flowsinefrequency);
+        this.flowPass.setSineXFrequency(this.currentValues.flowsinexfrequency);
+        this.flowPass.setSineYFrequency(this.currentValues.flowsineyfrequency);
         this.flowPass.setSineStrength(this.currentValues.flowsinestrength);
         this.flowPass.setVortexFrequency(this.currentValues.flowvortexfrequency);
         this.flowPass.setVortexStrength(this.currentValues.flowvortexstrength);
@@ -201,14 +208,11 @@ export class RetroFlowWallpaper {
             this.notifyCycleFallbacks();
         }
         if (hasChanged('barcolor')) {
-            this.currentColor = new THREE.Color(rgbTripletToCss(this.currentValues.barcolor));
-        }
-
-        if (hasChanged('barcolor', 'usesinglecolor') && this.currentValues.usesinglecolor) {
-            this.bars.forEach((bar) => {
-                bar.primary.material.color.copy(this.currentColor);
-                bar.secondary.material.color.copy(this.currentColor);
-            });
+            const { r, g, b } = parseRgbTriplet(this.currentValues.barcolor);
+            this.currentBarColor = new THREE.Color().setRGB(r, g, b);
+            const nextHsl = { h: 0, s: 0, l: 0 };
+            this.currentBarColor.getHSL(nextHsl);
+            this.currentBarHsl = nextHsl;
         }
 
         if (hasChanged('backgroundcolor', 'usecustomimage', 'customimage')) {
@@ -226,7 +230,8 @@ export class RetroFlowWallpaper {
                 'flowopacitylimit',
                 'flowfieldmix',
                 'flowswirldensity',
-                'flowsinefrequency',
+                'flowsinexfrequency',
+                'flowsineyfrequency',
                 'flowsinestrength',
                 'flowvortexfrequency',
                 'flowvortexstrength',
@@ -273,13 +278,19 @@ export class RetroFlowWallpaper {
     }
 
     colorForBar(value) {
-        const hue = (this.currentValues.hueinitial + value * 9000 * this.currentValues.huechangebysound) % 360;
-        const lightness = THREE.MathUtils.clamp(
-            this.currentValues.lightness + value * 100 * this.currentValues.lightnesschangebysound,
+        const hue = (this.currentBarHsl.h * 360 + value * 9000 * this.currentValues.huechangebysound) % 360;
+        const saturation = THREE.MathUtils.clamp(
+            this.currentBarHsl.s * 100 + value * 100 * this.currentValues.saturationchangebysound,
             0,
             100,
         );
-        return makeHslColor(hue, this.currentValues.saturation, lightness);
+        const lightness = THREE.MathUtils.clamp(
+            this.currentBarHsl.l * 100 + value * 100 * this.currentValues.lightnesschangebysound,
+            0,
+            100,
+        );
+        const wrappedHue = ((hue % 360) + 360) % 360;
+        return new THREE.Color().setHSL(wrappedHue / 360, saturation / 100, lightness / 100);
     }
 
     render(frame, incomingAudioSamples) {
@@ -316,11 +327,9 @@ export class RetroFlowWallpaper {
             const primaryMaterial = bar.primary.material;
             const secondaryMaterial = bar.secondary.material;
 
-            if (!this.currentValues.usesinglecolor) {
-                const nextColor = new THREE.Color(this.colorForBar(sample));
-                primaryMaterial.color.copy(nextColor);
-                secondaryMaterial.color.copy(nextColor);
-            }
+            const nextColor = this.colorForBar(sample);
+            primaryMaterial.color.copy(nextColor);
+            secondaryMaterial.color.copy(nextColor);
             const opacity = THREE.MathUtils.clamp(
                 this.currentValues.opacityinitial + sample * 100 * this.currentValues.opacitychangebysound,
                 0,
