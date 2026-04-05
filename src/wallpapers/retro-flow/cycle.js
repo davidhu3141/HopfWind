@@ -11,6 +11,7 @@ import {
     JUST_BARS_TYPE,
     SLAB_TYPE,
     WARP_FLOWER_TYPE,
+    WARP_NONE_TYPE,
     WARP_RADIAL_TYPE,
     WARP_TWIST_TYPE,
     WARP_WAVE_TYPE,
@@ -82,6 +83,9 @@ export function resolveCycleTypes(currentValues) {
     const warpEnabled = [];
     if (currentValues.cyclewarpradial) {
         warpEnabled.push(WARP_RADIAL_TYPE);
+    }
+    if (currentValues.cyclewarpnone) {
+        warpEnabled.push(WARP_NONE_TYPE);
     }
     if (currentValues.cyclewarptwist) {
         warpEnabled.push(WARP_TWIST_TYPE);

@@ -26,6 +26,7 @@ const CYCLE_SELECTION_KEYS = [
     'cycleflowswirl',
     'cycleflowsine',
     'cycleflowvortex',
+    'cyclewarpnone',
     'cyclewarpradial',
     'cyclewarptwist',
     'cyclewarpwave',

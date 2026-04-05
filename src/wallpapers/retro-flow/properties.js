@@ -82,6 +82,7 @@ export const retroFlowProperties = [
     bool('cycleflowswirl', 'Cycle Flow Swirl', true),
     bool('cycleflowsine', 'Cycle Flow Sine', false),
     bool('cycleflowvortex', 'Cycle Flow Vortex', false),
+    bool('cyclewarpnone', 'Cycle Warp None', false),
     bool('cyclewarpradial', 'Cycle Warp Radial', true),
     bool('cyclewarptwist', 'Cycle Warp Twist', false),
     bool('cyclewarpwave', 'Cycle Warp Wave', false),

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass.js';
 import {
     WARP_FLOWER_TYPE,
+    WARP_NONE_TYPE,
     WARP_RADIAL_TYPE,
     WARP_TWIST_TYPE,
     WARP_WAVE_TYPE,
@@ -77,10 +78,12 @@ vec2 flowerWarp(vec2 centered) {
 vec2 getWarpUv(float typeId, vec2 centered) {
     vec2 warped;
     if (typeId < 0.5) {
-        warped = radialWarp(centered);
+        warped = centered;
     } else if (typeId < 1.5) {
-        warped = twistWarp(centered);
+        warped = radialWarp(centered);
     } else if (typeId < 2.5) {
+        warped = twistWarp(centered);
+    } else if (typeId < 3.5) {
         warped = waveWarp(centered);
     } else {
         warped = flowerWarp(centered);
@@ -102,15 +105,18 @@ void main() {
 
 function getWarpTypeId(type) {
     switch (type) {
-    case WARP_TWIST_TYPE:
-        return 1;
-    case WARP_WAVE_TYPE:
-        return 2;
-    case WARP_FLOWER_TYPE:
-        return 3;
-    case WARP_RADIAL_TYPE:
-    default:
+    case WARP_NONE_TYPE:
         return 0;
+    case WARP_RADIAL_TYPE:
+        return 1;
+    case WARP_TWIST_TYPE:
+        return 2;
+    case WARP_WAVE_TYPE:
+        return 3;
+    case WARP_FLOWER_TYPE:
+        return 4;
+    default:
+        return 1;
     }
 }
 
