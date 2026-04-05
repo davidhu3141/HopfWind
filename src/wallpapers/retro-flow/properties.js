@@ -66,6 +66,7 @@ export const retroFlowProperties = [
     file('customimage', 'Custom Image', '', { accept: 'image/*' }),
 
     group('barsgroup', 'Bars Group'),
+    slider('geometrythetashift', 'Theta Shift', 0, 359, 0),
     slider('geometryrotationhz', 'Geometry Rotation Speed (Hz)', 0, 1, 0.05, { step: 0.01, fraction: true, precision: 2 }),
     bool('geometryreverse', 'Reverse Rotation', false),
     slider('geometrysizebyenergy', 'Size By Energy', -700, 700, 0, { step: 0.1, fraction: true, precision: 1 }),
@@ -142,7 +143,6 @@ export const retroFlowProperties = [
         fraction: true,
         precision: 2,
     }),
-    slider('circlethetashift', 'Circle Theta Shift', 0, 359, 0),
 
     group('doublecircle', 'Double Circle'),
     combo('doublecircleshape', 'Double Circle Shape', 'two-sided', [
@@ -153,6 +153,11 @@ export const retroFlowProperties = [
         step: 0.1,
         fraction: true,
         precision: 1,
+    }),
+    slider('doublecirclecenterdistanceratio', 'Center Distance (x Radius)', 0, 6, 2.2, {
+        step: 0.01,
+        fraction: true,
+        precision: 2,
     }),
     slider('doublecirclebarwidth', 'Bar Width', 0, 150, 100, {
         step: 1,
@@ -168,7 +173,7 @@ export const retroFlowProperties = [
         fraction: true,
         precision: 2,
     }),
-    slider('doublecirclethetashift', 'Circle Theta Shift', 0, 359, 0),
+    slider('doublecircleminorthetashift', 'Minor Theta Shift', 0, 359, 0),
 
     group('slab', 'Slab'),
     combo('slabshape', 'Slab Shape', 'shapeE', [
@@ -227,7 +232,6 @@ export const retroFlowProperties = [
         fraction: true,
         precision: 2,
     }),
-    slider('circleslabthetashift', 'Circle Theta Shift', 0, 359, 0),
 
     group('doublecircleslab', 'Double Circle-Slab'),
     combo('doublecircleslabshape', 'Double Circle-Slab Shape', 'two-sided', [
@@ -238,6 +242,11 @@ export const retroFlowProperties = [
         step: 0.1,
         fraction: true,
         precision: 1,
+    }),
+    slider('doublecircleslabcenterdistanceratio', 'Center Distance (x Radius)', 0, 6, 2.2, {
+        step: 0.01,
+        fraction: true,
+        precision: 2,
     }),
     slider('doublecircleslabbarwidth', 'Bar Width', 0, 150, 100, {
         step: 1,
@@ -253,7 +262,7 @@ export const retroFlowProperties = [
         fraction: true,
         precision: 2,
     }),
-    slider('doublecircleslabthetashift', 'Circle Theta Shift', 0, 359, 0),
+    slider('doublecircleslabminorthetashift', 'Minor Theta Shift', 0, 359, 0),
 
     group('colors', 'Bar Colors'),
     color('backgroundcolor', 'Background Color', '0 0 0'),

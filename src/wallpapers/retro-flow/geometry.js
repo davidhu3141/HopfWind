@@ -32,11 +32,6 @@ export function getMirroredIndex(index) {
         : index;
 }
 
-function getGeometryRotation(currentValues, frame) {
-    const direction = currentValues.geometryreverse ? -1 : 1;
-    return direction * frame * ((2 * Math.PI * currentValues.geometryrotationhz) / 60);
-}
-
 function getJustBarsWidthRatio(currentValues) {
     return currentValues.justbarswidth / 100;
 }
@@ -80,7 +75,7 @@ export function setBarGeometry(bar, primaryPoints, secondaryPoints = null) {
     }
 }
 
-function buildJustBarsPoints(currentValues, index, sample, rotationAngle) {
+function buildJustBarsPoints(currentValues, index, sample) {
     const height = currentValues.justbarslengthinitial / 30 + currentValues.justbarslengthchangebysound * sample;
     const widthRatio = getJustBarsWidthRatio(currentValues);
     const centerX = (index - 63.5) * currentValues.justbarsdistance;
@@ -97,26 +92,19 @@ function buildJustBarsPoints(currentValues, index, sample, rotationAngle) {
         q = isDown ? 0 : height;
     }
 
-    const localPoints = [
+    return [
         new THREE.Vector2(centerX - halfWidth, p),
         new THREE.Vector2(centerX + halfWidth, p),
         new THREE.Vector2(centerX + halfWidth, q),
         new THREE.Vector2(centerX - halfWidth, q),
     ];
-
-    if (rotationAngle === 0) {
-        return localPoints;
-    }
-
-    return localPoints.map((point) => point.clone().rotateAround(new THREE.Vector2(0, 0), rotationAngle));
 }
 
-function buildCirclePoints(currentValues, sampleSize, index, sample, rotationAngle) {
+function buildCirclePoints(currentValues, sampleSize, index, sample) {
     const height = currentValues.circlelengthinitial / 30 + currentValues.circlelengthchangebysound * sample;
     const radius = currentValues.circleradius;
-    const thetaShift = THREE.MathUtils.degToRad(currentValues.circlethetashift);
     const thetaStep = (2 * Math.PI) / sampleSize;
-    const thetaCenter = Math.PI / 2 + thetaShift + rotationAngle + thetaStep * (index + 0.5);
+    const thetaCenter = Math.PI / 2 + thetaStep * (index + 0.5);
     const thetaHalfWidth = (thetaStep * getCircleWidthRatio(currentValues)) / 2;
     const theta0 = thetaCenter - thetaHalfWidth;
     const theta1 = thetaCenter + thetaHalfWidth;
@@ -133,52 +121,48 @@ function buildCirclePoints(currentValues, sampleSize, index, sample, rotationAng
     ];
 }
 
-function buildDoubleCirclePoints(currentValues, index, sample, rotationAngle) {
+function buildDoubleCirclePoints(currentValues, index, sample) {
     const localIndex = index % SAMPLE_SIZE_HALF;
-    const channelDirection = index < SAMPLE_SIZE_HALF ? -1 : 1;
+    const isLeftChannel = index < SAMPLE_SIZE_HALF;
+    const angularDirection = isLeftChannel ? 1 : -1;
     const height = currentValues.doublecirclelengthinitial / 30 + currentValues.doublecirclelengthchangebysound * sample;
     const radius = currentValues.doublecircleradius;
-    const thetaShift = THREE.MathUtils.degToRad(currentValues.doublecirclethetashift);
+    const minorThetaShift = THREE.MathUtils.degToRad(currentValues.doublecircleminorthetashift);
     const thetaStep = (2 * Math.PI) / SAMPLE_SIZE_HALF;
-    const thetaCenter = Math.PI / 2 + thetaShift + rotationAngle + thetaStep * (localIndex + 0.5);
+    const thetaCenter = Math.PI / 2 + angularDirection * (minorThetaShift + thetaStep * (localIndex + 0.5));
     const thetaHalfWidth = (thetaStep * getDoubleCircleWidthRatio(currentValues)) / 2;
-    const theta0 = thetaCenter - thetaHalfWidth;
-    const theta1 = thetaCenter + thetaHalfWidth;
+    const thetaStart = thetaCenter - angularDirection * thetaHalfWidth;
+    const thetaEnd = thetaCenter + angularDirection * thetaHalfWidth;
     const innerRadius = currentValues.doublecircleshape === 'two-sided'
         ? Math.max(0, radius - height)
         : radius;
     const outerRadius = radius + height;
-    const centerOffsetX = channelDirection * radius * 1.1;
+    const halfCenterDistance = radius * currentValues.doublecirclecenterdistanceratio * 0.5;
+    const centerOffsetX = isLeftChannel ? -halfCenterDistance : halfCenterDistance;
 
     return [
-        new THREE.Vector2(Math.cos(theta0) * innerRadius + centerOffsetX, Math.sin(theta0) * innerRadius),
-        new THREE.Vector2(Math.cos(theta1) * innerRadius + centerOffsetX, Math.sin(theta1) * innerRadius),
-        new THREE.Vector2(Math.cos(theta1) * outerRadius + centerOffsetX, Math.sin(theta1) * outerRadius),
-        new THREE.Vector2(Math.cos(theta0) * outerRadius + centerOffsetX, Math.sin(theta0) * outerRadius),
+        new THREE.Vector2(Math.cos(thetaStart) * innerRadius + centerOffsetX, Math.sin(thetaStart) * innerRadius),
+        new THREE.Vector2(Math.cos(thetaEnd) * innerRadius + centerOffsetX, Math.sin(thetaEnd) * innerRadius),
+        new THREE.Vector2(Math.cos(thetaEnd) * outerRadius + centerOffsetX, Math.sin(thetaEnd) * outerRadius),
+        new THREE.Vector2(Math.cos(thetaStart) * outerRadius + centerOffsetX, Math.sin(thetaStart) * outerRadius),
     ];
 }
 
-function buildSlabQuad(currentValues, index, shape, height, thickness, rotationAngle) {
+function buildSlabQuad(currentValues, index, shape, height, thickness) {
     const widthRatio = getSlabWidthRatio(currentValues);
     const centerX = (index - 63.5) * currentValues.slabdistance;
     const halfWidth = (widthRatio * currentValues.slabdistance) / 2;
     const minY = shape === 'up' ? height : -height - thickness;
     const maxY = shape === 'up' ? height + thickness : -height;
-    const localPoints = [
+    return [
         new THREE.Vector2(centerX - halfWidth, minY),
         new THREE.Vector2(centerX + halfWidth, minY),
         new THREE.Vector2(centerX + halfWidth, maxY),
         new THREE.Vector2(centerX - halfWidth, maxY),
     ];
-
-    if (rotationAngle === 0) {
-        return localPoints;
-    }
-
-    return localPoints.map((point) => point.clone().rotateAround(new THREE.Vector2(0, 0), rotationAngle));
 }
 
-function buildSlabGeometry(currentValues, index, sample, rotationAngle) {
+function buildSlabGeometry(currentValues, index, sample) {
     const height = currentValues.slabheightinitial / 30 + currentValues.slabheightchangebysound * sample;
     const thickness = Math.max(0, currentValues.slabthickness);
     const shape = currentValues.slabshape;
@@ -187,13 +171,13 @@ function buildSlabGeometry(currentValues, index, sample, rotationAngle) {
 
     if (shape === 'shapeE') {
         return {
-            primary: buildSlabQuad(currentValues, index, 'up', height, thickness, rotationAngle),
-            secondary: buildSlabQuad(currentValues, index, 'down', height, thickness, rotationAngle),
+            primary: buildSlabQuad(currentValues, index, 'up', height, thickness),
+            secondary: buildSlabQuad(currentValues, index, 'down', height, thickness),
         };
     }
 
     return {
-        primary: buildSlabQuad(currentValues, index, isUp ? 'up' : 'down', height, thickness, rotationAngle),
+        primary: buildSlabQuad(currentValues, index, isUp ? 'up' : 'down', height, thickness),
     };
 }
 
@@ -207,13 +191,12 @@ function buildCircleSlabSegment(theta0, theta1, innerRadius, thickness) {
     ];
 }
 
-function buildCircleSlabGeometry(currentValues, sampleSize, index, sample, rotationAngle) {
+function buildCircleSlabGeometry(currentValues, sampleSize, index, sample) {
     const height = currentValues.circleslabheightchangebysound * sample;
     const radius = currentValues.circleslabradius;
     const thickness = Math.max(0, currentValues.circleslabthickness);
-    const thetaShift = THREE.MathUtils.degToRad(currentValues.circleslabthetashift);
     const thetaStep = (2 * Math.PI) / sampleSize;
-    const thetaCenter = Math.PI / 2 + thetaShift + rotationAngle + thetaStep * (index + 0.5);
+    const thetaCenter = Math.PI / 2 + thetaStep * (index + 0.5);
     const thetaHalfWidth = (thetaStep * getCircleSlabWidthRatio(currentValues)) / 2;
     const theta0 = thetaCenter - thetaHalfWidth;
     const theta1 = thetaCenter + thetaHalfWidth;
@@ -242,52 +225,53 @@ function buildDoubleCircleSlabSegment(theta0, theta1, innerRadius, thickness, ce
     ];
 }
 
-function buildDoubleCircleSlabGeometry(currentValues, index, sample, rotationAngle) {
+function buildDoubleCircleSlabGeometry(currentValues, index, sample) {
     const localIndex = index % SAMPLE_SIZE_HALF;
-    const channelDirection = index < SAMPLE_SIZE_HALF ? -1 : 1;
+    const isLeftChannel = index < SAMPLE_SIZE_HALF;
+    const angularDirection = isLeftChannel ? 1 : -1;
     const height = currentValues.doublecircleslabheightchangebysound * sample;
     const radius = currentValues.doublecircleslabradius;
     const thickness = Math.max(0, currentValues.doublecircleslabthickness);
-    const thetaShift = THREE.MathUtils.degToRad(currentValues.doublecircleslabthetashift);
+    const minorThetaShift = THREE.MathUtils.degToRad(currentValues.doublecircleslabminorthetashift);
     const thetaStep = (2 * Math.PI) / SAMPLE_SIZE_HALF;
-    const thetaCenter = Math.PI / 2 + thetaShift + rotationAngle + thetaStep * (localIndex + 0.5);
+    const thetaCenter = Math.PI / 2 + angularDirection * (minorThetaShift + thetaStep * (localIndex + 0.5));
     const thetaHalfWidth = (thetaStep * getDoubleCircleSlabWidthRatio(currentValues)) / 2;
-    const theta0 = thetaCenter - thetaHalfWidth;
-    const theta1 = thetaCenter + thetaHalfWidth;
-    const centerOffsetX = channelDirection * radius * 1.1;
+    const thetaStart = thetaCenter - angularDirection * thetaHalfWidth;
+    const thetaEnd = thetaCenter + angularDirection * thetaHalfWidth;
+    const halfCenterDistance = radius * currentValues.doublecircleslabcenterdistanceratio * 0.5;
+    const centerOffsetX = isLeftChannel ? -halfCenterDistance : halfCenterDistance;
 
     const outwardInner = Math.max(0, radius + height);
     if (currentValues.doublecircleslabshape === 'single-sided') {
         return {
-            primary: buildDoubleCircleSlabSegment(theta0, theta1, outwardInner, thickness, centerOffsetX),
+            primary: buildDoubleCircleSlabSegment(thetaStart, thetaEnd, outwardInner, thickness, centerOffsetX),
         };
     }
 
     const inwardInner = Math.max(0, radius - height - thickness);
     return {
-        primary: buildDoubleCircleSlabSegment(theta0, theta1, outwardInner, thickness, centerOffsetX),
-        secondary: buildDoubleCircleSlabSegment(theta0, theta1, inwardInner, thickness, centerOffsetX),
+        primary: buildDoubleCircleSlabSegment(thetaStart, thetaEnd, outwardInner, thickness, centerOffsetX),
+        secondary: buildDoubleCircleSlabSegment(thetaStart, thetaEnd, inwardInner, thickness, centerOffsetX),
     };
 }
 
-export function buildGeometryPoints(currentValues, sampleSize, index, sample, frame, geometryType) {
-    const rotationAngle = getGeometryRotation(currentValues, frame);
+export function buildGeometryPoints(currentValues, sampleSize, index, sample, geometryType) {
     if (geometryType === CIRCLE_TYPE) {
-        return { primary: buildCirclePoints(currentValues, sampleSize, index, sample, rotationAngle) };
+        return { primary: buildCirclePoints(currentValues, sampleSize, index, sample) };
     }
     if (geometryType === DOUBLE_CIRCLE_TYPE) {
-        return { primary: buildDoubleCirclePoints(currentValues, index, sample, rotationAngle) };
+        return { primary: buildDoubleCirclePoints(currentValues, index, sample) };
     }
     if (geometryType === SLAB_TYPE) {
-        return buildSlabGeometry(currentValues, index, sample, rotationAngle);
+        return buildSlabGeometry(currentValues, index, sample);
     }
     if (geometryType === CIRCLE_SLAB_TYPE) {
-        return buildCircleSlabGeometry(currentValues, sampleSize, index, sample, rotationAngle);
+        return buildCircleSlabGeometry(currentValues, sampleSize, index, sample);
     }
     if (geometryType === DOUBLE_CIRCLE_SLAB_TYPE) {
-        return buildDoubleCircleSlabGeometry(currentValues, index, sample, rotationAngle);
+        return buildDoubleCircleSlabGeometry(currentValues, index, sample);
     }
-    return { primary: buildJustBarsPoints(currentValues, index, sample, rotationAngle) };
+    return { primary: buildJustBarsPoints(currentValues, index, sample) };
 }
 
 function usesStereoPairLayout(geometryType) {

@@ -42,6 +42,13 @@ const CYCLE_SELECTION_KEYS = [
 
 const CYCLE_TIMING_KEYS = ['cycleinterval', 'cycleinterpolateduration'];
 
+function getBarsGroupRotation(currentValues, frame) {
+    const direction = currentValues.geometryreverse ? -1 : 1;
+    const spin = direction * frame * ((2 * Math.PI * currentValues.geometryrotationhz) / 60);
+    const thetaShift = THREE.MathUtils.degToRad(currentValues.geometrythetashift ?? 0);
+    return spin + thetaShift;
+}
+
 export class RetroFlowWallpaper {
     constructor({ host, audioBinCount }) {
         this.host = host;
@@ -316,6 +323,7 @@ export class RetroFlowWallpaper {
         }
 
         this.barsGroup.scale.setScalar(getGeometryScale(this.currentValues, this.selectedEnergy));
+        this.barsGroup.rotation.z = getBarsGroupRotation(this.currentValues, frame);
         const cyclePhases = updateCycleState(this.cycleState, this.resolvedCycleTypes, this.currentValues, frame);
         this.flowPass.setFlowInterpolation(cyclePhases.flow.fromType, cyclePhases.flow.toType, cyclePhases.flow.mix);
         this.postWarpPass.setWarpInterpolation(cyclePhases.warp.fromType, cyclePhases.warp.toType, cyclePhases.warp.mix);
@@ -344,7 +352,6 @@ export class RetroFlowWallpaper {
                 this.sampleSize,
                 index,
                 sample,
-                frame,
                 cyclePhases.geometry.fromType,
             );
             const geometry = cyclePhases.geometry.mix > 0
@@ -355,7 +362,6 @@ export class RetroFlowWallpaper {
                         this.sampleSize,
                         index,
                         sample,
-                        frame,
                         cyclePhases.geometry.toType,
                     ),
                     cyclePhases.geometry.mix,
