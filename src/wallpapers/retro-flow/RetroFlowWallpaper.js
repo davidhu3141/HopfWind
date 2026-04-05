@@ -122,7 +122,6 @@ export class RetroFlowWallpaper {
 
     updateFlowSettings() {
         this.flowPass.setFilter(this.currentValues.antialiasingwillcauseblur ? THREE.LinearFilter : THREE.NearestFilter);
-        this.flowPass.setApplyFadingPerNFrames(this.currentValues.applyfadingpernframes);
         this.flowPass.setFadeAmount(this.currentValues.fade / 255);
         this.flowPass.setMoveVelocity(this.currentValues.flowvelocity / 5);
         this.flowPass.setFlowOpacityLimit(this.currentValues.flowopacitylimit);
@@ -224,7 +223,6 @@ export class RetroFlowWallpaper {
         if (
             hasChanged(
                 'antialiasingwillcauseblur',
-                'applyfadingpernframes',
                 'fade',
                 'flowvelocity',
                 'flowopacitylimit',

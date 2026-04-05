@@ -15,8 +15,6 @@ function makeFragmentShader(shadeFront = false) {
     const frontJudge = shadeFront ? 'tex2.a <= 0.0' : 'tex1.a >= tex2.a';
 
     return /* glsl */`
-#define ETH 0.0025
-
 varying vec2 vUV;
 uniform sampler2D tDiffuse;
 uniform sampler2D tDiffuse2;
@@ -24,7 +22,6 @@ uniform vec2 center;
 uniform float width;
 uniform float height;
 uniform float moveVelocityX;
-uniform float shouldDecline;
 uniform float fadeAmount;
 uniform float flowOpacityLimit;
 uniform float flowFromType;
@@ -92,20 +89,20 @@ void main() {
     vec4 tex2 = texture2D(tDiffuse2, vUV2);
     tex1.a = min(tex1.a, 1.0);
     tex2.rgb /= max(tex2.a, 0.0001);
-    tex2.a = min(tex2.a, flowOpacityLimit) - (shouldDecline > 0.0 ? fadeAmount : 0.0);
+    tex2.a = min(tex2.a, flowOpacityLimit) - fadeAmount;
     gl_FragColor = ${frontJudge} ? tex1 : tex2;
 }`;
 }
 
 function getFlowTypeId(type) {
     switch (type) {
-    case FLOW_SINE_TYPE:
-        return 1;
-    case FLOW_VORTEX_TYPE:
-        return 2;
-    case FLOW_SWIRL_TYPE:
-    default:
-        return 0;
+        case FLOW_SINE_TYPE:
+            return 1;
+        case FLOW_VORTEX_TYPE:
+            return 2;
+        case FLOW_SWIRL_TYPE:
+        default:
+            return 0;
     }
 }
 
@@ -118,7 +115,6 @@ export class RetroFlowPass extends Pass {
         this.count = 0;
         this._velocity = 1 / 255;
         this._moveDir = 0.7;
-        this._applyFadingPerNFrames = 1;
         this._filter = THREE.NearestFilter;
         this._shadeFront = false;
 
@@ -129,7 +125,6 @@ export class RetroFlowPass extends Pass {
             width: { value: width },
             height: { value: height },
             moveVelocityX: { value: 0 },
-            shouldDecline: { value: 1 },
             fadeAmount: { value: 0.0025 },
             flowOpacityLimit: { value: 0.9 },
             flowFromType: { value: 0 },
@@ -246,10 +241,6 @@ export class RetroFlowPass extends Pass {
         this.uniforms.vortexStrength.value = value;
     }
 
-    setApplyFadingPerNFrames(value) {
-        this._applyFadingPerNFrames = Math.max(1, Math.round(value));
-    }
-
     setCenter(x, y) {
         this.uniforms.center.value.set(x, y);
     }
@@ -269,7 +260,6 @@ export class RetroFlowPass extends Pass {
 
     render(renderer, writeBuffer, readBuffer) {
         this.count += 1;
-        this.uniforms.shouldDecline.value = this.count % this._applyFadingPerNFrames === 0 ? 1 : 0;
         this.uniforms.tDiffuse.value = readBuffer.texture;
 
         if (this.count % 2 === 0) {

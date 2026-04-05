@@ -212,7 +212,6 @@ export const retroFlowProperties = [
 
     group('flow', 'Flow'),
     bool('antialiasingwillcauseblur', 'Allow Blur Filter', false),
-    slider('applyfadingpernframes', 'Fade Every N Frames', 1, 8, 1),
     slider('fade', 'Trail Fade', 0, 32, 1, { step: 0.1, fraction: true, precision: 2 }),
     slider('flowvelocity', 'Flow Velocity', 0, 100, 1, { step: 0.1, fraction: true, precision: 2 }),
     slider('flowopacitylimit', 'Flow Opacity Limit', 0, 1, 0.9, { step: 0.01, fraction: true, precision: 2 }),
@@ -261,8 +260,8 @@ export const retroFlowProperties = [
 
     group('clock', 'Clock'),
     bool('showclock', 'Show Clock', true),
-    slider('clocksizea', 'Clock Size A', 0.5, 6, 3, { step: 0.1, fraction: true, precision: 1 }),
-    slider('clocksizeb', 'Clock Size B', 0.5, 4, 1, { step: 0.1, fraction: true, precision: 1 }),
+    slider('clocksizea', 'Clock Size A', 0.5, 18, 3, { step: 0.1, fraction: true, precision: 1 }),
+    slider('clocksizeb', 'Clock Size B', 0.5, 12, 1, { step: 0.1, fraction: true, precision: 1 }),
     slider('clockpositionx', 'Clock Position X', 0, 100, 50),
     slider('clockpositiony', 'Clock Position Y', 0, 100, 50),
     bool('_24hourclock', '24 Hour Clock', false),
