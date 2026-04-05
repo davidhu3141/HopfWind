@@ -5,6 +5,8 @@ import {
     DEFAULT_FLOW_TYPE,
     DEFAULT_GEOMETRY_TYPE,
     DEFAULT_WARP_TYPE,
+    DOUBLE_CIRCLE_SLAB_TYPE,
+    DOUBLE_CIRCLE_TYPE,
     FLOW_SINE_TYPE,
     FLOW_SWIRL_TYPE,
     FLOW_VORTEX_TYPE,
@@ -62,11 +64,17 @@ export function resolveCycleTypes(currentValues) {
     if (currentValues.cyclegeometrycircle) {
         geometryEnabled.push(CIRCLE_TYPE);
     }
+    if (currentValues.cyclegeometrydoublecircle) {
+        geometryEnabled.push(DOUBLE_CIRCLE_TYPE);
+    }
     if (currentValues.cyclegeometryslab) {
         geometryEnabled.push(SLAB_TYPE);
     }
     if (currentValues.cyclegeometrycircleslab) {
         geometryEnabled.push(CIRCLE_SLAB_TYPE);
+    }
+    if (currentValues.cyclegeometrydoublecircleslab) {
+        geometryEnabled.push(DOUBLE_CIRCLE_SLAB_TYPE);
     }
 
     const flowEnabled = [];

@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import {
     CIRCLE_SLAB_TYPE,
     CIRCLE_TYPE,
+    DOUBLE_CIRCLE_SLAB_TYPE,
+    DOUBLE_CIRCLE_TYPE,
     JUST_BARS_TYPE,
     SAMPLE_SIZE_HALF,
     SLAB_TYPE,
@@ -43,12 +45,20 @@ function getCircleWidthRatio(currentValues) {
     return currentValues.circlebarwidth / 100;
 }
 
+function getDoubleCircleWidthRatio(currentValues) {
+    return currentValues.doublecirclebarwidth / 100;
+}
+
 function getSlabWidthRatio(currentValues) {
     return currentValues.slabwidth / 100;
 }
 
 function getCircleSlabWidthRatio(currentValues) {
     return currentValues.circleslabbarwidth / 100;
+}
+
+function getDoubleCircleSlabWidthRatio(currentValues) {
+    return currentValues.doublecircleslabbarwidth / 100;
 }
 
 function setQuadPositions(positionAttribute, points) {
@@ -120,6 +130,31 @@ function buildCirclePoints(currentValues, sampleSize, index, sample, rotationAng
         new THREE.Vector2(Math.cos(theta1) * innerRadius, Math.sin(theta1) * innerRadius),
         new THREE.Vector2(Math.cos(theta1) * outerRadius, Math.sin(theta1) * outerRadius),
         new THREE.Vector2(Math.cos(theta0) * outerRadius, Math.sin(theta0) * outerRadius),
+    ];
+}
+
+function buildDoubleCirclePoints(currentValues, index, sample, rotationAngle) {
+    const localIndex = index % SAMPLE_SIZE_HALF;
+    const channelDirection = index < SAMPLE_SIZE_HALF ? -1 : 1;
+    const height = currentValues.doublecirclelengthinitial / 30 + currentValues.doublecirclelengthchangebysound * sample;
+    const radius = currentValues.doublecircleradius;
+    const thetaShift = THREE.MathUtils.degToRad(currentValues.doublecirclethetashift);
+    const thetaStep = (2 * Math.PI) / SAMPLE_SIZE_HALF;
+    const thetaCenter = Math.PI / 2 + thetaShift + rotationAngle + thetaStep * (localIndex + 0.5);
+    const thetaHalfWidth = (thetaStep * getDoubleCircleWidthRatio(currentValues)) / 2;
+    const theta0 = thetaCenter - thetaHalfWidth;
+    const theta1 = thetaCenter + thetaHalfWidth;
+    const innerRadius = currentValues.doublecircleshape === 'two-sided'
+        ? Math.max(0, radius - height)
+        : radius;
+    const outerRadius = radius + height;
+    const centerOffsetX = channelDirection * radius * 1.1;
+
+    return [
+        new THREE.Vector2(Math.cos(theta0) * innerRadius + centerOffsetX, Math.sin(theta0) * innerRadius),
+        new THREE.Vector2(Math.cos(theta1) * innerRadius + centerOffsetX, Math.sin(theta1) * innerRadius),
+        new THREE.Vector2(Math.cos(theta1) * outerRadius + centerOffsetX, Math.sin(theta1) * outerRadius),
+        new THREE.Vector2(Math.cos(theta0) * outerRadius + centerOffsetX, Math.sin(theta0) * outerRadius),
     ];
 }
 
@@ -197,10 +232,51 @@ function buildCircleSlabGeometry(currentValues, sampleSize, index, sample, rotat
     };
 }
 
+function buildDoubleCircleSlabSegment(theta0, theta1, innerRadius, thickness, centerOffsetX) {
+    const outerRadius = innerRadius + thickness;
+    return [
+        new THREE.Vector2(Math.cos(theta0) * innerRadius + centerOffsetX, Math.sin(theta0) * innerRadius),
+        new THREE.Vector2(Math.cos(theta1) * innerRadius + centerOffsetX, Math.sin(theta1) * innerRadius),
+        new THREE.Vector2(Math.cos(theta1) * outerRadius + centerOffsetX, Math.sin(theta1) * outerRadius),
+        new THREE.Vector2(Math.cos(theta0) * outerRadius + centerOffsetX, Math.sin(theta0) * outerRadius),
+    ];
+}
+
+function buildDoubleCircleSlabGeometry(currentValues, index, sample, rotationAngle) {
+    const localIndex = index % SAMPLE_SIZE_HALF;
+    const channelDirection = index < SAMPLE_SIZE_HALF ? -1 : 1;
+    const height = currentValues.doublecircleslabheightchangebysound * sample;
+    const radius = currentValues.doublecircleslabradius;
+    const thickness = Math.max(0, currentValues.doublecircleslabthickness);
+    const thetaShift = THREE.MathUtils.degToRad(currentValues.doublecircleslabthetashift);
+    const thetaStep = (2 * Math.PI) / SAMPLE_SIZE_HALF;
+    const thetaCenter = Math.PI / 2 + thetaShift + rotationAngle + thetaStep * (localIndex + 0.5);
+    const thetaHalfWidth = (thetaStep * getDoubleCircleSlabWidthRatio(currentValues)) / 2;
+    const theta0 = thetaCenter - thetaHalfWidth;
+    const theta1 = thetaCenter + thetaHalfWidth;
+    const centerOffsetX = channelDirection * radius * 1.1;
+
+    const outwardInner = Math.max(0, radius + height);
+    if (currentValues.doublecircleslabshape === 'single-sided') {
+        return {
+            primary: buildDoubleCircleSlabSegment(theta0, theta1, outwardInner, thickness, centerOffsetX),
+        };
+    }
+
+    const inwardInner = Math.max(0, radius - height - thickness);
+    return {
+        primary: buildDoubleCircleSlabSegment(theta0, theta1, outwardInner, thickness, centerOffsetX),
+        secondary: buildDoubleCircleSlabSegment(theta0, theta1, inwardInner, thickness, centerOffsetX),
+    };
+}
+
 export function buildGeometryPoints(currentValues, sampleSize, index, sample, frame, geometryType) {
     const rotationAngle = getGeometryRotation(currentValues, frame);
     if (geometryType === CIRCLE_TYPE) {
         return { primary: buildCirclePoints(currentValues, sampleSize, index, sample, rotationAngle) };
+    }
+    if (geometryType === DOUBLE_CIRCLE_TYPE) {
+        return { primary: buildDoubleCirclePoints(currentValues, index, sample, rotationAngle) };
     }
     if (geometryType === SLAB_TYPE) {
         return buildSlabGeometry(currentValues, index, sample, rotationAngle);
@@ -208,7 +284,31 @@ export function buildGeometryPoints(currentValues, sampleSize, index, sample, fr
     if (geometryType === CIRCLE_SLAB_TYPE) {
         return buildCircleSlabGeometry(currentValues, sampleSize, index, sample, rotationAngle);
     }
+    if (geometryType === DOUBLE_CIRCLE_SLAB_TYPE) {
+        return buildDoubleCircleSlabGeometry(currentValues, index, sample, rotationAngle);
+    }
     return { primary: buildJustBarsPoints(currentValues, index, sample, rotationAngle) };
+}
+
+function usesStereoPairLayout(geometryType) {
+    return geometryType === DOUBLE_CIRCLE_TYPE || geometryType === DOUBLE_CIRCLE_SLAB_TYPE;
+}
+
+export function getSampleForGeometryType(audioSamples, index, geometryType) {
+    const sampleIndex = usesStereoPairLayout(geometryType)
+        ? index
+        : getMirroredIndex(index);
+    return audioSamples[sampleIndex] ?? 0;
+}
+
+export function getSampleForGeometryPhase(audioSamples, index, geometryPhase) {
+    const fromSample = getSampleForGeometryType(audioSamples, index, geometryPhase.fromType);
+    if (geometryPhase.mix <= 0) {
+        return fromSample;
+    }
+
+    const toSample = getSampleForGeometryType(audioSamples, index, geometryPhase.toType);
+    return THREE.MathUtils.lerp(fromSample, toSample, geometryPhase.mix);
 }
 
 function createCollapsedPoints(points) {

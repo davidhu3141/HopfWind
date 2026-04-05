@@ -11,7 +11,7 @@ import { rgbTripletToCss } from '../../shared/utils/color.js';
 import { createCycleState, resetCycleState, resolveCycleTypes, updateCycleState } from './cycle.js';
 import { IDLE_COUNTDOWN_FRAMES } from './constants.js';
 import { computeEnergyBands, computeSelectedEnergy, getGeometryScale } from './energy.js';
-import { buildGeometryPoints, createBarEntry, getMirroredIndex, mixGeometrySet, setBarGeometry } from './geometry.js';
+import { buildGeometryPoints, createBarEntry, getSampleForGeometryPhase, mixGeometrySet, setBarGeometry } from './geometry.js';
 
 function parseRgbTriplet(value) {
     const channels = String(value ?? '1 1 1')
@@ -26,8 +26,10 @@ function parseRgbTriplet(value) {
 const CYCLE_SELECTION_KEYS = [
     'cyclegeometryjustbars',
     'cyclegeometrycircle',
+    'cyclegeometrydoublecircle',
     'cyclegeometryslab',
     'cyclegeometrycircleslab',
+    'cyclegeometrydoublecircleslab',
     'cycleflowswirl',
     'cycleflowsine',
     'cycleflowvortex',
@@ -319,8 +321,7 @@ export class RetroFlowWallpaper {
         this.postWarpPass.setWarpInterpolation(cyclePhases.warp.fromType, cyclePhases.warp.toType, cyclePhases.warp.mix);
 
         for (let index = 0; index < this.sampleSize; index += 1) {
-            const mirroredIndex = getMirroredIndex(index);
-            const sample = audioSamples[mirroredIndex] ?? 0;
+            const sample = getSampleForGeometryPhase(audioSamples, index, cyclePhases.geometry);
             const bar = this.bars[index];
             const primaryMaterial = bar.primary.material;
             const secondaryMaterial = bar.secondary.material;
