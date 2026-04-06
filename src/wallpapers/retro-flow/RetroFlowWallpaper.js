@@ -37,6 +37,7 @@ const CYCLE_SELECTION_KEYS = [
     'cyclewarpnone',
     'cyclewarpradial',
     'cyclewarptwist',
+    'cyclewarpgrid',
     'cyclewarpwave',
     'cyclewarpflower',
 ];
@@ -74,7 +75,7 @@ export class RetroFlowWallpaper {
 
         this.currentValues = {};
         this.idleCountdown = IDLE_COUNTDOWN_FRAMES;
-        this.energyBands = { low: 0, mid: 0, high: 0 };
+        this.energyBands = { all: 0 };
         this.selectedEnergy = 0;
         this.currentBarColor = new THREE.Color(1, 1, 1);
         this.currentBarHsl = { h: 0, s: 0, l: 1 };
@@ -150,13 +151,17 @@ export class RetroFlowWallpaper {
         this.flowPass.setSaddleFrequency(this.currentValues.flowsaddlefrequency);
         this.flowPass.setSaddleStrength(this.currentValues.flowsaddlestrength);
 
-        this.postWarpPass.enabled = this.currentValues.usepostwarp;
         this.postWarpPass.setRadialFrequency(this.currentValues.warpradialfrequency);
         this.postWarpPass.setThetaFrequency(this.currentValues.warpthetafrequency);
         this.postWarpPass.setTwistAmount(this.currentValues.warptwistamount);
         this.postWarpPass.setTwistDecay(this.currentValues.warptwistdecay);
         this.postWarpPass.setTwistRadialFrequency(this.currentValues.warptwistradialfrequency);
         this.postWarpPass.setTwistRadialAmplitude(this.currentValues.warptwistradialamplitude);
+        this.postWarpPass.setGridXFrequency(this.currentValues.warpgridxfrequency);
+        this.postWarpPass.setGridYFrequency(this.currentValues.warpgridyfrequency);
+        this.postWarpPass.setGridSharpness(this.currentValues.warpgridsharpness);
+        this.postWarpPass.setGridXAmplitude(this.currentValues.warpgridxamplitude);
+        this.postWarpPass.setGridYAmplitude(this.currentValues.warpgridyamplitude);
         this.postWarpPass.setWaveXFrequency(this.currentValues.warpwavexfrequency);
         this.postWarpPass.setWaveYFrequency(this.currentValues.warpwaveyfrequency);
         this.postWarpPass.setWaveXAmplitude(this.currentValues.warpwavexamplitude);
@@ -253,13 +258,17 @@ export class RetroFlowWallpaper {
                 'flowgridstrength',
                 'flowsaddlefrequency',
                 'flowsaddlestrength',
-                'usepostwarp',
                 'warpradialfrequency',
                 'warpthetafrequency',
                 'warptwistamount',
                 'warptwistdecay',
                 'warptwistradialfrequency',
                 'warptwistradialamplitude',
+                'warpgridxfrequency',
+                'warpgridyfrequency',
+                'warpgridsharpness',
+                'warpgridxamplitude',
+                'warpgridyamplitude',
                 'warpwavexfrequency',
                 'warpwaveyfrequency',
                 'warpwavexamplitude',

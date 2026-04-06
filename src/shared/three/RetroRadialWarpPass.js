@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass.js';
 import {
     WARP_FLOWER_TYPE,
+    WARP_GRID_TYPE,
     WARP_NONE_TYPE,
     WARP_RADIAL_TYPE,
     WARP_TWIST_TYPE,
@@ -32,6 +33,11 @@ uniform float twistAmount;
 uniform float twistDecay;
 uniform float twistRadialFrequency;
 uniform float twistRadialAmplitude;
+uniform float gridXFrequency;
+uniform float gridYFrequency;
+uniform float gridSharpness;
+uniform float gridXAmplitude;
+uniform float gridYAmplitude;
 uniform float waveXFrequency;
 uniform float waveYFrequency;
 uniform float waveXAmplitude;
@@ -60,6 +66,19 @@ vec2 twistWarp(vec2 centered) {
     return vec2(cos(sampleTheta), sin(sampleTheta)) * sampleR;
 }
 
+float gridLane(float value, float frequency, float sharpness) {
+    float wave = sin(value * frequency);
+    float magnitude = pow(abs(wave), max(sharpness, 0.0001));
+    return sign(wave) * magnitude;
+}
+
+vec2 gridWarp(vec2 centered) {
+    return centered + vec2(
+        gridLane(centered.x, gridXFrequency, gridSharpness) * gridXAmplitude,
+        gridLane(centered.y, gridYFrequency, gridSharpness) * gridYAmplitude
+    );
+}
+
 vec2 waveWarp(vec2 centered) {
     return centered + vec2(
         sin(centered.y * waveYFrequency) * waveXAmplitude,
@@ -84,6 +103,8 @@ vec2 getWarpUv(float typeId, vec2 centered) {
     } else if (typeId < 2.5) {
         warped = twistWarp(centered);
     } else if (typeId < 3.5) {
+        warped = gridWarp(centered);
+    } else if (typeId < 4.5) {
         warped = waveWarp(centered);
     } else {
         warped = flowerWarp(centered);
@@ -111,10 +132,12 @@ function getWarpTypeId(type) {
         return 1;
     case WARP_TWIST_TYPE:
         return 2;
-    case WARP_WAVE_TYPE:
+    case WARP_GRID_TYPE:
         return 3;
-    case WARP_FLOWER_TYPE:
+    case WARP_WAVE_TYPE:
         return 4;
+    case WARP_FLOWER_TYPE:
+        return 5;
     default:
         return 1;
     }
@@ -139,6 +162,11 @@ export class RetroRadialWarpPass extends Pass {
             twistDecay: { value: 1.8 },
             twistRadialFrequency: { value: 8 },
             twistRadialAmplitude: { value: 0.08 },
+            gridXFrequency: { value: 6 },
+            gridYFrequency: { value: 6 },
+            gridSharpness: { value: 0.25 },
+            gridXAmplitude: { value: 0.12 },
+            gridYAmplitude: { value: 0.12 },
             waveXFrequency: { value: 4 },
             waveYFrequency: { value: 5 },
             waveXAmplitude: { value: 0.18 },
@@ -194,6 +222,26 @@ export class RetroRadialWarpPass extends Pass {
 
     setTwistRadialAmplitude(value) {
         this.uniforms.twistRadialAmplitude.value = value;
+    }
+
+    setGridXFrequency(value) {
+        this.uniforms.gridXFrequency.value = value;
+    }
+
+    setGridYFrequency(value) {
+        this.uniforms.gridYFrequency.value = value;
+    }
+
+    setGridSharpness(value) {
+        this.uniforms.gridSharpness.value = value;
+    }
+
+    setGridXAmplitude(value) {
+        this.uniforms.gridXAmplitude.value = value;
+    }
+
+    setGridYAmplitude(value) {
+        this.uniforms.gridYAmplitude.value = value;
     }
 
     setWaveXFrequency(value) {

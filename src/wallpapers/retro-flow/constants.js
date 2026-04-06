@@ -16,6 +16,7 @@ export const DEFAULT_FLOW_TYPE = FLOW_SWIRL_TYPE;
 export const WARP_RADIAL_TYPE = 'radial';
 export const WARP_TWIST_TYPE = 'twist';
 export const WARP_WAVE_TYPE = 'wave';
+export const WARP_GRID_TYPE = 'grid';
 export const WARP_FLOWER_TYPE = 'flower';
 export const WARP_NONE_TYPE = 'none';
 export const DEFAULT_WARP_TYPE = WARP_RADIAL_TYPE;

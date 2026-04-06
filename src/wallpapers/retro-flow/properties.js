@@ -65,13 +65,30 @@ export const retroFlowProperties = [
     bool('usecustomimage', 'Use Custom Image', false),
     file('customimage', 'Custom Image', '', { accept: 'image/*' }),
 
-    group('barsgroup', 'Bars Group'),
-    slider('geometrythetashift', 'Theta Shift', 0, 359, 0),
-    slider('geometryrotationhz', 'Geometry Rotation Speed (Hz)', 0, 1, 0.05, { step: 0.01, fraction: true, precision: 2 }),
-    bool('geometryreverse', 'Reverse Rotation', false),
-    slider('geometrysizebyenergy', 'Size By Energy', -700, 700, 0, { step: 0.1, fraction: true, precision: 1 }),
-    slider('_2doffsetx', '2D Offset X', -1, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
-    slider('_2doffsety', '2D Offset Y', -1, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
+    group('clock', 'Clock'),
+    bool('showclock', 'Show Clock', true),
+    slider('clocksizea', 'Clock Size A', 0.5, 18, 3, { step: 0.1, fraction: true, precision: 1 }),
+    slider('clocksizeb', 'Clock Size B', 0.5, 12, 1, { step: 0.1, fraction: true, precision: 1 }),
+    slider('clockpositionx', 'Clock Position X', 0, 100, 50),
+    slider('clockpositiony', 'Clock Position Y', 0, 100, 50),
+    bool('_24hourclock', '24 Hour Clock', false),
+    color('clockcolor', 'Clock Color', '1 1 1'),
+    color('clockshadowcolor', 'Clock Shadow Color', '0 0 0'),
+    color('clockbackdropcolor', 'Clock Backdrop Color', '0 0 0'),
+    slider('clockbackdropopacity', 'Clock Backdrop Opacity', 0, 1, 0.6, {
+        step: 0.01,
+        fraction: true,
+        precision: 2,
+    }),
+
+    group('colors', 'Colors'),
+    color('backgroundcolor', 'Background Color', '0 0 0'),
+    color('barcolor', 'Bar Color', '1 1 1'),
+    slider('huechangebysound', 'Hue By Sound', -2, 2, 0, { step: 0.01, fraction: true, precision: 2 }),
+    slider('saturationchangebysound', 'Saturation By Sound', -10, 10, 0, { step: 0.01, fraction: true, precision: 2 }),
+    slider('lightnesschangebysound', 'Lightness By Sound', -10, 10, 0, { step: 0.01, fraction: true, precision: 2 }),
+    slider('opacityinitial', 'Opacity Initial', 0, 1, 1, { step: 0.01, fraction: true, precision: 2 }),
+    slider('opacitychangebysound', 'Opacity By Sound', 0, 5, 1, { step: 0.01, fraction: true, precision: 2 }),
 
     group('cycle', 'Cycle'),
     slider('cycleinterval', 'Cycle Interval (sec)', 1, 60, 8, { step: 0.1, fraction: true, precision: 1 }),
@@ -89,10 +106,19 @@ export const retroFlowProperties = [
     bool('cyclewarpnone', 'Cycle Warp None', false),
     bool('cyclewarpradial', 'Cycle Warp Radial', true),
     bool('cyclewarptwist', 'Cycle Warp Twist', false),
+    bool('cyclewarpgrid', 'Cycle Warp Grid', false),
     bool('cyclewarpwave', 'Cycle Warp Wave', false),
     bool('cyclewarpflower', 'Cycle Warp Flower', false),
 
-    group('justbars', 'Just Bars'),
+    group('barsgroup', 'Bars'),
+    slider('geometrythetashift', 'Theta Shift', 0, 359, 0),
+    slider('geometryrotationhz', 'Rotation Speed (Hz)', 0, 1, 0.05, { step: 0.01, fraction: true, precision: 2 }),
+    bool('geometryreverse', 'Reverse Rotation', false),
+    slider('geometrysizebyenergy', 'Size By Energy', -700, 700, 0, { step: 0.1, fraction: true, precision: 1 }),
+    slider('_2doffsetx', '2D Offset X', -1, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
+    slider('_2doffsety', '2D Offset Y', -1, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
+
+    group('justbars', 'Bars: Just Bars'),
     combo('justbarsshape', 'Just Bars Shape', 'shapeE', [
         { label: 'Single Up / Down', value: 'shapeA' },
         { label: 'Single Down / Up', value: 'shapeB' },
@@ -120,7 +146,7 @@ export const retroFlowProperties = [
         precision: 2,
     }),
 
-    group('circle', 'Circle'),
+    group('circle', 'Bars: Circle'),
     combo('circleshape', 'Circle Shape', 'two-sided', [
         { label: 'Single-Sided', value: 'single-sided' },
         { label: 'Two-Sided', value: 'two-sided' },
@@ -145,7 +171,7 @@ export const retroFlowProperties = [
         precision: 2,
     }),
 
-    group('doublecircle', 'Double Circle'),
+    group('doublecircle', 'Bars: Double Circle'),
     combo('doublecircleshape', 'Double Circle Shape', 'two-sided', [
         { label: 'Single-Sided', value: 'single-sided' },
         { label: 'Two-Sided', value: 'two-sided' },
@@ -176,7 +202,7 @@ export const retroFlowProperties = [
     }),
     slider('doublecircleminorthetashift', 'Minor Theta Shift', 0, 359, 0),
 
-    group('slab', 'Slab'),
+    group('slab', 'Bars: Slab'),
     combo('slabshape', 'Slab Shape', 'shapeE', [
         { label: 'Single Up / Down', value: 'shapeA' },
         { label: 'Single Down / Up', value: 'shapeB' },
@@ -209,7 +235,7 @@ export const retroFlowProperties = [
         precision: 2,
     }),
 
-    group('circleslab', 'Circle-Slab'),
+    group('circleslab', 'Bars: Circle-Slab'),
     combo('circleslabshape', 'Circle-Slab Shape', 'two-sided', [
         { label: 'Single-Sided', value: 'single-sided' },
         { label: 'Two-Sided', value: 'two-sided' },
@@ -234,7 +260,7 @@ export const retroFlowProperties = [
         precision: 2,
     }),
 
-    group('doublecircleslab', 'Double Circle-Slab'),
+    group('doublecircleslab', 'Bars: Double Circle-Slab'),
     combo('doublecircleslabshape', 'Double Circle-Slab Shape', 'two-sided', [
         { label: 'Single-Sided', value: 'single-sided' },
         { label: 'Two-Sided', value: 'two-sided' },
@@ -265,82 +291,56 @@ export const retroFlowProperties = [
     }),
     slider('doublecircleslabminorthetashift', 'Minor Theta Shift', 0, 359, 0),
 
-    group('colors', 'Bar Colors'),
-    color('backgroundcolor', 'Background Color', '0 0 0'),
-    color('barcolor', 'Bar Color', '1 1 1'),
-    slider('huechangebysound', 'Hue By Sound', -2, 2, 0, { step: 0.01, fraction: true, precision: 2 }),
-    slider('saturationchangebysound', 'Saturation By Sound', -10, 10, 0, { step: 0.01, fraction: true, precision: 2 }),
-    slider('lightnesschangebysound', 'Lightness By Sound', -10, 10, 0, { step: 0.01, fraction: true, precision: 2 }),
-    slider('opacityinitial', 'Opacity Initial', 0, 1, 1, { step: 0.01, fraction: true, precision: 2 }),
-    slider('opacitychangebysound', 'Opacity By Sound', 0, 5, 1, { step: 0.01, fraction: true, precision: 2 }),
-
     group('flow', 'Flow'),
     bool('antialiasingwillcauseblur', 'Allow Blur Filter', false),
     slider('fade', 'Trail Fade', 0, 32, 1, { step: 0.1, fraction: true, precision: 2 }),
     slider('flowvelocity', 'Flow Velocity', 0, 100, 1, { step: 0.1, fraction: true, precision: 2 }),
     slider('flowopacitylimit', 'Flow Opacity Limit', 0, 1, 0.9, { step: 0.01, fraction: true, precision: 2 }),
 
-    group('flowswirl', 'Flow Swirl'),
+    group('flowswirl', 'Flow: Swirl'),
     slider('flowfieldmix', 'Swirl Blend', 0, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
     slider('flowswirldensity', 'Swirl Density', 10, 100, 55, { step: 0.1, fraction: true, precision: 1 }),
 
-    group('flowsine', 'Flow Sine'),
+    group('flowsine', 'Flow: Sine'),
     slider('flowsinexfrequency', 'Sine X Frequency', 0, 8, 1.2, { step: 0.01, fraction: true, precision: 2 }),
     slider('flowsineyfrequency', 'Sine Y Frequency', 0, 8, 1.2, { step: 0.01, fraction: true, precision: 2 }),
     slider('flowsinestrength', 'Sine Strength', 0, 2, 0.35, { step: 0.01, fraction: true, precision: 2 }),
 
-    group('flowgrid', 'Flow Grid'),
+    group('flowgrid', 'Flow: Grid'),
     slider('flowgridxfrequency', 'Grid X Frequency', 0, 8, 1.7, { step: 0.01, fraction: true, precision: 2 }),
     slider('flowgridyfrequency', 'Grid Y Frequency', 0, 8, 1.7, { step: 0.01, fraction: true, precision: 2 }),
     slider('flowgridsharpness', 'Grid Sharpness', 0.05, 2, 0.22, { step: 0.01, fraction: true, precision: 2 }),
     slider('flowgridstrength', 'Grid Strength', 0, 2, 0.45, { step: 0.01, fraction: true, precision: 2 }),
 
-    group('flowsaddle', 'Flow Saddle'),
+    group('flowsaddle', 'Flow: Saddle'),
     slider('flowsaddlefrequency', 'Saddle Frequency', 0, 8, 1.6, { step: 0.01, fraction: true, precision: 2 }),
     slider('flowsaddlestrength', 'Saddle Strength', 0, 2, 0.5, { step: 0.01, fraction: true, precision: 2 }),
 
-    group('warp', 'Warp'),
-    bool('usepostwarp', 'Use Post Warp', true),
-
-    group('warpradial', 'Warp Radial'),
+    group('warpradial', 'Warp: Radial'),
     slider('warpradialfrequency', 'Radial Frequency', 0, 40, 27, { step: 0.1, fraction: true, precision: 1 }),
     slider('warpthetafrequency', 'Theta Frequency', 0, 40, 27, { step: 0.1, fraction: true, precision: 1 }),
 
-    group('warptwist', 'Warp Twist'),
+    group('warptwist', 'Warp: Twist'),
     slider('warptwistamount', 'Twist Amount', 0, 3, 0.9, { step: 0.01, fraction: true, precision: 2 }),
     slider('warptwistdecay', 'Twist Decay', 0, 5, 1.8, { step: 0.01, fraction: true, precision: 2 }),
     slider('warptwistradialfrequency', 'Twist Radial Frequency', 0, 20, 8, { step: 0.1, fraction: true, precision: 1 }),
     slider('warptwistradialamplitude', 'Twist Radial Amplitude', 0, 1, 0.08, { step: 0.01, fraction: true, precision: 2 }),
 
-    group('warpwave', 'Warp Wave'),
+    group('warpgrid', 'Warp: Grid'),
+    slider('warpgridxfrequency', 'Grid X Frequency', 0, 60, 6, { step: 0.1, fraction: true, precision: 1 }),
+    slider('warpgridyfrequency', 'Grid Y Frequency', 0, 60, 6, { step: 0.1, fraction: true, precision: 1 }),
+    slider('warpgridsharpness', 'Grid Sharpness', 0.05, 2, 0.25, { step: 0.01, fraction: true, precision: 2 }),
+    slider('warpgridxamplitude', 'Grid X Amplitude', 0, 1, 0.12, { step: 0.01, fraction: true, precision: 2 }),
+    slider('warpgridyamplitude', 'Grid Y Amplitude', 0, 1, 0.12, { step: 0.01, fraction: true, precision: 2 }),
+
+    group('warpwave', 'Warp: Wave'),
     slider('warpwavexfrequency', 'Wave X Frequency', 0, 20, 4, { step: 0.1, fraction: true, precision: 1 }),
     slider('warpwaveyfrequency', 'Wave Y Frequency', 0, 20, 5, { step: 0.1, fraction: true, precision: 1 }),
     slider('warpwavexamplitude', 'Wave X Amplitude', 0, 1, 0.18, { step: 0.01, fraction: true, precision: 2 }),
     slider('warpwaveyamplitude', 'Wave Y Amplitude', 0, 1, 0.12, { step: 0.01, fraction: true, precision: 2 }),
 
-    group('warpflower', 'Warp Flower'),
+    group('warpflower', 'Warp: Flower'),
     slider('warpflowerpetals', 'Flower Petals', 0, 20, 6, { step: 0.1, fraction: true, precision: 1 }),
     slider('warpfloweramplitude', 'Flower Amplitude', 0, 1, 0.22, { step: 0.01, fraction: true, precision: 2 }),
     slider('warpflowerdecay', 'Flower Decay', 0, 5, 0.9, { step: 0.01, fraction: true, precision: 2 }),
-
-    group('energy', 'Energy'),
-    bool('useenergylow', 'Use Low Energy', true),
-    bool('useenergymid', 'Use Mid Energy', true),
-    bool('useenergyhigh', 'Use High Energy', true),
-
-    group('clock', 'Clock'),
-    bool('showclock', 'Show Clock', true),
-    slider('clocksizea', 'Clock Size A', 0.5, 18, 3, { step: 0.1, fraction: true, precision: 1 }),
-    slider('clocksizeb', 'Clock Size B', 0.5, 12, 1, { step: 0.1, fraction: true, precision: 1 }),
-    slider('clockpositionx', 'Clock Position X', 0, 100, 50),
-    slider('clockpositiony', 'Clock Position Y', 0, 100, 50),
-    bool('_24hourclock', '24 Hour Clock', false),
-    color('clockcolor', 'Clock Color', '1 1 1'),
-    color('clockshadowcolor', 'Clock Shadow Color', '0 0 0'),
-    color('clockbackdropcolor', 'Clock Backdrop Color', '0 0 0'),
-    slider('clockbackdropopacity', 'Clock Backdrop Opacity', 0, 1, 0.6, {
-        step: 0.01,
-        fraction: true,
-        precision: 2,
-    }),
 ];
