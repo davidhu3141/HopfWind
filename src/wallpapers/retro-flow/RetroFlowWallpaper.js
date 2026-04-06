@@ -207,6 +207,8 @@ export class RetroFlowWallpaper {
         this.flowPass.setShadeFront(false);
         this.flowPass.setSwirlBlend(this.currentValues.flowfieldmix);
         this.flowPass.setSwirlDensity(this.currentValues.flowswirldensity);
+        this.flowPass.setSwirlTheta(this.currentValues.flowswirltheta);
+        this.flowPass.setSwirlStrength(this.currentValues.flowswirlstrength);
         this.flowPass.setSineXFrequency(this.currentValues.flowsinexfrequency);
         this.flowPass.setSineYFrequency(this.currentValues.flowsineyfrequency);
         this.flowPass.setSineStrength(this.currentValues.flowsinestrength);
@@ -359,6 +361,8 @@ export class RetroFlowWallpaper {
                 'flowopacitylimit',
                 'flowfieldmix',
                 'flowswirldensity',
+                'flowswirltheta',
+                'flowswirlstrength',
                 'flowsinexfrequency',
                 'flowsineyfrequency',
                 'flowsinestrength',
