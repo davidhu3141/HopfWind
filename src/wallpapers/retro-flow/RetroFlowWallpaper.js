@@ -34,6 +34,7 @@ const CYCLE_SELECTION_KEYS = [
     'cycleflowsine',
     'cycleflowgrid',
     'cycleflowsaddle',
+    'cyclerandomcolor',
     'cyclewarpnone',
     'cyclewarpradial',
     'cyclewarptwist',
@@ -43,6 +44,64 @@ const CYCLE_SELECTION_KEYS = [
 ];
 
 const CYCLE_TIMING_KEYS = ['cycleinterval', 'cycleinterpolateduration'];
+const MIN_RANDOM_COLOR_SATURATION = 0.06;
+const MAX_RANDOM_COLOR_SATURATION = 0.8;
+const MIN_RANDOM_COLOR_LIGHTNESS = 0.05;
+const MAX_RANDOM_COLOR_LIGHTNESS = 0.7;
+const LARGE_HUE_DIFF_THRESHOLD = 0.25;
+
+function cloneHsl(hsl) {
+    return { h: hsl.h, s: hsl.s, l: hsl.l };
+}
+
+function makeRandomCycleHsl() {
+    return {
+        h: Math.random(),
+        s: MIN_RANDOM_COLOR_SATURATION + Math.random() * (MAX_RANDOM_COLOR_SATURATION - MIN_RANDOM_COLOR_SATURATION),
+        l: MIN_RANDOM_COLOR_LIGHTNESS + Math.random() * (MAX_RANDOM_COLOR_LIGHTNESS - MIN_RANDOM_COLOR_LIGHTNESS),
+    };
+}
+
+function lerpHue(fromHue, toHue, mix) {
+    let delta = toHue - fromHue;
+    if (delta > 0.5) {
+        delta -= 1;
+    } else if (delta < -0.5) {
+        delta += 1;
+    }
+    return (fromHue + delta * mix + 1) % 1;
+}
+
+function getHueDiff(fromHue, toHue) {
+    return Math.abs((((toHue - fromHue + 0.5) % 1) + 1) % 1 - 0.5);
+}
+
+function interpolateCycleHsl(fromHsl, toHsl, mix) {
+    if (getHueDiff(fromHsl.h, toHsl.h) <= LARGE_HUE_DIFF_THRESHOLD) {
+        return {
+            h: lerpHue(fromHsl.h, toHsl.h, mix),
+            s: THREE.MathUtils.lerp(fromHsl.s, toHsl.s, mix),
+            l: THREE.MathUtils.lerp(fromHsl.l, toHsl.l, mix),
+        };
+    }
+
+    const pivotLightness = 0.5 * (fromHsl.l + toHsl.l);
+    if (mix <= 0.5) {
+        const localMix = mix / 0.5;
+        return {
+            h: fromHsl.h,
+            s: THREE.MathUtils.lerp(fromHsl.s, 0, localMix),
+            l: THREE.MathUtils.lerp(fromHsl.l, pivotLightness, localMix),
+        };
+    }
+
+    const localMix = (mix - 0.5) / 0.5;
+    return {
+        h: toHsl.h,
+        s: THREE.MathUtils.lerp(0, toHsl.s, localMix),
+        l: THREE.MathUtils.lerp(pivotLightness, toHsl.l, localMix),
+    };
+}
 
 function getBarsGroupRotation(currentValues, frame) {
     const direction = currentValues.geometryreverse ? -1 : 1;
@@ -79,6 +138,13 @@ export class RetroFlowWallpaper {
         this.selectedEnergy = 0;
         this.currentBarColor = new THREE.Color(1, 1, 1);
         this.currentBarHsl = { h: 0, s: 0, l: 1 };
+        this.colorCycle = {
+            currentHsl: cloneHsl(this.currentBarHsl),
+            fromHsl: cloneHsl(this.currentBarHsl),
+            targetHsl: cloneHsl(this.currentBarHsl),
+            fromToken: 0,
+            toToken: 0,
+        };
         this.cycleState = createCycleState();
         this.resolvedCycleTypes = resolveCycleTypes({});
         this.lastFrame = 0;
@@ -171,6 +237,46 @@ export class RetroFlowWallpaper {
         this.postWarpPass.setFlowerDecay(this.currentValues.warpflowerdecay);
     }
 
+    resetColorCycle() {
+        const baseHsl = cloneHsl(this.currentBarHsl);
+        this.colorCycle = {
+            currentHsl: baseHsl,
+            fromHsl: cloneHsl(baseHsl),
+            targetHsl: cloneHsl(baseHsl),
+            fromToken: 0,
+            toToken: 0,
+        };
+    }
+
+    getActiveBaseHsl(colorPhase) {
+        if (!this.currentValues.cyclerandomcolor) {
+            this.resetColorCycle();
+            return this.currentBarHsl;
+        }
+
+        if (colorPhase.fromToken === colorPhase.toToken) {
+            return this.colorCycle.currentHsl;
+        }
+
+        if (this.colorCycle.fromToken !== colorPhase.fromToken || this.colorCycle.toToken !== colorPhase.toToken) {
+            this.colorCycle.fromToken = colorPhase.fromToken;
+            this.colorCycle.toToken = colorPhase.toToken;
+            this.colorCycle.fromHsl = cloneHsl(this.colorCycle.currentHsl);
+            this.colorCycle.targetHsl = makeRandomCycleHsl();
+        }
+
+        const nextHsl = {
+            ...interpolateCycleHsl(this.colorCycle.fromHsl, this.colorCycle.targetHsl, colorPhase.mix),
+        };
+
+        if (colorPhase.mix >= 1) {
+            this.colorCycle.currentHsl = cloneHsl(this.colorCycle.targetHsl);
+            return this.colorCycle.currentHsl;
+        }
+
+        return nextHsl;
+    }
+
     updateCanvas() {
         const metrics = this.canvas.resize({
             pixelated: this.currentValues.pixelated * 2,
@@ -233,6 +339,10 @@ export class RetroFlowWallpaper {
             const nextHsl = { h: 0, s: 0, l: 0 };
             this.currentBarColor.getHSL(nextHsl);
             this.currentBarHsl = nextHsl;
+            this.resetColorCycle();
+        }
+        if (hasChanged('cyclerandomcolor')) {
+            this.resetColorCycle();
         }
 
         if (hasChanged('backgroundcolor', 'usecustomimage', 'customimage')) {
@@ -306,15 +416,15 @@ export class RetroFlowWallpaper {
         this.updateCanvas();
     }
 
-    colorForBar(value) {
-        const hue = (this.currentBarHsl.h * 360 + value * 9000 * this.currentValues.huechangebysound) % 360;
+    colorForBar(baseHsl, value) {
+        const hue = (baseHsl.h * 360 + value * 9000 * this.currentValues.huechangebysound) % 360;
         const saturation = THREE.MathUtils.clamp(
-            this.currentBarHsl.s * 100 + value * 100 * this.currentValues.saturationchangebysound,
+            baseHsl.s * 100 + value * 100 * this.currentValues.saturationchangebysound,
             0,
             100,
         );
         const lightness = THREE.MathUtils.clamp(
-            this.currentBarHsl.l * 100 + value * 100 * this.currentValues.lightnesschangebysound,
+            baseHsl.l * 100 + value * 100 * this.currentValues.lightnesschangebysound,
             0,
             100,
         );
@@ -347,6 +457,7 @@ export class RetroFlowWallpaper {
         this.barsGroup.scale.setScalar(getGeometryScale(this.currentValues, this.selectedEnergy));
         this.barsGroup.rotation.z = getBarsGroupRotation(this.currentValues, frame);
         const cyclePhases = updateCycleState(this.cycleState, this.resolvedCycleTypes, this.currentValues, frame);
+        const activeBaseHsl = this.getActiveBaseHsl(cyclePhases.color);
         this.flowPass.setFlowInterpolation(cyclePhases.flow.fromType, cyclePhases.flow.toType, cyclePhases.flow.mix);
         this.postWarpPass.setWarpInterpolation(cyclePhases.warp.fromType, cyclePhases.warp.toType, cyclePhases.warp.mix);
 
@@ -356,7 +467,7 @@ export class RetroFlowWallpaper {
             const primaryMaterial = bar.primary.material;
             const secondaryMaterial = bar.secondary.material;
 
-            const nextColor = this.colorForBar(sample);
+            const nextColor = this.colorForBar(activeBaseHsl, sample);
             primaryMaterial.color.copy(nextColor);
             secondaryMaterial.color.copy(nextColor);
             const opacity = THREE.MathUtils.clamp(

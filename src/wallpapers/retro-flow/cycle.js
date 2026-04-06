@@ -35,6 +35,7 @@ function buildCycleStateSignature(resolved) {
         resolved.geometry.enabledTypes.join('|'),
         resolved.flow.enabledTypes.join('|'),
         resolved.warp.enabledTypes.join('|'),
+        resolved.color.enabled ? 'color-on' : 'color-off',
     ].join('::');
 }
 
@@ -54,8 +55,20 @@ function createStaticPhase(state) {
     };
 }
 
+function createColorPhase(state) {
+    return {
+        fromToken: state.currentToken,
+        toToken: state.currentToken,
+        mix: 0,
+    };
+}
+
 function getEligibleDomains(resolved) {
-    return ['geometry', 'flow', 'warp'].filter((domain) => resolved[domain].enabledTypes.length > 1);
+    const domains = ['geometry', 'flow', 'warp'].filter((domain) => resolved[domain].enabledTypes.length > 1);
+    if (resolved.color.enabled) {
+        domains.push('color');
+    }
+    return domains;
 }
 
 export function resolveCycleTypes(currentValues) {
@@ -129,6 +142,9 @@ export function resolveCycleTypes(currentValues) {
             fallbackUsed: warpEnabled.length === 0,
             defaultType: DEFAULT_WARP_TYPE,
         },
+        color: {
+            enabled: Boolean(currentValues.cyclerandomcolor),
+        },
     };
 }
 
@@ -137,6 +153,11 @@ export function createCycleState(resolved = null) {
         geometry: createDomainState(DEFAULT_GEOMETRY_TYPE),
         flow: createDomainState(DEFAULT_FLOW_TYPE),
         warp: createDomainState(DEFAULT_WARP_TYPE),
+        color: {
+            currentToken: 0,
+            targetToken: 0,
+            transitionFromToken: 0,
+        },
         activeDomain: '',
         transitionStartSeconds: 0,
         nextSwitchSeconds: Infinity,
@@ -167,6 +188,10 @@ export function resetCycleState(state, resolved, intervalSeconds, nowSeconds) {
         domain.transitionFromType = nextType;
         domain.fallbackUsed = resolvedDomain.fallbackUsed;
     }
+
+    state.color.currentToken = 0;
+    state.color.targetToken = 0;
+    state.color.transitionFromToken = 0;
 }
 
 export function updateCycleState(state, resolved, currentValues, frame) {
@@ -183,6 +208,7 @@ export function updateCycleState(state, resolved, currentValues, frame) {
         geometry: createStaticPhase(state.geometry),
         flow: createStaticPhase(state.flow),
         warp: createStaticPhase(state.warp),
+        color: createColorPhase(state.color),
     };
 
     if (state.activeDomain) {
@@ -192,17 +218,39 @@ export function updateCycleState(state, resolved, currentValues, frame) {
             : THREE.MathUtils.clamp((nowSeconds - state.transitionStartSeconds) / durationSeconds, 0, 1);
 
         if (mix >= 1) {
-            domain.currentType = domain.targetType;
-            domain.transitionFromType = domain.targetType;
+            if (state.activeDomain === 'color') {
+                phases.color = {
+                    fromToken: domain.transitionFromToken,
+                    toToken: domain.targetToken,
+                    mix: 1,
+                };
+                domain.currentToken = domain.targetToken;
+                domain.transitionFromToken = domain.targetToken;
+                state.activeDomain = '';
+                state.transitionStartSeconds = nowSeconds;
+                state.nextSwitchSeconds = nowSeconds + intervalSeconds;
+                return phases;
+            } else {
+                domain.currentType = domain.targetType;
+                domain.transitionFromType = domain.targetType;
+            }
             state.activeDomain = '';
             state.transitionStartSeconds = nowSeconds;
             state.nextSwitchSeconds = nowSeconds + intervalSeconds;
         } else {
-            phases[state.activeDomain] = {
-                fromType: domain.transitionFromType,
-                toType: domain.targetType,
-                mix,
-            };
+            if (state.activeDomain === 'color') {
+                phases.color = {
+                    fromToken: domain.transitionFromToken,
+                    toToken: domain.targetToken,
+                    mix,
+                };
+            } else {
+                phases[state.activeDomain] = {
+                    fromType: domain.transitionFromType,
+                    toType: domain.targetType,
+                    mix,
+                };
+            }
             return phases;
         }
     }
@@ -210,6 +258,7 @@ export function updateCycleState(state, resolved, currentValues, frame) {
     phases.geometry = createStaticPhase(state.geometry);
     phases.flow = createStaticPhase(state.flow);
     phases.warp = createStaticPhase(state.warp);
+    phases.color = createColorPhase(state.color);
 
     const eligibleDomains = getEligibleDomains(resolved);
     if (eligibleDomains.length === 0 || nowSeconds < state.nextSwitchSeconds) {
@@ -218,6 +267,31 @@ export function updateCycleState(state, resolved, currentValues, frame) {
 
     const domainName = eligibleDomains[Math.floor(Math.random() * eligibleDomains.length)];
     const domain = state[domainName];
+
+    if (domainName === 'color') {
+        const nextToken = domain.currentToken + 1;
+        domain.transitionFromToken = domain.currentToken;
+        domain.targetToken = nextToken;
+        state.activeDomain = domainName;
+        state.transitionStartSeconds = nowSeconds;
+
+        if (durationSeconds <= 0) {
+            domain.currentToken = nextToken;
+            domain.transitionFromToken = nextToken;
+            state.activeDomain = '';
+            state.nextSwitchSeconds = nowSeconds + intervalSeconds;
+            phases.color = createColorPhase(domain);
+            return phases;
+        }
+
+        phases.color = {
+            fromToken: domain.transitionFromToken,
+            toToken: nextToken,
+            mix: 0,
+        };
+        return phases;
+    }
+
     const enabledTypes = resolved[domainName].enabledTypes;
     const nextType = chooseNextType(enabledTypes, domain.currentType);
 

@@ -103,6 +103,7 @@ export const retroFlowProperties = [
     bool('cycleflowsine', 'Cycle Flow Sine', false),
     bool('cycleflowgrid', 'Cycle Flow Grid', false),
     bool('cycleflowsaddle', 'Cycle Flow Saddle', false),
+    bool('cyclerandomcolor', 'Cycle Random Color', false),
     bool('cyclewarpnone', 'Cycle Warp None', false),
     bool('cyclewarpradial', 'Cycle Warp Radial', true),
     bool('cyclewarptwist', 'Cycle Warp Twist', false),
