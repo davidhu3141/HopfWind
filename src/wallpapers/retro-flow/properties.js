@@ -52,15 +52,6 @@ const combo = (id, label, defaultValue, options, extra = {}) => ({
     condition: extra.condition,
 });
 
-const BAR_TYPE_OPTIONS = [
-    { label: 'Just Bars', value: 'just-bars' },
-    { label: 'Circle', value: 'circle' },
-    { label: 'Double Circle', value: 'double-circle' },
-    { label: 'Slab', value: 'slab' },
-    { label: 'Circle-Slab', value: 'circle-slab' },
-    { label: 'Double Circle-Slab', value: 'double-circle-slab' },
-];
-
 const FLOW_TYPE_OPTIONS = [
     { label: 'Swirl', value: 'swirl' },
     { label: 'Grid', value: 'grid' },
@@ -127,7 +118,6 @@ export const retroFlowProperties = [
     bool('cyclegeometryslab', 'Cycle Bar Slab', false),
     bool('cyclegeometrycircleslab', 'Cycle Bar Circle-Slab', false),
     bool('cyclegeometrydoublecircleslab', 'Cycle Bar Double Circle-Slab', false),
-    bool('cyclegeometrycustom', 'Cycle Bar Custom', false),
     bool('cycleflowswirl', 'Cycle Flow Swirl', true),
     bool('cycleflowgrid', 'Cycle Flow Grid', false),
     bool('cycleflowsaddle', 'Cycle Flow Saddle', false),
@@ -323,15 +313,6 @@ export const retroFlowProperties = [
         precision: 2,
     }),
     slider('doublecircleslabminorthetashift', 'Minor Theta Shift', 0, 359, 0),
-
-    group('custombars', 'Bars: Custom'),
-    combo('custombarsfromtype', 'From Type', 'circle', BAR_TYPE_OPTIONS),
-    combo('custombarstotype', 'To Type', 'slab', BAR_TYPE_OPTIONS),
-    slider('custombarsmix', 'Mix', 0, 1, 0.5, {
-        step: 0.01,
-        fraction: true,
-        precision: 2,
-    }),
 
     group('flow', 'Flow'),
     bool('antialiasingwillcauseblur', 'Allow Blur Filter', false),

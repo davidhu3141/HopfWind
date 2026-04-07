@@ -7,7 +7,6 @@ export const DOUBLE_CIRCLE_TYPE = 'double-circle';
 export const SLAB_TYPE = 'slab';
 export const CIRCLE_SLAB_TYPE = 'circle-slab';
 export const DOUBLE_CIRCLE_SLAB_TYPE = 'double-circle-slab';
-export const CUSTOM_GEOMETRY_TYPE = 'custom';
 export const DEFAULT_GEOMETRY_TYPE = CIRCLE_TYPE;
 export const FLOW_SWIRL_TYPE = 'swirl';
 export const FLOW_GRID_TYPE = 'grid';

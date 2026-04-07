@@ -30,7 +30,6 @@ const CYCLE_SELECTION_KEYS = [
     'cyclegeometryslab',
     'cyclegeometrycircleslab',
     'cyclegeometrydoublecircleslab',
-    'cyclegeometrycustom',
     'cycleflowswirl',
     'cycleflowgrid',
     'cycleflowsaddle',

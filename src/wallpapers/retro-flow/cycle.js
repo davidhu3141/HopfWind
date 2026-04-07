@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import {
     CIRCLE_SLAB_TYPE,
     CIRCLE_TYPE,
-    CUSTOM_GEOMETRY_TYPE,
     DEFAULT_FLOW_TYPE,
     DEFAULT_GEOMETRY_TYPE,
     DEFAULT_WARP_TYPE,
@@ -96,10 +95,6 @@ export function resolveCycleTypes(currentValues) {
     if (currentValues.cyclegeometrydoublecircleslab) {
         geometryEnabled.push(DOUBLE_CIRCLE_SLAB_TYPE);
     }
-    if (currentValues.cyclegeometrycustom) {
-        geometryEnabled.push(CUSTOM_GEOMETRY_TYPE);
-    }
-
     const flowEnabled = [];
     if (currentValues.cycleflowswirl) {
         flowEnabled.push(FLOW_SWIRL_TYPE);

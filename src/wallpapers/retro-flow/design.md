@@ -25,7 +25,7 @@ Implemented settings:
 - `Cycle Bar ...` toggles which bar geometry types can be selected.
 - `Cycle Flow ...` toggles which flow types can be selected.
 - `Cycle Warp ...` toggles which warp types can be selected.
-- `Cycle ... Custom` toggles each domain's user-defined mix type.
+- `Cycle Flow Custom` and `Cycle Warp Custom` toggle user-defined mix types.
 
 At each switch time, RetroFlow randomly chooses one eligible domain to change:
 
@@ -55,8 +55,6 @@ Geometry interpolation:
 - Geometry modes produce local quad point sets.
 - Transitioning geometry linearly interpolates quad vertices.
 - If one side has no secondary quad, the missing quad is represented as a degenerate quad before interpolation.
-- `Custom` geometry builds two concrete geometry modes and mixes their quad vertices by `Mix`.
-
 Flow interpolation:
 
 - All flow types live in one GLSL shader.
@@ -112,7 +110,6 @@ Implemented geometry modes:
 - `Slab`
 - `Circle-Slab`
 - `Double Circle-Slab`
-- `Custom`
 
 Common behavior:
 
@@ -152,12 +149,6 @@ Common behavior:
 
 - Stereo-pair version of Circle-Slab.
 - Includes minor theta shift and center distance ratio.
-
-`Custom`:
-
-- Selects two concrete bar geometry types.
-- `Mix` controls interpolation between those two types.
-- The selectable source/target types exclude `Custom` to avoid recursive definitions.
 
 ## Flow Types
 
