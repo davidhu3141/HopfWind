@@ -7,6 +7,7 @@ import {
     DEFAULT_WARP_TYPE,
     DOUBLE_CIRCLE_SLAB_TYPE,
     DOUBLE_CIRCLE_TYPE,
+    FLOW_DUAL_CORE_TYPE,
     FLOW_GRID_TYPE,
     FLOW_POLYGON_TYPE,
     FLOW_SADDLE_TYPE,
@@ -105,6 +106,9 @@ export function resolveCycleTypes(currentValues) {
     }
     if (currentValues.cycleflowpolygon) {
         flowEnabled.push(FLOW_POLYGON_TYPE);
+    }
+    if (currentValues.cycleflowdualcore) {
+        flowEnabled.push(FLOW_DUAL_CORE_TYPE);
     }
 
     const warpEnabled = [];

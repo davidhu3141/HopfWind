@@ -34,6 +34,7 @@ const CYCLE_SELECTION_KEYS = [
     'cycleflowgrid',
     'cycleflowsaddle',
     'cycleflowpolygon',
+    'cycleflowdualcore',
     'cyclerandomcolor',
     'cyclewarpnone',
     'cyclewarpradial',
@@ -216,6 +217,9 @@ export class RetroFlowWallpaper {
         this.flowPass.setGridStrength(this.currentValues.flowgridstrength);
         this.flowPass.setSaddleFrequency(this.currentValues.flowsaddlefrequency);
         this.flowPass.setSaddleStrength(this.currentValues.flowsaddlestrength);
+        this.flowPass.setDualCoreDirection(THREE.MathUtils.degToRad(this.currentValues.flowdualcoredirection));
+        this.flowPass.setDualCoreStrength(this.currentValues.flowdualcorestrength);
+        this.flowPass.setDualCoreDistance(this.currentValues.flowdualcoredistance);
         this.flowPass.setPolygonSides(this.currentValues.flowpolygonsides);
         this.flowPass.setPolygonThetaShift(THREE.MathUtils.degToRad(this.currentValues.flowpolygonthetashift));
         this.flowPass.setStripThetaShift(THREE.MathUtils.degToRad(this.currentValues.flowpolygonstripthetashift));
@@ -376,6 +380,9 @@ export class RetroFlowWallpaper {
                 'flowgridstrength',
                 'flowsaddlefrequency',
                 'flowsaddlestrength',
+                'flowdualcoredirection',
+                'flowdualcorestrength',
+                'flowdualcoredistance',
                 'flowpolygonsides',
                 'flowpolygonthetashift',
                 'flowpolygonstripthetashift',

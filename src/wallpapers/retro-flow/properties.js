@@ -104,6 +104,7 @@ export const retroFlowProperties = [
     bool('cycleflowgrid', 'Cycle Flow Grid', false),
     bool('cycleflowsaddle', 'Cycle Flow Saddle', false),
     bool('cycleflowpolygon', 'Cycle Flow Polygon', false),
+    bool('cycleflowdualcore', 'Cycle Flow Dual Core', false),
     bool('cyclewarpnone', 'Cycle Warp None', false),
     bool('cyclewarpradial', 'Cycle Warp Radial', true),
     bool('cyclewarptwist', 'Cycle Warp Twist', false),
@@ -314,6 +315,23 @@ export const retroFlowProperties = [
     group('flowsaddle', 'Flow: Saddle'),
     slider('flowsaddlefrequency', 'Saddle Frequency', 0, 8, 1.6, { step: 0.01, fraction: true, precision: 2 }),
     slider('flowsaddlestrength', 'Saddle Strength', 0, 2, 0.5, { step: 0.01, fraction: true, precision: 2 }),
+
+    group('flowdualcore', 'Flow: Dual Core'),
+    slider('flowdualcoredirection', 'Dual Core Direction', 0, 360, 24.1, {
+        step: 0.1,
+        fraction: true,
+        precision: 1,
+    }),
+    slider('flowdualcorestrength', 'Dual Core Strength', 0, 2, 0.18, {
+        step: 0.01,
+        fraction: true,
+        precision: 2,
+    }),
+    slider('flowdualcoredistance', 'Dual Core Distance', 0.1, 60, 15, {
+        step: 0.1,
+        fraction: true,
+        precision: 1,
+    }),
 
     group('flowpolygon', 'Flow: Polygon'),
     slider('flowpolygonsides', 'Polygon Sides', 1, 64, 6, { step: 1, precision: 0 }),

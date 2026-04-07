@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass.js';
 import {
+    FLOW_DUAL_CORE_TYPE,
     FLOW_GRID_TYPE,
     FLOW_POLYGON_TYPE,
     FLOW_SADDLE_TYPE,
@@ -42,6 +43,9 @@ uniform float gridSharpness;
 uniform float gridStrength;
 uniform float saddleFrequency;
 uniform float saddleStrength;
+uniform float dualCoreDirection;
+uniform float dualCoreStrength;
+uniform float dualCoreDistance;
 uniform float polygonSides;
 uniform float polygonThetaShift;
 uniform float stripThetaShift;
@@ -74,33 +78,33 @@ vec2 gridField(vec2 centered) {
     return vec2(laneY, -laneX) * gridStrength;
 }
 
-// vec2 saddleField(vec2 centered) {
-//     float radius = max(length(centered), 0.6);
-//     vec2 base = vec2(centered.x, -centered.y) / radius;
-//     vec2 ripple = vec2(
-//         sin(centered.x * saddleFrequency),
-//         sin(centered.y * saddleFrequency)
-//     );
-//     return (base + 0.25 * ripple) * saddleStrength;
-// }
-
 vec2 saddleField(vec2 centered) {
+    float radius = max(length(centered), 0.6);
+    vec2 base = vec2(centered.x, -centered.y) / radius;
+    vec2 ripple = vec2(
+        sin(centered.x * saddleFrequency),
+        sin(centered.y * saddleFrequency)
+    );
+    return (base + 0.25 * ripple) * saddleStrength;
+}
+
+vec2 dualCoreField(vec2 centered) {
     float x = centered.x;
     float y = centered.y;
-    float A = y * y + (x - 1.0) * (x - 1.0);
-    float B = y * y + (x + 1.0) * (x + 1.0);
-    float u = 0.05 / A + 0.05 / B;
-    float denom = 1.0 + u * u;
-
-    vec2 grad = vec2(
-        -0.1 * ((x - 1.0) / (A * A) + (x + 1.0) / (B * B)) / denom,
-        -0.1 * y * (1.0 / (A * A) + 1.0 / (B * B)) / denom
+    float A = max(y * y + (x - dualCoreDistance) * (x - dualCoreDistance), 0.0001);
+    float B = max(y * y + (x + dualCoreDistance) * (x + dualCoreDistance), 0.0001);
+    float invA2 = 1.0 / (A * A);
+    float invB2 = 1.0 / (B * B);
+    vec2 directionVector = -vec2(
+        (x - dualCoreDistance) * invA2 + (x + dualCoreDistance) * invB2,
+        y * (invA2 + invB2)
     );
+    vec2 unitDirection = directionVector / max(length(directionVector), 0.0001);
 
     return vec2(
-        grad.x * cos(saddleFrequency) - grad.y * sin(saddleFrequency),
-        grad.y * cos(saddleFrequency) + grad.x * sin(saddleFrequency)
-    )
+        unitDirection.x * cos(dualCoreDirection) - unitDirection.y * sin(dualCoreDirection),
+        unitDirection.y * cos(dualCoreDirection) + unitDirection.x * sin(dualCoreDirection)
+    ) * dualCoreStrength;
 }
 
 vec2 polygonField(vec2 centered) {
@@ -134,7 +138,10 @@ vec2 getFlowField(float typeId, vec2 centered) {
     if (typeId < 2.5) {
         return saddleField(centered);
     }
-    return polygonField(centered);
+    if (typeId < 3.5) {
+        return polygonField(centered);
+    }
+    return dualCoreField(centered);
 }
 
 void main() {
@@ -165,6 +172,8 @@ function getFlowTypeId(type) {
             return 2;
         case FLOW_POLYGON_TYPE:
             return 3;
+        case FLOW_DUAL_CORE_TYPE:
+            return 4;
         case FLOW_SWIRL_TYPE:
         default:
             return 0;
@@ -205,6 +214,9 @@ export class RetroFlowPass extends Pass {
             gridStrength: { value: 0.45 },
             saddleFrequency: { value: 1.6 },
             saddleStrength: { value: 0.5 },
+            dualCoreDirection: { value: 0.42 },
+            dualCoreStrength: { value: 0.18 },
+            dualCoreDistance: { value: 15 },
             polygonSides: { value: 6 },
             polygonThetaShift: { value: 0 },
             stripThetaShift: { value: 0 },
@@ -326,6 +338,18 @@ export class RetroFlowPass extends Pass {
 
     setSaddleStrength(value) {
         this.uniforms.saddleStrength.value = value;
+    }
+
+    setDualCoreDirection(value) {
+        this.uniforms.dualCoreDirection.value = value;
+    }
+
+    setDualCoreStrength(value) {
+        this.uniforms.dualCoreStrength.value = value;
+    }
+
+    setDualCoreDistance(value) {
+        this.uniforms.dualCoreDistance.value = value;
     }
 
     setPolygonSides(value) {
