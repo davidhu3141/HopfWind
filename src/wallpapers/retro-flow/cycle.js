@@ -2,11 +2,13 @@ import * as THREE from 'three';
 import {
     CIRCLE_SLAB_TYPE,
     CIRCLE_TYPE,
+    CUSTOM_GEOMETRY_TYPE,
     DEFAULT_FLOW_TYPE,
     DEFAULT_GEOMETRY_TYPE,
     DEFAULT_WARP_TYPE,
     DOUBLE_CIRCLE_SLAB_TYPE,
     DOUBLE_CIRCLE_TYPE,
+    FLOW_CUSTOM_TYPE,
     FLOW_DUAL_CORE_TYPE,
     FLOW_GRID_TYPE,
     FLOW_POLYGON_TYPE,
@@ -14,6 +16,7 @@ import {
     FLOW_SWIRL_TYPE,
     JUST_BARS_TYPE,
     SLAB_TYPE,
+    WARP_CUSTOM_TYPE,
     WARP_FLOWER_TYPE,
     WARP_GRID_TYPE,
     WARP_NONE_TYPE,
@@ -93,6 +96,9 @@ export function resolveCycleTypes(currentValues) {
     if (currentValues.cyclegeometrydoublecircleslab) {
         geometryEnabled.push(DOUBLE_CIRCLE_SLAB_TYPE);
     }
+    if (currentValues.cyclegeometrycustom) {
+        geometryEnabled.push(CUSTOM_GEOMETRY_TYPE);
+    }
 
     const flowEnabled = [];
     if (currentValues.cycleflowswirl) {
@@ -109,6 +115,9 @@ export function resolveCycleTypes(currentValues) {
     }
     if (currentValues.cycleflowdualcore) {
         flowEnabled.push(FLOW_DUAL_CORE_TYPE);
+    }
+    if (currentValues.cycleflowcustom) {
+        flowEnabled.push(FLOW_CUSTOM_TYPE);
     }
 
     const warpEnabled = [];
@@ -132,6 +141,9 @@ export function resolveCycleTypes(currentValues) {
     }
     if (currentValues.cyclewarptriangular) {
         warpEnabled.push(WARP_TRIANGULAR_TYPE);
+    }
+    if (currentValues.cyclewarpcustom) {
+        warpEnabled.push(WARP_CUSTOM_TYPE);
     }
 
     return {

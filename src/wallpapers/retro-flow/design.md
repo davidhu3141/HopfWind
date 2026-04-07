@@ -25,6 +25,7 @@ Implemented settings:
 - `Cycle Bar ...` toggles which bar geometry types can be selected.
 - `Cycle Flow ...` toggles which flow types can be selected.
 - `Cycle Warp ...` toggles which warp types can be selected.
+- `Cycle ... Custom` toggles each domain's user-defined mix type.
 
 At each switch time, RetroFlow randomly chooses one eligible domain to change:
 
@@ -54,18 +55,21 @@ Geometry interpolation:
 - Geometry modes produce local quad point sets.
 - Transitioning geometry linearly interpolates quad vertices.
 - If one side has no secondary quad, the missing quad is represented as a degenerate quad before interpolation.
+- `Custom` geometry builds two concrete geometry modes and mixes their quad vertices by `Mix`.
 
 Flow interpolation:
 
 - All flow types live in one GLSL shader.
 - The cycle state passes `flowFromType`, `flowToType`, and `flowTypeMix`.
 - The shader computes both fields and mixes them.
+- `Custom` flow mixes two concrete flow types in the same shader by `Mix`.
 
 Warp interpolation:
 
 - All warp types live in one GLSL shader.
 - The cycle state passes `warpFromType`, `warpToType`, and `warpTypeMix`.
 - The shader computes both sample UVs and mixes them.
+- `Custom` warp mixes two concrete warp types in the same shader by `Mix`.
 
 Color interpolation:
 
@@ -108,6 +112,7 @@ Implemented geometry modes:
 - `Slab`
 - `Circle-Slab`
 - `Double Circle-Slab`
+- `Custom`
 
 Common behavior:
 
@@ -148,6 +153,12 @@ Common behavior:
 - Stereo-pair version of Circle-Slab.
 - Includes minor theta shift and center distance ratio.
 
+`Custom`:
+
+- Selects two concrete bar geometry types.
+- `Mix` controls interpolation between those two types.
+- The selectable source/target types exclude `Custom` to avoid recursive definitions.
+
 ## Flow Types
 
 Implemented flow types:
@@ -157,6 +168,7 @@ Implemented flow types:
 - `Saddle`
 - `Polygon`
 - `Dual Core`
+- `Custom`
 
 General flow settings:
 
@@ -200,6 +212,13 @@ General flow settings:
 - `Dual Core Strength`
 - `Dual Core Distance`
 
+`Custom` settings:
+
+- `From Type`
+- `To Type`
+- `Mix`
+- The selectable source/target types exclude `Custom` to avoid recursive definitions.
+
 ## Warp Types
 
 The post-warp pass is always enabled. Use `Cycle Warp None` when no warp should be part of the cycle.
@@ -213,6 +232,7 @@ Implemented warp types:
 - `Wave`
 - `Flower`
 - `Triangular`
+- `Custom`
 
 `Radial` settings:
 
@@ -251,6 +271,13 @@ Implemented warp types:
 
 - `Triangle Width`
 - `Triangle Height`
+
+`Custom` settings:
+
+- `From Type`
+- `To Type`
+- `Mix`
+- The selectable source/target types exclude `Custom` to avoid recursive definitions.
 
 ## Colors
 

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass.js';
 import {
+    FLOW_CUSTOM_TYPE,
     FLOW_DUAL_CORE_TYPE,
     FLOW_GRID_TYPE,
     FLOW_POLYGON_TYPE,
@@ -33,6 +34,9 @@ uniform float flowOpacityLimit;
 uniform float flowFromType;
 uniform float flowToType;
 uniform float flowTypeMix;
+uniform float customFlowFromType;
+uniform float customFlowToType;
+uniform float customFlowMix;
 uniform float swirlBlend;
 uniform float swirlDensity;
 uniform float swirlTheta;
@@ -128,7 +132,7 @@ vec2 polygonField(vec2 centered) {
     ) * fieldLength * 0.08;
 }
 
-vec2 getFlowField(float typeId, vec2 centered) {
+vec2 getConcreteFlowField(float typeId, vec2 centered) {
     if (typeId < 0.5) {
         return swirlField(centered);
     }
@@ -142,6 +146,17 @@ vec2 getFlowField(float typeId, vec2 centered) {
         return polygonField(centered);
     }
     return dualCoreField(centered);
+}
+
+vec2 getFlowField(float typeId, vec2 centered) {
+    if (typeId < 4.5) {
+        return getConcreteFlowField(typeId, centered);
+    }
+    return mix(
+        getConcreteFlowField(customFlowFromType, centered),
+        getConcreteFlowField(customFlowToType, centered),
+        customFlowMix
+    );
 }
 
 void main() {
@@ -164,7 +179,7 @@ void main() {
 }`;
 }
 
-function getFlowTypeId(type) {
+function getConcreteFlowTypeId(type) {
     switch (type) {
         case FLOW_GRID_TYPE:
             return 1;
@@ -178,6 +193,13 @@ function getFlowTypeId(type) {
         default:
             return 0;
     }
+}
+
+function getFlowTypeId(type) {
+    if (type === FLOW_CUSTOM_TYPE) {
+        return 5;
+    }
+    return getConcreteFlowTypeId(type);
 }
 
 export class RetroFlowPass extends Pass {
@@ -204,6 +226,9 @@ export class RetroFlowPass extends Pass {
             flowFromType: { value: 0 },
             flowToType: { value: 0 },
             flowTypeMix: { value: 0 },
+            customFlowFromType: { value: 0 },
+            customFlowToType: { value: 1 },
+            customFlowMix: { value: 0.5 },
             swirlBlend: { value: 0 },
             swirlDensity: { value: 55 },
             swirlTheta: { value: 0.1 },
@@ -298,6 +323,12 @@ export class RetroFlowPass extends Pass {
         this.uniforms.flowFromType.value = getFlowTypeId(fromType);
         this.uniforms.flowToType.value = getFlowTypeId(toType);
         this.uniforms.flowTypeMix.value = mix;
+    }
+
+    setCustomFlow(fromType, toType, mix) {
+        this.uniforms.customFlowFromType.value = getConcreteFlowTypeId(fromType);
+        this.uniforms.customFlowToType.value = getConcreteFlowTypeId(toType);
+        this.uniforms.customFlowMix.value = THREE.MathUtils.clamp(Number.isFinite(mix) ? mix : 0.5, 0, 1);
     }
 
     setSwirlBlend(value) {

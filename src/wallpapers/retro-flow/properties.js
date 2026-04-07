@@ -52,6 +52,33 @@ const combo = (id, label, defaultValue, options, extra = {}) => ({
     condition: extra.condition,
 });
 
+const BAR_TYPE_OPTIONS = [
+    { label: 'Just Bars', value: 'just-bars' },
+    { label: 'Circle', value: 'circle' },
+    { label: 'Double Circle', value: 'double-circle' },
+    { label: 'Slab', value: 'slab' },
+    { label: 'Circle-Slab', value: 'circle-slab' },
+    { label: 'Double Circle-Slab', value: 'double-circle-slab' },
+];
+
+const FLOW_TYPE_OPTIONS = [
+    { label: 'Swirl', value: 'swirl' },
+    { label: 'Grid', value: 'grid' },
+    { label: 'Saddle', value: 'saddle' },
+    { label: 'Polygon', value: 'polygon' },
+    { label: 'Dual Core', value: 'dual-core' },
+];
+
+const WARP_TYPE_OPTIONS = [
+    { label: 'None', value: 'none' },
+    { label: 'Radial', value: 'radial' },
+    { label: 'Twist', value: 'twist' },
+    { label: 'Grid', value: 'grid' },
+    { label: 'Wave', value: 'wave' },
+    { label: 'Flower', value: 'flower' },
+    { label: 'Triangular', value: 'triangular' },
+];
+
 export const retroFlowProperties = [
     group('general', 'General'),
     slider('overallmagnitude', 'Overall Magnitude', 0, 20, 8, { step: 0.1, fraction: true, precision: 1 }),
@@ -100,11 +127,13 @@ export const retroFlowProperties = [
     bool('cyclegeometryslab', 'Cycle Bar Slab', false),
     bool('cyclegeometrycircleslab', 'Cycle Bar Circle-Slab', false),
     bool('cyclegeometrydoublecircleslab', 'Cycle Bar Double Circle-Slab', false),
+    bool('cyclegeometrycustom', 'Cycle Bar Custom', false),
     bool('cycleflowswirl', 'Cycle Flow Swirl', true),
     bool('cycleflowgrid', 'Cycle Flow Grid', false),
     bool('cycleflowsaddle', 'Cycle Flow Saddle', false),
     bool('cycleflowpolygon', 'Cycle Flow Polygon', false),
     bool('cycleflowdualcore', 'Cycle Flow Dual Core', false),
+    bool('cycleflowcustom', 'Cycle Flow Custom', false),
     bool('cyclewarpnone', 'Cycle Warp None', false),
     bool('cyclewarpradial', 'Cycle Warp Radial', true),
     bool('cyclewarptwist', 'Cycle Warp Twist', false),
@@ -112,6 +141,7 @@ export const retroFlowProperties = [
     bool('cyclewarpwave', 'Cycle Warp Wave', false),
     bool('cyclewarpflower', 'Cycle Warp Flower', false),
     bool('cyclewarptriangular', 'Cycle Warp Triangular', false),
+    bool('cyclewarpcustom', 'Cycle Warp Custom', false),
 
     group('barsgroup', 'Bars'),
     slider('geometrythetashift', 'Theta Shift', 0, 359, 0),
@@ -294,6 +324,15 @@ export const retroFlowProperties = [
     }),
     slider('doublecircleslabminorthetashift', 'Minor Theta Shift', 0, 359, 0),
 
+    group('custombars', 'Bars: Custom'),
+    combo('custombarsfromtype', 'From Type', 'circle', BAR_TYPE_OPTIONS),
+    combo('custombarstotype', 'To Type', 'slab', BAR_TYPE_OPTIONS),
+    slider('custombarsmix', 'Mix', 0, 1, 0.5, {
+        step: 0.01,
+        fraction: true,
+        precision: 2,
+    }),
+
     group('flow', 'Flow'),
     bool('antialiasingwillcauseblur', 'Allow Blur Filter', false),
     slider('fade', 'Trail Fade', 0, 32, 1, { step: 0.1, fraction: true, precision: 2 }),
@@ -354,6 +393,15 @@ export const retroFlowProperties = [
         precision: 2,
     }),
 
+    group('flowcustom', 'Flow: Custom'),
+    combo('flowcustomfromtype', 'From Type', 'swirl', FLOW_TYPE_OPTIONS),
+    combo('flowcustomtotype', 'To Type', 'grid', FLOW_TYPE_OPTIONS),
+    slider('flowcustommix', 'Mix', 0, 1, 0.5, {
+        step: 0.01,
+        fraction: true,
+        precision: 2,
+    }),
+
     group('warpradial', 'Warp: Radial'),
     slider('warpradialfrequency', 'Radial Frequency', 0, 40, 27, { step: 0.1, fraction: true, precision: 1 }),
     slider('warpthetafrequency', 'Theta Frequency', 0, 40, 27, { step: 0.1, fraction: true, precision: 1 }),
@@ -392,5 +440,14 @@ export const retroFlowProperties = [
         step: 0.001,
         fraction: true,
         precision: 3,
+    }),
+
+    group('warpcustom', 'Warp: Custom'),
+    combo('warpcustomfromtype', 'From Type', 'radial', WARP_TYPE_OPTIONS),
+    combo('warpcustomtotype', 'To Type', 'twist', WARP_TYPE_OPTIONS),
+    slider('warpcustommix', 'Mix', 0, 1, 0.5, {
+        step: 0.01,
+        fraction: true,
+        precision: 2,
     }),
 ];

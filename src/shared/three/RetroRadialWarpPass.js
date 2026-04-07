@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass.js';
 import {
+    WARP_CUSTOM_TYPE,
     WARP_FLOWER_TYPE,
     WARP_GRID_TYPE,
     WARP_NONE_TYPE,
@@ -28,6 +29,9 @@ uniform vec2 center;
 uniform float warpFromType;
 uniform float warpToType;
 uniform float warpTypeMix;
+uniform float customWarpFromType;
+uniform float customWarpToType;
+uniform float customWarpMix;
 uniform float radialFrequency;
 uniform float thetaFrequency;
 uniform float twistAmount;
@@ -109,23 +113,41 @@ vec2 triangularWarp(vec2 centered) {
     return vec2((xIndex + 0.25 - yIndex) * w * 0.5, (yIndex + 0.5) * h * 0.886);
 }
 
-vec2 getWarpUv(float typeId, vec2 centered) {
-    vec2 warped;
+vec2 getConcreteWarped(float typeId, vec2 centered) {
     if (typeId < 0.5) {
-        warped = centered;
-    } else if (typeId < 1.5) {
-        warped = radialWarp(centered);
-    } else if (typeId < 2.5) {
-        warped = twistWarp(centered);
-    } else if (typeId < 3.5) {
-        warped = gridWarp(centered);
-    } else if (typeId < 4.5) {
-        warped = waveWarp(centered);
-    } else if (typeId < 5.5) {
-        warped = flowerWarp(centered);
-    } else {
-        warped = triangularWarp(centered);
+        return centered;
     }
+    if (typeId < 1.5) {
+        return radialWarp(centered);
+    }
+    if (typeId < 2.5) {
+        return twistWarp(centered);
+    }
+    if (typeId < 3.5) {
+        return gridWarp(centered);
+    }
+    if (typeId < 4.5) {
+        return waveWarp(centered);
+    }
+    if (typeId < 5.5) {
+        return flowerWarp(centered);
+    }
+    return triangularWarp(centered);
+}
+
+vec2 getWarped(float typeId, vec2 centered) {
+    if (typeId < 6.5) {
+        return getConcreteWarped(typeId, centered);
+    }
+    return mix(
+        getConcreteWarped(customWarpFromType, centered),
+        getConcreteWarped(customWarpToType, centered),
+        customWarpMix
+    );
+}
+
+vec2 getWarpUv(float typeId, vec2 centered) {
+    vec2 warped = getWarped(typeId, centered);
     warped.x /= aspect;
     return warped * 0.5 + center;
 }
@@ -141,7 +163,7 @@ void main() {
 }`;
 }
 
-function getWarpTypeId(type) {
+function getConcreteWarpTypeId(type) {
     switch (type) {
         case WARP_NONE_TYPE:
             return 0;
@@ -162,6 +184,13 @@ function getWarpTypeId(type) {
     }
 }
 
+function getWarpTypeId(type) {
+    if (type === WARP_CUSTOM_TYPE) {
+        return 7;
+    }
+    return getConcreteWarpTypeId(type);
+}
+
 export class RetroRadialWarpPass extends Pass {
     constructor(width, height) {
         super();
@@ -175,6 +204,9 @@ export class RetroRadialWarpPass extends Pass {
             warpFromType: { value: 0 },
             warpToType: { value: 0 },
             warpTypeMix: { value: 0 },
+            customWarpFromType: { value: 1 },
+            customWarpToType: { value: 2 },
+            customWarpMix: { value: 0.5 },
             radialFrequency: { value: 27 },
             thetaFrequency: { value: 27 },
             twistAmount: { value: 0.9 },
@@ -219,6 +251,12 @@ export class RetroRadialWarpPass extends Pass {
         this.uniforms.warpFromType.value = getWarpTypeId(fromType);
         this.uniforms.warpToType.value = getWarpTypeId(toType);
         this.uniforms.warpTypeMix.value = mix;
+    }
+
+    setCustomWarp(fromType, toType, mix) {
+        this.uniforms.customWarpFromType.value = getConcreteWarpTypeId(fromType);
+        this.uniforms.customWarpToType.value = getConcreteWarpTypeId(toType);
+        this.uniforms.customWarpMix.value = THREE.MathUtils.clamp(Number.isFinite(mix) ? mix : 0.5, 0, 1);
     }
 
     setRadialFrequency(value) {

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {
     CIRCLE_SLAB_TYPE,
     CIRCLE_TYPE,
+    CUSTOM_GEOMETRY_TYPE,
     DOUBLE_CIRCLE_SLAB_TYPE,
     DOUBLE_CIRCLE_TYPE,
     JUST_BARS_TYPE,
@@ -61,6 +62,14 @@ function setQuadPositions(positionAttribute, points) {
         positionAttribute.setXYZ(index, points[index].x, points[index].y, 0);
     }
     positionAttribute.needsUpdate = true;
+}
+
+function clampUnit(value, fallback = 0.5) {
+    return Number.isFinite(value) ? THREE.MathUtils.clamp(value, 0, 1) : fallback;
+}
+
+function getConcreteGeometryType(type, fallback = CIRCLE_TYPE) {
+    return type === CUSTOM_GEOMETRY_TYPE ? fallback : type;
 }
 
 export function setBarGeometry(bar, primaryPoints, secondaryPoints = null) {
@@ -256,6 +265,26 @@ function buildDoubleCircleSlabGeometry(currentValues, index, sample) {
 }
 
 export function buildGeometryPoints(currentValues, sampleSize, index, sample, geometryType) {
+    if (geometryType === CUSTOM_GEOMETRY_TYPE) {
+        const mix = clampUnit(currentValues.custombarsmix);
+        return mixGeometrySet(
+            buildGeometryPoints(
+                currentValues,
+                sampleSize,
+                index,
+                sample,
+                getConcreteGeometryType(currentValues.custombarsfromtype, CIRCLE_TYPE),
+            ),
+            buildGeometryPoints(
+                currentValues,
+                sampleSize,
+                index,
+                sample,
+                getConcreteGeometryType(currentValues.custombarstotype, SLAB_TYPE),
+            ),
+            mix,
+        );
+    }
     if (geometryType === CIRCLE_TYPE) {
         return { primary: buildCirclePoints(currentValues, sampleSize, index, sample) };
     }
@@ -278,21 +307,63 @@ function usesStereoPairLayout(geometryType) {
     return geometryType === DOUBLE_CIRCLE_TYPE || geometryType === DOUBLE_CIRCLE_SLAB_TYPE;
 }
 
-export function getSampleForGeometryType(audioSamples, index, geometryType) {
+export function getSampleForGeometryType(audioSamples, index, geometryType, currentValues = {}) {
+    if (geometryType === CUSTOM_GEOMETRY_TYPE) {
+        const fromType = getConcreteGeometryType(currentValues.custombarsfromtype, CIRCLE_TYPE);
+        const toType = getConcreteGeometryType(currentValues.custombarstotype, SLAB_TYPE);
+        return THREE.MathUtils.lerp(
+            getSampleForGeometryType(audioSamples, index, fromType, currentValues),
+            getSampleForGeometryType(audioSamples, index, toType, currentValues),
+            clampUnit(currentValues.custombarsmix),
+        );
+    }
+
     const sampleIndex = usesStereoPairLayout(geometryType)
         ? index
         : getMirroredIndex(index);
     return audioSamples[sampleIndex] ?? 0;
 }
 
-export function getSampleForGeometryPhase(audioSamples, index, geometryPhase) {
-    const fromSample = getSampleForGeometryType(audioSamples, index, geometryPhase.fromType);
+export function getSampleForGeometryPhase(audioSamples, index, geometryPhase, currentValues = {}) {
+    const fromSample = getSampleForGeometryType(audioSamples, index, geometryPhase.fromType, currentValues);
     if (geometryPhase.mix <= 0) {
         return fromSample;
     }
 
-    const toSample = getSampleForGeometryType(audioSamples, index, geometryPhase.toType);
+    const toSample = getSampleForGeometryType(audioSamples, index, geometryPhase.toType, currentValues);
     return THREE.MathUtils.lerp(fromSample, toSample, geometryPhase.mix);
+}
+
+export function buildGeometryForType(currentValues, sampleSize, index, audioSamples, geometryType) {
+    if (geometryType === CUSTOM_GEOMETRY_TYPE) {
+        const fromType = getConcreteGeometryType(currentValues.custombarsfromtype, CIRCLE_TYPE);
+        const toType = getConcreteGeometryType(currentValues.custombarstotype, SLAB_TYPE);
+        return mixGeometrySet(
+            buildGeometryForType(currentValues, sampleSize, index, audioSamples, fromType),
+            buildGeometryForType(currentValues, sampleSize, index, audioSamples, toType),
+            clampUnit(currentValues.custombarsmix),
+        );
+    }
+
+    return buildGeometryPoints(
+        currentValues,
+        sampleSize,
+        index,
+        getSampleForGeometryType(audioSamples, index, geometryType, currentValues),
+        geometryType,
+    );
+}
+
+export function buildGeometryForPhase(currentValues, sampleSize, index, audioSamples, geometryPhase) {
+    const fromGeometry = buildGeometryForType(currentValues, sampleSize, index, audioSamples, geometryPhase.fromType);
+    if (geometryPhase.mix <= 0) {
+        return fromGeometry;
+    }
+    return mixGeometrySet(
+        fromGeometry,
+        buildGeometryForType(currentValues, sampleSize, index, audioSamples, geometryPhase.toType),
+        geometryPhase.mix,
+    );
 }
 
 function createCollapsedPoints(points) {

@@ -11,7 +11,7 @@ import { rgbTripletToCss } from '../../shared/utils/color.js';
 import { createCycleState, resetCycleState, resolveCycleTypes, updateCycleState } from './cycle.js';
 import { IDLE_COUNTDOWN_FRAMES } from './constants.js';
 import { computeEnergyBands, computeSelectedEnergy, getGeometryScale } from './energy.js';
-import { buildGeometryPoints, createBarEntry, getSampleForGeometryPhase, mixGeometrySet, setBarGeometry } from './geometry.js';
+import { buildGeometryForPhase, createBarEntry, getSampleForGeometryPhase, setBarGeometry } from './geometry.js';
 
 function parseRgbTriplet(value) {
     const channels = String(value ?? '1 1 1')
@@ -30,11 +30,13 @@ const CYCLE_SELECTION_KEYS = [
     'cyclegeometryslab',
     'cyclegeometrycircleslab',
     'cyclegeometrydoublecircleslab',
+    'cyclegeometrycustom',
     'cycleflowswirl',
     'cycleflowgrid',
     'cycleflowsaddle',
     'cycleflowpolygon',
     'cycleflowdualcore',
+    'cycleflowcustom',
     'cyclerandomcolor',
     'cyclewarpnone',
     'cyclewarpradial',
@@ -43,6 +45,7 @@ const CYCLE_SELECTION_KEYS = [
     'cyclewarpwave',
     'cyclewarpflower',
     'cyclewarptriangular',
+    'cyclewarpcustom',
 ];
 
 const CYCLE_TIMING_KEYS = ['cycleinterval', 'cycleinterpolateduration'];
@@ -227,6 +230,11 @@ export class RetroFlowWallpaper {
         this.flowPass.setPolygonTwistStrength(this.currentValues.flowpolygontwiststrength);
         this.flowPass.setPolygonTwistFrequency(this.currentValues.flowpolygontwistfrequency);
         this.flowPass.setPolygonConcaveStrength(this.currentValues.flowpolygonconcavestrength);
+        this.flowPass.setCustomFlow(
+            this.currentValues.flowcustomfromtype,
+            this.currentValues.flowcustomtotype,
+            this.currentValues.flowcustommix,
+        );
 
         this.postWarpPass.setRadialFrequency(this.currentValues.warpradialfrequency);
         this.postWarpPass.setThetaFrequency(this.currentValues.warpthetafrequency);
@@ -248,6 +256,11 @@ export class RetroFlowWallpaper {
         this.postWarpPass.setFlowerDecay(this.currentValues.warpflowerdecay);
         this.postWarpPass.setTriangularWidth(this.currentValues.warptriangularwidth);
         this.postWarpPass.setTriangularHeight(this.currentValues.warptriangularheight);
+        this.postWarpPass.setCustomWarp(
+            this.currentValues.warpcustomfromtype,
+            this.currentValues.warpcustomtotype,
+            this.currentValues.warpcustommix,
+        );
     }
 
     resetColorCycle() {
@@ -390,6 +403,9 @@ export class RetroFlowWallpaper {
                 'flowpolygontwiststrength',
                 'flowpolygontwistfrequency',
                 'flowpolygonconcavestrength',
+                'flowcustomfromtype',
+                'flowcustomtotype',
+                'flowcustommix',
                 'warpradialfrequency',
                 'warpthetafrequency',
                 'warptwistamount',
@@ -410,6 +426,9 @@ export class RetroFlowWallpaper {
                 'warpflowerdecay',
                 'warptriangularwidth',
                 'warptriangularheight',
+                'warpcustomfromtype',
+                'warpcustomtotype',
+                'warpcustommix',
             )
         ) {
             this.updateFlowSettings();
@@ -486,7 +505,7 @@ export class RetroFlowWallpaper {
         this.postWarpPass.setWarpInterpolation(cyclePhases.warp.fromType, cyclePhases.warp.toType, cyclePhases.warp.mix);
 
         for (let index = 0; index < this.sampleSize; index += 1) {
-            const sample = getSampleForGeometryPhase(audioSamples, index, cyclePhases.geometry);
+            const sample = getSampleForGeometryPhase(audioSamples, index, cyclePhases.geometry, this.currentValues);
             const bar = this.bars[index];
             const primaryMaterial = bar.primary.material;
             const secondaryMaterial = bar.secondary.material;
@@ -504,26 +523,13 @@ export class RetroFlowWallpaper {
             primaryMaterial.needsUpdate = true;
             secondaryMaterial.needsUpdate = true;
 
-            const fromGeometry = buildGeometryPoints(
+            const geometry = buildGeometryForPhase(
                 this.currentValues,
                 this.sampleSize,
                 index,
-                sample,
-                cyclePhases.geometry.fromType,
+                audioSamples,
+                cyclePhases.geometry,
             );
-            const geometry = cyclePhases.geometry.mix > 0
-                ? mixGeometrySet(
-                    fromGeometry,
-                    buildGeometryPoints(
-                        this.currentValues,
-                        this.sampleSize,
-                        index,
-                        sample,
-                        cyclePhases.geometry.toType,
-                    ),
-                    cyclePhases.geometry.mix,
-                )
-                : fromGeometry;
             setBarGeometry(bar, geometry.primary, geometry.secondary);
         }
 
