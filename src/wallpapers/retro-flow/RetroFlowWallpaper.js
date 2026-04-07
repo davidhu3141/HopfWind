@@ -31,7 +31,6 @@ const CYCLE_SELECTION_KEYS = [
     'cyclegeometrycircleslab',
     'cyclegeometrydoublecircleslab',
     'cycleflowswirl',
-    'cycleflowsine',
     'cycleflowgrid',
     'cycleflowsaddle',
     'cyclerandomcolor',
@@ -204,15 +203,11 @@ export class RetroFlowWallpaper {
         this.flowPass.setFadeAmount(this.currentValues.fade / 255);
         this.flowPass.setMoveVelocity(this.currentValues.flowvelocity / 5);
         this.flowPass.setFlowOpacityLimit(this.currentValues.flowopacitylimit);
-        this.flowPass.setFlowDensity(this.currentValues.flowdensity);
         this.flowPass.setShadeFront(false);
         this.flowPass.setSwirlBlend(this.currentValues.flowfieldmix);
         this.flowPass.setSwirlDensity(this.currentValues.flowswirldensity);
         this.flowPass.setSwirlTheta(THREE.MathUtils.degToRad(this.currentValues.flowswirltheta));
         this.flowPass.setSwirlStrength(this.currentValues.flowswirlstrength);
-        this.flowPass.setSineXFrequency(this.currentValues.flowsinexfrequency);
-        this.flowPass.setSineYFrequency(this.currentValues.flowsineyfrequency);
-        this.flowPass.setSineStrength(this.currentValues.flowsinestrength);
         this.flowPass.setGridXFrequency(this.currentValues.flowgridxfrequency);
         this.flowPass.setGridYFrequency(this.currentValues.flowgridyfrequency);
         this.flowPass.setGridSharpness(this.currentValues.flowgridsharpness);
@@ -360,14 +355,10 @@ export class RetroFlowWallpaper {
                 'fade',
                 'flowvelocity',
                 'flowopacitylimit',
-                'flowdensity',
                 'flowfieldmix',
                 'flowswirldensity',
                 'flowswirltheta',
                 'flowswirlstrength',
-                'flowsinexfrequency',
-                'flowsineyfrequency',
-                'flowsinestrength',
                 'flowgridxfrequency',
                 'flowgridyfrequency',
                 'flowgridsharpness',

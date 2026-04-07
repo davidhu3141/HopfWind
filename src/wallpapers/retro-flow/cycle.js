@@ -9,7 +9,6 @@ import {
     DOUBLE_CIRCLE_TYPE,
     FLOW_GRID_TYPE,
     FLOW_SADDLE_TYPE,
-    FLOW_SINE_TYPE,
     FLOW_SWIRL_TYPE,
     JUST_BARS_TYPE,
     SLAB_TYPE,
@@ -95,9 +94,6 @@ export function resolveCycleTypes(currentValues) {
     const flowEnabled = [];
     if (currentValues.cycleflowswirl) {
         flowEnabled.push(FLOW_SWIRL_TYPE);
-    }
-    if (currentValues.cycleflowsine) {
-        flowEnabled.push(FLOW_SINE_TYPE);
     }
     if (currentValues.cycleflowgrid) {
         flowEnabled.push(FLOW_GRID_TYPE);

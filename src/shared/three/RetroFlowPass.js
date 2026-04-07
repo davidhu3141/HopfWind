@@ -3,7 +3,6 @@ import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass.js'
 import {
     FLOW_GRID_TYPE,
     FLOW_SADDLE_TYPE,
-    FLOW_SINE_TYPE,
     FLOW_SWIRL_TYPE,
 } from '../../wallpapers/retro-flow/constants.js';
 
@@ -32,20 +31,18 @@ uniform float flowOpacityLimit;
 uniform float flowFromType;
 uniform float flowToType;
 uniform float flowTypeMix;
-uniform float flowDensity;
 uniform float swirlBlend;
 uniform float swirlDensity;
 uniform float swirlTheta;
 uniform float swirlStrength;
-uniform float sineXFrequency;
-uniform float sineYFrequency;
-uniform float sineStrength;
 uniform float gridXFrequency;
 uniform float gridYFrequency;
 uniform float gridSharpness;
 uniform float gridStrength;
 uniform float saddleFrequency;
 uniform float saddleStrength;
+
+const float FLOW_DENSITY = 55.0;
 
 vec2 swirlField(vec2 centered) {
     float x = centered.x;
@@ -57,13 +54,6 @@ vec2 swirlField(vec2 centered) {
         cosPhi*cos(swirlTheta)-sinPhi*sin(swirlTheta),
         sinPhi*cos(swirlTheta)+cosPhi*sin(swirlTheta)
     ) * swirlStrength * (r + r * swirlBlend * sin(swirlDensity * r));
-}
-
-vec2 sineField(vec2 centered) {
-    return vec2(
-        sin(centered.y * sineYFrequency),
-        -sin(centered.x * sineXFrequency)
-    ) * sineStrength;
 }
 
 float gridLane(float value, float frequency, float sharpness) {
@@ -93,9 +83,6 @@ vec2 getFlowField(float typeId, vec2 centered) {
         return swirlField(centered);
     }
     if (typeId < 1.5) {
-        return sineField(centered);
-    }
-    if (typeId < 2.5) {
         return gridField(centered);
     }
     return saddleField(centered);
@@ -103,7 +90,7 @@ vec2 getFlowField(float typeId, vec2 centered) {
 
 void main() {
     float aspect = width / max(height, 1.0);
-    vec2 centered = (vUV - center) * flowDensity;
+    vec2 centered = (vUV - center) * FLOW_DENSITY;
     centered.x *= aspect;
 
     vec2 fromField = getFlowField(flowFromType, centered);
@@ -123,12 +110,10 @@ void main() {
 
 function getFlowTypeId(type) {
     switch (type) {
-        case FLOW_SINE_TYPE:
-            return 1;
         case FLOW_GRID_TYPE:
-            return 2;
+            return 1;
         case FLOW_SADDLE_TYPE:
-            return 3;
+            return 2;
         case FLOW_SWIRL_TYPE:
         default:
             return 0;
@@ -159,14 +144,10 @@ export class RetroFlowPass extends Pass {
             flowFromType: { value: 0 },
             flowToType: { value: 0 },
             flowTypeMix: { value: 0 },
-            flowDensity: { value: 55 },
             swirlBlend: { value: 0 },
             swirlDensity: { value: 55 },
             swirlTheta: { value: 0.1 },
             swirlStrength: { value: 1 },
-            sineXFrequency: { value: 1.2 },
-            sineYFrequency: { value: 1.2 },
-            sineStrength: { value: 0.35 },
             gridXFrequency: { value: 1.7 },
             gridYFrequency: { value: 1.7 },
             gridSharpness: { value: 0.22 },
@@ -249,10 +230,6 @@ export class RetroFlowPass extends Pass {
         this.uniforms.flowTypeMix.value = mix;
     }
 
-    setFlowDensity(value) {
-        this.uniforms.flowDensity.value = value;
-    }
-
     setSwirlBlend(value) {
         this.uniforms.swirlBlend.value = value;
     }
@@ -267,18 +244,6 @@ export class RetroFlowPass extends Pass {
 
     setSwirlStrength(value) {
         this.uniforms.swirlStrength.value = value;
-    }
-
-    setSineXFrequency(value) {
-        this.uniforms.sineXFrequency.value = value;
-    }
-
-    setSineYFrequency(value) {
-        this.uniforms.sineYFrequency.value = value;
-    }
-
-    setSineStrength(value) {
-        this.uniforms.sineStrength.value = value;
     }
 
     setGridXFrequency(value) {

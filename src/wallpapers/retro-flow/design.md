@@ -236,8 +236,8 @@ flow pass types
 目前 flow types 先共用同一支 shader，type 切換時由 shader 內插值。
 
 - Swirl
-- Sine
-- Vortex
+- Grid
+- Saddle
 
 
 flow pass 輪播

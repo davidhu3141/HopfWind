@@ -101,7 +101,6 @@ export const retroFlowProperties = [
     bool('cyclegeometrycircleslab', 'Cycle Bar Circle-Slab', false),
     bool('cyclegeometrydoublecircleslab', 'Cycle Bar Double Circle-Slab', false),
     bool('cycleflowswirl', 'Cycle Flow Swirl', true),
-    bool('cycleflowsine', 'Cycle Flow Sine', false),
     bool('cycleflowgrid', 'Cycle Flow Grid', false),
     bool('cycleflowsaddle', 'Cycle Flow Saddle', false),
     bool('cyclewarpnone', 'Cycle Warp None', false),
@@ -297,18 +296,12 @@ export const retroFlowProperties = [
     slider('fade', 'Trail Fade', 0, 32, 1, { step: 0.1, fraction: true, precision: 2 }),
     slider('flowvelocity', 'Flow Velocity', 0, 100, 1, { step: 0.1, fraction: true, precision: 2 }),
     slider('flowopacitylimit', 'Flow Opacity Limit', 0, 1, 0.9, { step: 0.01, fraction: true, precision: 2 }),
-    slider('flowdensity', 'Flow Density', 10, 100, 55, { step: 0.1, fraction: true, precision: 1 }),
 
     group('flowswirl', 'Flow: Swirl'),
     slider('flowfieldmix', 'Swirl Blend', 0, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
     slider('flowswirldensity', 'Swirl Density', 0, 10, 5, { step: 0.1, fraction: true, precision: 1 }),
     slider('flowswirltheta', 'Swirl Theta (deg)', -180, 180, 5.73, { step: 0.1, fraction: true, precision: 1 }),
     slider('flowswirlstrength', 'Swirl Strength', 0, 4, 1, { step: 0.01, fraction: true, precision: 2 }),
-
-    group('flowsine', 'Flow: Sine'),
-    slider('flowsinexfrequency', 'Sine X Frequency', 0, 8, 1.2, { step: 0.01, fraction: true, precision: 2 }),
-    slider('flowsineyfrequency', 'Sine Y Frequency', 0, 8, 1.2, { step: 0.01, fraction: true, precision: 2 }),
-    slider('flowsinestrength', 'Sine Strength', 0, 2, 0.35, { step: 0.01, fraction: true, precision: 2 }),
 
     group('flowgrid', 'Flow: Grid'),
     slider('flowgridxfrequency', 'Grid X Frequency', 0, 8, 1.7, { step: 0.01, fraction: true, precision: 2 }),
