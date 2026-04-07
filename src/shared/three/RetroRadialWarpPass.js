@@ -94,6 +94,18 @@ vec2 flowerWarp(vec2 centered) {
     return vec2(cos(theta), sin(theta)) * sampleR;
 }
 
+vec2 triangularWarp(vec2 centered) {
+    float w = 0.04;
+    float h = 0.04;
+    float yslanted = centered.y / h / 0.886;
+    float xslanted = centered.x / w + yslanted * 0.5;
+    float yIndex = floor(yslanted);
+    float yFract = fract(yslanted);
+    float xFract = fract(xslanted);
+    float xIndex = floor(min(1.5, xFract / yFract)) + 2.0 * floor(xslanted);
+    return vec2((xIndex - yIndex) * w * 0.5, yIndex * h * 0.886);
+}
+
 vec2 getWarpUv(float typeId, vec2 centered) {
     vec2 warped;
     if (typeId < 0.5) {
@@ -126,20 +138,20 @@ void main() {
 
 function getWarpTypeId(type) {
     switch (type) {
-    case WARP_NONE_TYPE:
-        return 0;
-    case WARP_RADIAL_TYPE:
-        return 1;
-    case WARP_TWIST_TYPE:
-        return 2;
-    case WARP_GRID_TYPE:
-        return 3;
-    case WARP_WAVE_TYPE:
-        return 4;
-    case WARP_FLOWER_TYPE:
-        return 5;
-    default:
-        return 1;
+        case WARP_NONE_TYPE:
+            return 0;
+        case WARP_RADIAL_TYPE:
+            return 1;
+        case WARP_TWIST_TYPE:
+            return 2;
+        case WARP_GRID_TYPE:
+            return 3;
+        case WARP_WAVE_TYPE:
+            return 4;
+        case WARP_FLOWER_TYPE:
+            return 5;
+        default:
+            return 1;
     }
 }
 
