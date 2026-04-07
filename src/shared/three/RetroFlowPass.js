@@ -91,7 +91,7 @@ vec2 polygonField(vec2 centered) {
     float theta = atan(centered.y, centered.x);
     float n = floor(max(1.0, polygonSides));
     float singlePiece = TWO_PI / n;
-    float thetaPrime = mod(theta + polygonThetaShift, TWO_PI);
+    float thetaPrime = mod(theta - polygonThetaShift, TWO_PI);
     float normalizedTheta = thetaPrime / singlePiece;
     float pieceIndex = floor(normalizedTheta);
     float pieceFract = fract(normalizedTheta);
@@ -100,7 +100,10 @@ vec2 polygonField(vec2 centered) {
         + polygonConcaveStrength * pieceFract * (1.0 - pieceFract);
     float polygonalR = r * sin(pieceFract * singlePiece);
     float fieldLength = r + r * polygonTwistStrength * sin(polygonTwistFrequency * polygonalR);
-    return vec2(cos(fieldTheta), sin(fieldTheta)) * fieldLength * 0.08;
+    return vec2(
+        cos(fieldTheta + polygonThetaShift),
+        sin(fieldTheta + polygonThetaShift)
+    ) * fieldLength * 0.08;
 }
 
 vec2 getFlowField(float typeId, vec2 centered) {
