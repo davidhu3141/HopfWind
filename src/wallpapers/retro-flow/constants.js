@@ -23,4 +23,4 @@ export const WARP_FLOWER_TYPE = 'flower';
 export const WARP_TRIANGULAR_TYPE = 'triangular';
 export const WARP_NONE_TYPE = 'none';
 export const WARP_CUSTOM_TYPE = 'custom';
-export const DEFAULT_WARP_TYPE = WARP_RADIAL_TYPE;
+export const DEFAULT_WARP_TYPE = WARP_NONE_TYPE;

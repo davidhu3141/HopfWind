@@ -46,7 +46,7 @@ Default types:
 
 - Geometry: `Circle`
 - Flow: `Swirl`
-- Warp: `Radial`
+- Warp: `None`
 
 ## Interpolation
 

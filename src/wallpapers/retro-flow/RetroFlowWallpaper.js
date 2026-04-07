@@ -329,7 +329,7 @@ export class RetroFlowWallpaper {
             messages.push('No flow type selected. Using default Swirl.');
         }
         if (this.resolvedCycleTypes.warp.fallbackUsed) {
-            messages.push('No warp type selected. Using default Radial.');
+            messages.push('No warp type selected. Using default None.');
         }
         if (messages.length > 0) {
             this.toast.show(messages.join('\n'), 3000);
