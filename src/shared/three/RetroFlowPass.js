@@ -32,6 +32,7 @@ uniform float flowOpacityLimit;
 uniform float flowFromType;
 uniform float flowToType;
 uniform float flowTypeMix;
+uniform float flowDensity;
 uniform float swirlBlend;
 uniform float swirlDensity;
 uniform float swirlTheta;
@@ -49,10 +50,13 @@ uniform float saddleStrength;
 vec2 swirlField(vec2 centered) {
     float x = centered.x;
     float y = centered.y;
+    float r = length(centered);
+    float cosPhi = x / r;
+    float sinPhi = y / r;
     return vec2(
-        x*cos(swirlTheta)-y*sin(swirlTheta),
-        y*cos(swirlTheta)+x*sin(swirlTheta)
-    ) * swirlStrength;
+        cosPhi*cos(swirlTheta)-sinPhi*sin(swirlTheta),
+        sinPhi*cos(swirlTheta)+cosPhi*sin(swirlTheta)
+    ) * swirlStrength * (r + r * swirlBlend * sin(swirlDensity * r));
 }
 
 vec2 sineField(vec2 centered) {
@@ -99,7 +103,7 @@ vec2 getFlowField(float typeId, vec2 centered) {
 
 void main() {
     float aspect = width / max(height, 1.0);
-    vec2 centered = (vUV - center) * swirlDensity;
+    vec2 centered = (vUV - center) * flowDensity;
     centered.x *= aspect;
 
     vec2 fromField = getFlowField(flowFromType, centered);
@@ -155,6 +159,7 @@ export class RetroFlowPass extends Pass {
             flowFromType: { value: 0 },
             flowToType: { value: 0 },
             flowTypeMix: { value: 0 },
+            flowDensity: { value: 55 },
             swirlBlend: { value: 0 },
             swirlDensity: { value: 55 },
             swirlTheta: { value: 0.1 },
@@ -242,6 +247,10 @@ export class RetroFlowPass extends Pass {
         this.uniforms.flowFromType.value = getFlowTypeId(fromType);
         this.uniforms.flowToType.value = getFlowTypeId(toType);
         this.uniforms.flowTypeMix.value = mix;
+    }
+
+    setFlowDensity(value) {
+        this.uniforms.flowDensity.value = value;
     }
 
     setSwirlBlend(value) {
