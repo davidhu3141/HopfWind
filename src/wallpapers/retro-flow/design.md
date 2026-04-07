@@ -1,257 +1,299 @@
-Design
-======
+# RetroFlow Design
 
-retro flow 預計設計成讓各種視覺效果可以輪播
+This document describes the current implemented RetroFlow behavior. It should not include unimplemented roadmap items.
 
+## Overview
 
-舊功能調整
------------
+RetroFlow is a mode-based audio wallpaper built from four independently cycling domains:
 
-- 拔掉 Flow Before Bars 與 flow direction 功能
-- 2d offset 要連帶影響 pass 的 center
-- 添加 lightness by sound 功能
-- Hue By Sound 要允許負值
-- Hue Initial 不允許負值 也不用負值行為了
+- Bars geometry
+- Flow field
+- Warp pass
+- Base color
 
+The web preview and Wallpaper Engine build use the same wallpaper definition and property schema.
 
-能量機制
--------
+## Cycle System
 
-定義能量為 audio sample 加總
+Cycle settings are under the `Cycle` property group.
 
-- 低頻的能量: sum audio[0]~audio[3]
-- 中頻的能量: sum audio[4]~audio[45]
-- 高頻的能量: sum audio[46]~audio[63]
-- (以上 index 也要與 index+64 一起計算)
+Implemented settings:
 
-有些與 EQ 相關的效果會用到
+- `Cycle Interval (sec)` controls how often a switch attempt happens.
+- `Interpolate Duration (sec)` controls transition duration.
+- `Cycle Random Color` enables color cycling as a cycle domain.
+- `Cycle Bar ...` toggles which bar geometry types can be selected.
+- `Cycle Flow ...` toggles which flow types can be selected.
+- `Cycle Warp ...` toggles which warp types can be selected.
 
+At each switch time, RetroFlow randomly chooses one eligible domain to change:
 
-能量 settings
-------------
+- Geometry, if at least two geometry types are enabled.
+- Flow, if at least two flow types are enabled.
+- Warp, if at least two warp types are enabled.
+- Color, if `Cycle Random Color` is enabled.
 
-- bool: 計入低頻能量
-- bool: 計入中頻能量
-- bool: 計入高頻能量
+Fallback behavior:
 
+- If no geometry type is enabled, RetroFlow uses `Circle` and shows a toast.
+- If no flow type is enabled, RetroFlow uses `Swirl` and shows a toast.
+- If no warp type is enabled, RetroFlow uses `Radial` and shows a toast.
 
-輪播機制
--------
+Fallback toasts are DOM overlays and therefore work in both web preview and WPE.
 
-可以輪播的視覺效果有以下幾種
-- bars geometry type
-- flow pass type
-- warp pass type
+Default types:
 
-不另外提供固定的 bars geometry / flow / warp type selector。
-目前顯示的 type 完全由 cycle settings 決定：
-- 若某一類只勾選一種 type，就固定顯示那一種
-- 若某一類勾選多種 type，切換時才有機會輪到那一類
-- 若某一類完全沒勾，則顯示 3 秒 toast 提示會回退到預設
+- Geometry: `Circle`
+- Flow: `Swirl`
+- Warp: `Radial`
 
-預設如下
-- bars geometry default: Circle
-- flow default: Swirl
-- warp default: Radial
+## Interpolation
 
-輪播切換時會隨機選一個 domain 來切換
-- 有時切 bars geometry
-- 有時切 flow pass
-- 有時切 warp pass
+Geometry interpolation:
 
-#### interpolation
+- Geometry modes produce local quad point sets.
+- Transitioning geometry linearly interpolates quad vertices.
+- If one side has no secondary quad, the missing quad is represented as a degenerate quad before interpolation.
 
-多種 bars geometry 之間會設計成可以互相 interpolate
+Flow interpolation:
 
-- interpolate 方式即四邊形各個頂點分別 interpolate
-- mix 程度使用 barycentric coordinate 表示
+- All flow types live in one GLSL shader.
+- The cycle state passes `flowFromType`, `flowToType`, and `flowTypeMix`.
+- The shader computes both fields and mixes them.
 
-flow pass, warp pass 一樣可以有 interpolate 功能
-- 這些是向量場，interpolate 計算方式很直觀
-- mix 程度使用 barycentric coordinate 表示，但 shader 最多只支援 vec4，超過 4 個再想辦法
+Warp interpolation:
 
+- All warp types live in one GLSL shader.
+- The cycle state passes `warpFromType`, `warpToType`, and `warpTypeMix`.
+- The shader computes both sample UVs and mixes them.
 
+Color interpolation:
 
-輪播 settings
--------------
+- `Bar Color` is the initial/base color.
+- When random color cycling is enabled, cycle color transitions generate random HSL targets.
+- Random color limits are defined in `RetroFlowWallpaper.js`.
+- If hue difference is <= 90 degrees, normal HSL interpolation is used.
+- If hue difference is > 90 degrees, interpolation desaturates first, switches hue at low saturation, then restores saturation.
 
-- 使用 combobox 決定輪播切換方式是下列哪一種
-    - 固定時間觸發視覺效果切換
-    - 當能量大於近 1000 筆紀錄的 x 百分位時切換
-        - 這個設定值 x 應該用 "觸發的難易度" 相關詞彙取名，而不需要讓使用者理解百分位數
-        - range x = 60~100
-- number: 設定值 x
-- number: interpolate 時長(秒)
-- bool: 各 geometry type 是否參與 cycle
-- bool: 各 flow type 是否參與 cycle
-- bool: 各 warp type 是否參與 cycle
+## Energy
 
-#### (note) combo 的撰寫方式
+Energy is currently simplified to the average of all audio bins.
 
-- 可能需要參考文件
-    - https://docs.wallpaperengine.io/en/web/customization/properties.html#combo-property
-- `project (sample 3).json` 有個 `"type" : "combo"` 的寫法可以參考
+- Stereo band selection is not used for energy.
+- `Size By Energy` scales the whole `barsGroup` using this full-spectrum energy value.
+- Geometry formulas do not individually apply energy scale; the group transform handles it.
 
+## Bars Group Transform
 
-顏色輪播
--------
+The rendered bars live inside one `barsGroup`.
 
-之後再想
+Group-level controls:
 
+- `Theta Shift`
+- `Rotation Speed (Hz)`
+- `Reverse Rotation`
+- `Size By Energy`
+- `2D Offset X`
+- `2D Offset Y`
 
+`2D Offset` also updates the flow and warp pass centers.
 
-bars geometry types
--------------------
-
-### Just bars
-
-目前設定 vertex 的寫法很醜，幫我改掉
-
-#### 幾何描述
-
-基本上就是一排水平排開的長方形，位置與寬度就由 bar_distance 與 bar_width 決定，高度 h 依照 audiosample 決定。
-一樣要採用 mirroredIndex。
-
-定義 isUp = 
-    shapeC || (shapeA && index<64) || (shapeC && index>=64)
-定義 isDown = 
-    shapeD || (shapeB && index<64) || (shapeA && index>=64)
-定義 p = 
-- `0`  (if isUp)
-- `-h` (if isDown || shapeE)
-定義 q = 
-- `h`  (if isUp || shapeE)
-- `0`  (if isDown)
-
-四個頂點如下
-- (x,y) = (index - 63.5 - bar_width/2, p) * bar_distance
-- (x,y) = (index - 63.5 + bar_width/2, p) * bar_distance
-- (x,y) = (index - 63.5 + bar_width/2, q) * bar_distance
-- (x,y) = (index - 63.5 - bar_width/2, q) * bar_distance
-
-#### 設定
-
-- combo: shape
-    - shapeA: single-sided, up, down
-    - shapeB: single-sided, down, up
-    - shapeC: single-sided, up, up
-    - shapeD: single-sided, down, down
-    - shapeE: two-sided
-- number: bar distance
-- number: bar width
-    - 是 bar distance 的相對值 (理解為百分比)
-    - range: 0~150 (%)
+## Bars Geometry Types
 
+Implemented geometry modes:
 
-### Circle
+- `Just Bars`
+- `Circle`
+- `Double Circle`
+- `Slab`
+- `Circle-Slab`
+- `Double Circle-Slab`
 
-#### 幾何描述
+Common behavior:
 
-基本上就是圍著半徑 r 的圓周排列的梯形，高度 h 依照 audiosample 決定。
-要採用 mirroredIndex。
-定義 d = 2*pi / 128
-定義 p = 
-    - `0` (if `single-sided`)
-    - `-1` (if `two-sided`)
-梯形頂點為
-- (r, theta) = (r+p*h, pi/2 + theta_shift + d *  index)
-- (r, theta) = (r+p*h, pi/2 + theta_shift + d * (index+1))
-- (r, theta) = (r + h, pi/2 + theta_shift + d * (index+1))
-- (r, theta) = (r + h, pi/2 + theta_shift + d *  index)
+- Geometry uses local coordinates; rotation is handled by `barsGroup.rotation.z`.
+- Geometry-specific settings live in their own property groups.
 
-#### 設定
+`Just Bars`:
 
-- combo: shape
-    - single-sided
-    - two-sided
-- number: radius r
-- number: bar width
-    - 是相對值 (理解為百分比)
-    - range: 0~150 (%)
-- number: theta_shift 
-    - range: 0~359
-    - 實際使用要轉為弳度
+- Supports five shapes: `shapeA`, `shapeB`, `shapeC`, `shapeD`, `shapeE`.
+- Uses its own distance, width, initial length, and length-by-sound controls.
 
+`Circle`:
 
-### Slab
+- Supports `single-sided` and `two-sided` shapes.
+- Uses radius, width, initial length, and length-by-sound controls.
 
-跟 Just bars 類似，但是厚度 thickness 固定，高度 h 只決定整個 slab 離中心多遠。
-這樣在 h 很小甚至 0 的時候，slab 仍然可見，不會因為 thickness 大於 h 而退化。
+`Double Circle`:
 
-定義 isUp = 
-    shapeC || (shapeA && index<64) || (shapeC && index>=64)
-定義 isDown = 
-    shapeD || (shapeB && index<64) || (shapeA && index>=64)
-定義 p = 
-- `h`  (if isUp)
-- `-h-thickness` (if isDown)
-定義 q = 
-- `h+thickness`  (if isUp)
-- `-h`  (if isDown)
+- Draws left and right stereo halves as separate circles.
+- Left channel uses bins `0..63`.
+- Right channel uses bins `64..127`.
+- The two circles are symmetrical: one side winds clockwise, the other counter-clockwise.
+- Includes `Minor Theta Shift` for each small circle orientation.
+- Includes `Center Distance (x Radius)` to control distance between circle centers.
 
-四個頂點如下
-- (x,y) = (index - 63.5 - bar_width/2, p) * bar_distance
-- (x,y) = (index - 63.5 + bar_width/2, p) * bar_distance
-- (x,y) = (index - 63.5 + bar_width/2, q) * bar_distance
-- (x,y) = (index - 63.5 - bar_width/2, q) * bar_distance
+`Slab`:
 
-shapeE 的話就是同時繪製 shapeC 與 shapeD，但 shapeD 的形狀不參與 interpolation，不用了就直接隱藏
+- Similar to Just Bars, but uses fixed slab thickness.
+- Height controls offset from center; thickness remains visible even when height is zero.
 
-### Circle-Slab
+`Circle-Slab`:
 
-跟 Circle 類似，但是 thickness 固定，高度 h 只決定整個扁梯形離基準半徑 r 多遠。
-這樣在 h 很小甚至 0 的時候也仍然有可見厚度。
+- Similar to Circle, but renders ring slabs with fixed thickness.
+- Two-sided mode draws inward and outward slabs.
 
-定義 d = 2*pi / 128
-若為 outward slab，梯形頂點為
-- (r, theta) = (r+h, pi/2 + theta_shift + d *  index)
-- (r, theta) = (r+h, pi/2 + theta_shift + d * (index+1))
-- (r, theta) = (r+h+thickness, pi/2 + theta_shift + d * (index+1))
-- (r, theta) = (r+h+thickness, pi/2 + theta_shift + d *  index)
+`Double Circle-Slab`:
 
-若為 inward slab，梯形頂點為
-- (r, theta) = (r-h-thickness, pi/2 + theta_shift + d *  index)
-- (r, theta) = (r-h-thickness, pi/2 + theta_shift + d * (index+1))
-- (r, theta) = (r-h, pi/2 + theta_shift + d * (index+1))
-- (r, theta) = (r-h, pi/2 + theta_shift + d *  index)
+- Stereo-pair version of Circle-Slab.
+- Includes minor theta shift and center distance ratio.
 
-single-sided 只畫 outward slab，two-sided 則同時畫 outward 與 inward slab。
+## Flow Types
 
+Implemented flow types:
 
-bars geometry settings
-----------------------
+- `Swirl`
+- `Grid`
+- `Saddle`
+- `Polygon`
+- `Dual Core`
 
-- 整體幾何旋轉頻率
-    - 0 ~ 1 (Hz)
-- bool: 反方向轉
-- number: size by energy 
-    - 依照能量調整 size 的程度
-    - range: -10~10 (%)
-    - 實際套用到幾何上要先乘以一個 k 值來做某些補償，先試試看 k=10
+General flow settings:
 
+- `Allow Blur Filter`
+- `Trail Fade`
+- `Flow Velocity`
+- `Flow Opacity Limit`
 
-flow pass types
----------------
+`Swirl` settings:
 
-目前 flow types 先共用同一支 shader，type 切換時由 shader 內插值。
+- `Swirl Blend`
+- `Swirl Density`
+- `Swirl Theta (deg)`
+- `Swirl Strength`
 
-- Swirl
-- Grid
-- Saddle
-- Polygon
+`Grid` settings:
 
+- `Grid X Frequency`
+- `Grid Y Frequency`
+- `Grid Sharpness`
+- `Grid Strength`
 
-flow pass 輪播
---------------
+`Saddle` settings:
 
-目前已經有兩種在 interpolate 了，你整理成方便添加新種類即可
+- `Saddle Frequency`
+- `Saddle Strength`
 
+`Polygon` settings:
 
-warp pass 輪播
---------------
+- `Polygon Sides`
+- `Polygon Theta Shift`
+- `Strip Theta Shift`
+- `Reverse Polygon Flow`
+- `Polygon Twist Strength`
+- `Polygon Twist Frequency`
+- `Flow Inward Strength`
 
-目前 warp types 先共用同一支 shader，type 切換時由 shader 內插值。
+`Dual Core` settings:
 
-- Radial
-- Twist
-- Triangular
+- `Dual Core Direction`
+- `Dual Core Strength`
+- `Dual Core Distance`
+
+## Warp Types
+
+The post-warp pass is always enabled. Use `Cycle Warp None` when no warp should be part of the cycle.
+
+Implemented warp types:
+
+- `None`
+- `Radial`
+- `Twist`
+- `Grid`
+- `Wave`
+- `Flower`
+- `Triangular`
+
+`Radial` settings:
+
+- `Radial Frequency`
+- `Theta Frequency`
+
+`Twist` settings:
+
+- `Twist Amount`
+- `Twist Decay`
+- `Twist Radial Frequency`
+- `Twist Radial Amplitude`
+
+`Grid` settings:
+
+- `Grid X Frequency`
+- `Grid Y Frequency`
+- `Grid Sharpness`
+- `Grid X Amplitude`
+- `Grid Y Amplitude`
+
+`Wave` settings:
+
+- `Wave X Frequency`
+- `Wave Y Frequency`
+- `Wave X Amplitude`
+- `Wave Y Amplitude`
+
+`Flower` settings:
+
+- `Flower Petals`
+- `Flower Amplitude`
+- `Flower Decay`
+
+`Triangular` settings:
+
+- `Triangle Width`
+- `Triangle Height`
+
+## Colors
+
+Implemented color settings:
+
+- `Background Color`
+- `Bar Color`
+- `Hue By Sound`
+- `Saturation By Sound`
+- `Lightness By Sound`
+- `Opacity Initial`
+- `Opacity By Sound`
+
+`Bar Color` is converted to HSL internally, then the by-sound modifiers are applied per bar.
+
+## Clock
+
+Clock overlay settings:
+
+- `Show Clock`
+- `Clock Size A`
+- `Clock Size B`
+- `Clock Position X`
+- `Clock Position Y`
+- `24 Hour Clock`
+- `Clock Color`
+- `Clock Shadow Color`
+- `Clock Backdrop Color`
+- `Clock Backdrop Opacity`
+
+The clock backdrop is a DOM ellipse using a softened radial gradient.
+
+## Canvas And Background
+
+Canvas settings:
+
+- `Canvas Offset X`
+- `Canvas Offset Y`
+- `Pixelated`
+- `Canvas Shrink`
+
+Background settings:
+
+- `Use Custom Image`
+- `Custom Image`
+- `Background Color`
