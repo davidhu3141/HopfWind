@@ -47,7 +47,13 @@ function loadPersistedProperties(definition) {
         }
 
         const parsed = JSON.parse(raw);
-        return mergePropertyValues(definition.properties, defaults, parsed);
+        const values = mergePropertyValues(definition.properties, defaults, parsed);
+        for (const descriptor of definition.properties) {
+            if (descriptor.type === 'file' && String(values[descriptor.id] ?? '').startsWith('blob:')) {
+                values[descriptor.id] = descriptor.default;
+            }
+        }
+        return values;
     } catch {
         return defaults;
     }
