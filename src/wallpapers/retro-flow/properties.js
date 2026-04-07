@@ -103,6 +103,7 @@ export const retroFlowProperties = [
     bool('cycleflowswirl', 'Cycle Flow Swirl', true),
     bool('cycleflowgrid', 'Cycle Flow Grid', false),
     bool('cycleflowsaddle', 'Cycle Flow Saddle', false),
+    bool('cycleflowpolygon', 'Cycle Flow Polygon', false),
     bool('cyclewarpnone', 'Cycle Warp None', false),
     bool('cyclewarpradial', 'Cycle Warp Radial', true),
     bool('cyclewarptwist', 'Cycle Warp Twist', false),
@@ -312,6 +313,25 @@ export const retroFlowProperties = [
     group('flowsaddle', 'Flow: Saddle'),
     slider('flowsaddlefrequency', 'Saddle Frequency', 0, 8, 1.6, { step: 0.01, fraction: true, precision: 2 }),
     slider('flowsaddlestrength', 'Saddle Strength', 0, 2, 0.5, { step: 0.01, fraction: true, precision: 2 }),
+
+    group('flowpolygon', 'Flow: Polygon'),
+    slider('flowpolygonsides', 'Polygon Sides', 1, 64, 6, { step: 1, precision: 0 }),
+    slider('flowpolygonthetashift', 'Polygon Theta Shift', 0, 360, 0, { step: 1, precision: 0 }),
+    slider('flowpolygontwiststrength', 'Polygon Twist Strength', -2, 2, 0.4, {
+        step: 0.01,
+        fraction: true,
+        precision: 2,
+    }),
+    slider('flowpolygontwistfrequency', 'Polygon Twist Frequency', -2, 2, 1, {
+        step: 0.01,
+        fraction: true,
+        precision: 2,
+    }),
+    slider('flowpolygonconcavestrength', 'Polygon Concave Strength', -2, 2, 0.4, {
+        step: 0.01,
+        fraction: true,
+        precision: 2,
+    }),
 
     group('warpradial', 'Warp: Radial'),
     slider('warpradialfrequency', 'Radial Frequency', 0, 40, 27, { step: 0.1, fraction: true, precision: 1 }),

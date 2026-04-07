@@ -33,6 +33,7 @@ const CYCLE_SELECTION_KEYS = [
     'cycleflowswirl',
     'cycleflowgrid',
     'cycleflowsaddle',
+    'cycleflowpolygon',
     'cyclerandomcolor',
     'cyclewarpnone',
     'cyclewarpradial',
@@ -214,6 +215,11 @@ export class RetroFlowWallpaper {
         this.flowPass.setGridStrength(this.currentValues.flowgridstrength);
         this.flowPass.setSaddleFrequency(this.currentValues.flowsaddlefrequency);
         this.flowPass.setSaddleStrength(this.currentValues.flowsaddlestrength);
+        this.flowPass.setPolygonSides(this.currentValues.flowpolygonsides);
+        this.flowPass.setPolygonThetaShift(THREE.MathUtils.degToRad(this.currentValues.flowpolygonthetashift));
+        this.flowPass.setPolygonTwistStrength(this.currentValues.flowpolygontwiststrength);
+        this.flowPass.setPolygonTwistFrequency(this.currentValues.flowpolygontwistfrequency);
+        this.flowPass.setPolygonConcaveStrength(this.currentValues.flowpolygonconcavestrength);
 
         this.postWarpPass.setRadialFrequency(this.currentValues.warpradialfrequency);
         this.postWarpPass.setThetaFrequency(this.currentValues.warpthetafrequency);
@@ -365,6 +371,11 @@ export class RetroFlowWallpaper {
                 'flowgridstrength',
                 'flowsaddlefrequency',
                 'flowsaddlestrength',
+                'flowpolygonsides',
+                'flowpolygonthetashift',
+                'flowpolygontwiststrength',
+                'flowpolygontwistfrequency',
+                'flowpolygonconcavestrength',
                 'warpradialfrequency',
                 'warpthetafrequency',
                 'warptwistamount',

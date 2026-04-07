@@ -11,6 +11,7 @@ export const DEFAULT_GEOMETRY_TYPE = CIRCLE_TYPE;
 export const FLOW_SWIRL_TYPE = 'swirl';
 export const FLOW_GRID_TYPE = 'grid';
 export const FLOW_SADDLE_TYPE = 'saddle';
+export const FLOW_POLYGON_TYPE = 'polygon';
 export const DEFAULT_FLOW_TYPE = FLOW_SWIRL_TYPE;
 export const WARP_RADIAL_TYPE = 'radial';
 export const WARP_TWIST_TYPE = 'twist';

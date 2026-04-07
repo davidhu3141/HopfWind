@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass.js';
 import {
     FLOW_GRID_TYPE,
+    FLOW_POLYGON_TYPE,
     FLOW_SADDLE_TYPE,
     FLOW_SWIRL_TYPE,
 } from '../../wallpapers/retro-flow/constants.js';
@@ -41,7 +42,14 @@ uniform float gridSharpness;
 uniform float gridStrength;
 uniform float saddleFrequency;
 uniform float saddleStrength;
+uniform float polygonSides;
+uniform float polygonThetaShift;
+uniform float polygonTwistStrength;
+uniform float polygonTwistFrequency;
+uniform float polygonConcaveStrength;
 
+const float PI = 3.141592653589793;
+const float TWO_PI = 6.283185307179586;
 const float FLOW_DENSITY = 55.0;
 
 vec2 swirlField(vec2 centered) {
@@ -78,6 +86,23 @@ vec2 saddleField(vec2 centered) {
     return (base + 0.25 * ripple) * saddleStrength;
 }
 
+vec2 polygonField(vec2 centered) {
+    float r = length(centered);
+    float theta = atan(centered.y, centered.x);
+    float n = floor(max(1.0, polygonSides));
+    float singlePiece = TWO_PI / n;
+    float thetaPrime = mod(theta + polygonThetaShift, TWO_PI);
+    float normalizedTheta = thetaPrime / singlePiece;
+    float pieceIndex = floor(normalizedTheta);
+    float pieceFract = fract(normalizedTheta);
+    float fieldTheta = singlePiece * (pieceIndex + 0.5)
+        + 0.5 * PI
+        + polygonConcaveStrength * pieceFract * (1.0 - pieceFract);
+    float polygonalR = r * sin(pieceFract * singlePiece);
+    float fieldLength = r + r * polygonTwistStrength * sin(polygonTwistFrequency * polygonalR);
+    return vec2(cos(fieldTheta), sin(fieldTheta)) * fieldLength * 0.08;
+}
+
 vec2 getFlowField(float typeId, vec2 centered) {
     if (typeId < 0.5) {
         return swirlField(centered);
@@ -85,7 +110,10 @@ vec2 getFlowField(float typeId, vec2 centered) {
     if (typeId < 1.5) {
         return gridField(centered);
     }
-    return saddleField(centered);
+    if (typeId < 2.5) {
+        return saddleField(centered);
+    }
+    return polygonField(centered);
 }
 
 void main() {
@@ -114,6 +142,8 @@ function getFlowTypeId(type) {
             return 1;
         case FLOW_SADDLE_TYPE:
             return 2;
+        case FLOW_POLYGON_TYPE:
+            return 3;
         case FLOW_SWIRL_TYPE:
         default:
             return 0;
@@ -154,6 +184,11 @@ export class RetroFlowPass extends Pass {
             gridStrength: { value: 0.45 },
             saddleFrequency: { value: 1.6 },
             saddleStrength: { value: 0.5 },
+            polygonSides: { value: 6 },
+            polygonThetaShift: { value: 0 },
+            polygonTwistStrength: { value: 0.4 },
+            polygonTwistFrequency: { value: 1 },
+            polygonConcaveStrength: { value: 0.4 },
         });
 
         this.material = new THREE.ShaderMaterial({
@@ -268,6 +303,26 @@ export class RetroFlowPass extends Pass {
 
     setSaddleStrength(value) {
         this.uniforms.saddleStrength.value = value;
+    }
+
+    setPolygonSides(value) {
+        this.uniforms.polygonSides.value = value;
+    }
+
+    setPolygonThetaShift(value) {
+        this.uniforms.polygonThetaShift.value = value;
+    }
+
+    setPolygonTwistStrength(value) {
+        this.uniforms.polygonTwistStrength.value = value;
+    }
+
+    setPolygonTwistFrequency(value) {
+        this.uniforms.polygonTwistFrequency.value = value;
+    }
+
+    setPolygonConcaveStrength(value) {
+        this.uniforms.polygonConcaveStrength.value = value;
     }
 
     setCenter(x, y) {

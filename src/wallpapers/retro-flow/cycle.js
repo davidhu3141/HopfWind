@@ -8,6 +8,7 @@ import {
     DOUBLE_CIRCLE_SLAB_TYPE,
     DOUBLE_CIRCLE_TYPE,
     FLOW_GRID_TYPE,
+    FLOW_POLYGON_TYPE,
     FLOW_SADDLE_TYPE,
     FLOW_SWIRL_TYPE,
     JUST_BARS_TYPE,
@@ -100,6 +101,9 @@ export function resolveCycleTypes(currentValues) {
     }
     if (currentValues.cycleflowsaddle) {
         flowEnabled.push(FLOW_SADDLE_TYPE);
+    }
+    if (currentValues.cycleflowpolygon) {
+        flowEnabled.push(FLOW_POLYGON_TYPE);
     }
 
     const warpEnabled = [];

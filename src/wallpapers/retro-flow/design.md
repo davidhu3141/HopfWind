@@ -238,6 +238,7 @@ flow pass types
 - Swirl
 - Grid
 - Saddle
+- Polygon
 
 
 flow pass 輪播
