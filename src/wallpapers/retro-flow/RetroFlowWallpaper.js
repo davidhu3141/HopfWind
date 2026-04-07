@@ -217,6 +217,8 @@ export class RetroFlowWallpaper {
         this.flowPass.setSaddleStrength(this.currentValues.flowsaddlestrength);
         this.flowPass.setPolygonSides(this.currentValues.flowpolygonsides);
         this.flowPass.setPolygonThetaShift(THREE.MathUtils.degToRad(this.currentValues.flowpolygonthetashift));
+        this.flowPass.setStripThetaShift(THREE.MathUtils.degToRad(this.currentValues.flowpolygonstripthetashift));
+        this.flowPass.setPolygonReverse(this.currentValues.flowpolygonreverse);
         this.flowPass.setPolygonTwistStrength(this.currentValues.flowpolygontwiststrength);
         this.flowPass.setPolygonTwistFrequency(this.currentValues.flowpolygontwistfrequency);
         this.flowPass.setPolygonConcaveStrength(this.currentValues.flowpolygonconcavestrength);
@@ -373,6 +375,8 @@ export class RetroFlowWallpaper {
                 'flowsaddlestrength',
                 'flowpolygonsides',
                 'flowpolygonthetashift',
+                'flowpolygonstripthetashift',
+                'flowpolygonreverse',
                 'flowpolygontwiststrength',
                 'flowpolygontwistfrequency',
                 'flowpolygonconcavestrength',

@@ -44,6 +44,8 @@ uniform float saddleFrequency;
 uniform float saddleStrength;
 uniform float polygonSides;
 uniform float polygonThetaShift;
+uniform float stripThetaShift;
+uniform float polygonReverseSign;
 uniform float polygonTwistStrength;
 uniform float polygonTwistFrequency;
 uniform float polygonConcaveStrength;
@@ -88,21 +90,22 @@ vec2 saddleField(vec2 centered) {
 
 vec2 polygonField(vec2 centered) {
     float r = length(centered);
-    float theta = atan(centered.y, centered.x);
+    float theta = atan(centered.y, polygonReverseSign * centered.x);
     float n = floor(max(1.0, polygonSides));
     float singlePiece = TWO_PI / n;
     float thetaPrime = mod(theta - polygonThetaShift, TWO_PI);
     float normalizedTheta = thetaPrime / singlePiece;
     float pieceIndex = floor(normalizedTheta);
     float pieceFract = fract(normalizedTheta);
+    float polygonalR = r * cos((pieceFract - 0.5) * singlePiece + stripThetaShift);
     float fieldTheta = singlePiece * (pieceIndex + 0.5)
         + 0.5 * PI
-        + polygonConcaveStrength * pieceFract * (1.0 - pieceFract);
-    float polygonalR = r * sin(pieceFract * singlePiece);
+        + polygonConcaveStrength * pieceFract * (1.0 - pieceFract)
+        + polygonThetaShift;
     float fieldLength = r + r * polygonTwistStrength * sin(polygonTwistFrequency * polygonalR);
     return vec2(
-        cos(fieldTheta + polygonThetaShift),
-        sin(fieldTheta + polygonThetaShift)
+        polygonReverseSign * cos(fieldTheta),
+        sin(fieldTheta)
     ) * fieldLength * 0.08;
 }
 
@@ -189,6 +192,8 @@ export class RetroFlowPass extends Pass {
             saddleStrength: { value: 0.5 },
             polygonSides: { value: 6 },
             polygonThetaShift: { value: 0 },
+            stripThetaShift: { value: 0 },
+            polygonReverseSign: { value: 1 },
             polygonTwistStrength: { value: 0.4 },
             polygonTwistFrequency: { value: 1 },
             polygonConcaveStrength: { value: 0.4 },
@@ -314,6 +319,14 @@ export class RetroFlowPass extends Pass {
 
     setPolygonThetaShift(value) {
         this.uniforms.polygonThetaShift.value = value;
+    }
+
+    setStripThetaShift(value) {
+        this.uniforms.stripThetaShift.value = value;
+    }
+
+    setPolygonReverse(value) {
+        this.uniforms.polygonReverseSign.value = value ? -1 : 1;
     }
 
     setPolygonTwistStrength(value) {

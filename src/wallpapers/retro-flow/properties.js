@@ -317,17 +317,19 @@ export const retroFlowProperties = [
     group('flowpolygon', 'Flow: Polygon'),
     slider('flowpolygonsides', 'Polygon Sides', 1, 64, 6, { step: 1, precision: 0 }),
     slider('flowpolygonthetashift', 'Polygon Theta Shift', 0, 360, 0, { step: 1, precision: 0 }),
+    slider('flowpolygonstripthetashift', 'Strip Theta Shift', 0, 360, 0, { step: 1, precision: 0 }),
+    bool('flowpolygonreverse', 'Reverse Polygon Flow', false),
     slider('flowpolygontwiststrength', 'Polygon Twist Strength', -2, 2, 0.4, {
         step: 0.01,
         fraction: true,
         precision: 2,
     }),
-    slider('flowpolygontwistfrequency', 'Polygon Twist Frequency', -2, 2, 1, {
+    slider('flowpolygontwistfrequency', 'Polygon Twist Frequency', 0, 10, 1, {
         step: 0.01,
         fraction: true,
         precision: 2,
     }),
-    slider('flowpolygonconcavestrength', 'Polygon Concave Strength', -2, 2, 0.4, {
+    slider('flowpolygonconcavestrength', 'Flow Inward Strength', -5, 5, 0.4, {
         step: 0.01,
         fraction: true,
         precision: 2,
