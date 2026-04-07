@@ -254,3 +254,4 @@ warp pass 輪播
 
 - Radial
 - Twist
+- Triangular

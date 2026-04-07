@@ -17,6 +17,7 @@ import {
     WARP_GRID_TYPE,
     WARP_NONE_TYPE,
     WARP_RADIAL_TYPE,
+    WARP_TRIANGULAR_TYPE,
     WARP_TWIST_TYPE,
     WARP_WAVE_TYPE,
 } from './constants.js';
@@ -124,6 +125,9 @@ export function resolveCycleTypes(currentValues) {
     }
     if (currentValues.cyclewarpflower) {
         warpEnabled.push(WARP_FLOWER_TYPE);
+    }
+    if (currentValues.cyclewarptriangular) {
+        warpEnabled.push(WARP_TRIANGULAR_TYPE);
     }
 
     return {

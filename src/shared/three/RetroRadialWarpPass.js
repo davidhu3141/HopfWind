@@ -5,6 +5,7 @@ import {
     WARP_GRID_TYPE,
     WARP_NONE_TYPE,
     WARP_RADIAL_TYPE,
+    WARP_TRIANGULAR_TYPE,
     WARP_TWIST_TYPE,
     WARP_WAVE_TYPE,
 } from '../../wallpapers/retro-flow/constants.js';
@@ -45,6 +46,8 @@ uniform float waveYAmplitude;
 uniform float flowerPetals;
 uniform float flowerAmplitude;
 uniform float flowerDecay;
+uniform float triangularWidth;
+uniform float triangularHeight;
 
 float safeWave(float x, float k) {
     return abs(k) < 0.0001 ? 0.0 : sin(k * x) / k;
@@ -95,15 +98,15 @@ vec2 flowerWarp(vec2 centered) {
 }
 
 vec2 triangularWarp(vec2 centered) {
-    float w = 0.04;
-    float h = 0.04;
+    float w = max(triangularWidth, 0.0001);
+    float h = max(triangularHeight, 0.0001);
     float yslanted = centered.y / h / 0.886;
     float xslanted = centered.x / w + yslanted * 0.5;
     float yIndex = floor(yslanted);
     float yFract = fract(yslanted);
     float xFract = fract(xslanted);
     float xIndex = floor(min(1.5, xFract / yFract)) + 2.0 * floor(xslanted);
-    return vec2((xIndex - yIndex) * w * 0.5, yIndex * h * 0.886);
+    return vec2((xIndex + 0.25 - yIndex) * w * 0.5, (yIndex + 0.5) * h * 0.886);
 }
 
 vec2 getWarpUv(float typeId, vec2 centered) {
@@ -118,8 +121,10 @@ vec2 getWarpUv(float typeId, vec2 centered) {
         warped = gridWarp(centered);
     } else if (typeId < 4.5) {
         warped = waveWarp(centered);
-    } else {
+    } else if (typeId < 5.5) {
         warped = flowerWarp(centered);
+    } else {
+        warped = triangularWarp(centered);
     }
     warped.x /= aspect;
     return warped * 0.5 + center;
@@ -150,6 +155,8 @@ function getWarpTypeId(type) {
             return 4;
         case WARP_FLOWER_TYPE:
             return 5;
+        case WARP_TRIANGULAR_TYPE:
+            return 6;
         default:
             return 1;
     }
@@ -186,6 +193,8 @@ export class RetroRadialWarpPass extends Pass {
             flowerPetals: { value: 6 },
             flowerAmplitude: { value: 0.22 },
             flowerDecay: { value: 0.9 },
+            triangularWidth: { value: 0.04 },
+            triangularHeight: { value: 0.04 },
         };
         this.material = new THREE.ShaderMaterial({
             uniforms: this.uniforms,
@@ -282,6 +291,14 @@ export class RetroRadialWarpPass extends Pass {
 
     setFlowerDecay(value) {
         this.uniforms.flowerDecay.value = value;
+    }
+
+    setTriangularWidth(value) {
+        this.uniforms.triangularWidth.value = value;
+    }
+
+    setTriangularHeight(value) {
+        this.uniforms.triangularHeight.value = value;
     }
 
     render(renderer, writeBuffer, readBuffer) {

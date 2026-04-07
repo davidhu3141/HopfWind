@@ -41,6 +41,7 @@ const CYCLE_SELECTION_KEYS = [
     'cyclewarpgrid',
     'cyclewarpwave',
     'cyclewarpflower',
+    'cyclewarptriangular',
 ];
 
 const CYCLE_TIMING_KEYS = ['cycleinterval', 'cycleinterpolateduration'];
@@ -241,6 +242,8 @@ export class RetroFlowWallpaper {
         this.postWarpPass.setFlowerPetals(this.currentValues.warpflowerpetals);
         this.postWarpPass.setFlowerAmplitude(this.currentValues.warpfloweramplitude);
         this.postWarpPass.setFlowerDecay(this.currentValues.warpflowerdecay);
+        this.postWarpPass.setTriangularWidth(this.currentValues.warptriangularwidth);
+        this.postWarpPass.setTriangularHeight(this.currentValues.warptriangularheight);
     }
 
     resetColorCycle() {
@@ -398,6 +401,8 @@ export class RetroFlowWallpaper {
                 'warpflowerpetals',
                 'warpfloweramplitude',
                 'warpflowerdecay',
+                'warptriangularwidth',
+                'warptriangularheight',
             )
         ) {
             this.updateFlowSettings();

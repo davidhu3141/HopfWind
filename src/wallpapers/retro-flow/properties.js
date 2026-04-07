@@ -110,6 +110,7 @@ export const retroFlowProperties = [
     bool('cyclewarpgrid', 'Cycle Warp Grid', false),
     bool('cyclewarpwave', 'Cycle Warp Wave', false),
     bool('cyclewarpflower', 'Cycle Warp Flower', false),
+    bool('cyclewarptriangular', 'Cycle Warp Triangular', false),
 
     group('barsgroup', 'Bars'),
     slider('geometrythetashift', 'Theta Shift', 0, 359, 0),
@@ -362,4 +363,16 @@ export const retroFlowProperties = [
     slider('warpflowerpetals', 'Flower Petals', 0, 20, 6, { step: 0.1, fraction: true, precision: 1 }),
     slider('warpfloweramplitude', 'Flower Amplitude', 0, 1, 0.22, { step: 0.01, fraction: true, precision: 2 }),
     slider('warpflowerdecay', 'Flower Decay', 0, 5, 0.9, { step: 0.01, fraction: true, precision: 2 }),
+
+    group('warptriangular', 'Warp: Triangular'),
+    slider('warptriangularwidth', 'Triangle Width', 0.001, 0.5, 0.04, {
+        step: 0.001,
+        fraction: true,
+        precision: 3,
+    }),
+    slider('warptriangularheight', 'Triangle Height', 0.001, 0.5, 0.04, {
+        step: 0.001,
+        fraction: true,
+        precision: 3,
+    }),
 ];
