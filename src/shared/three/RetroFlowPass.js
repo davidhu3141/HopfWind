@@ -55,15 +55,11 @@ const float TWO_PI = 6.283185307179586;
 const float FLOW_DENSITY = 55.0;
 
 vec2 swirlField(vec2 centered) {
-    float x = centered.x;
-    float y = centered.y;
-    float r = length(centered);
-    float cosPhi = x / r;
-    float sinPhi = y / r;
     return vec2(
-        cosPhi*cos(swirlTheta)-sinPhi*sin(swirlTheta),
-        sinPhi*cos(swirlTheta)+cosPhi*sin(swirlTheta)
-    ) * swirlStrength * (r + r * swirlBlend * sin(swirlDensity * r));
+        centered.x * cos(swirlTheta) - centered.y * sin(swirlTheta),
+        centered.y * cos(swirlTheta) + centered.x * sin(swirlTheta))
+    * swirlStrength
+    * (1.0 + swirlBlend * sin(swirlDensity * length(centered)));
 }
 
 float gridLane(float value, float frequency, float sharpness) {
@@ -78,14 +74,33 @@ vec2 gridField(vec2 centered) {
     return vec2(laneY, -laneX) * gridStrength;
 }
 
+// vec2 saddleField(vec2 centered) {
+//     float radius = max(length(centered), 0.6);
+//     vec2 base = vec2(centered.x, -centered.y) / radius;
+//     vec2 ripple = vec2(
+//         sin(centered.x * saddleFrequency),
+//         sin(centered.y * saddleFrequency)
+//     );
+//     return (base + 0.25 * ripple) * saddleStrength;
+// }
+
 vec2 saddleField(vec2 centered) {
-    float radius = max(length(centered), 0.6);
-    vec2 base = vec2(centered.x, -centered.y) / radius;
-    vec2 ripple = vec2(
-        sin(centered.x * saddleFrequency),
-        sin(centered.y * saddleFrequency)
+    float x = centered.x;
+    float y = centered.y;
+    float A = y * y + (x - 1.0) * (x - 1.0);
+    float B = y * y + (x + 1.0) * (x + 1.0);
+    float u = 0.05 / A + 0.05 / B;
+    float denom = 1.0 + u * u;
+
+    vec2 grad = vec2(
+        -0.1 * ((x - 1.0) / (A * A) + (x + 1.0) / (B * B)) / denom,
+        -0.1 * y * (1.0 / (A * A) + 1.0 / (B * B)) / denom
     );
-    return (base + 0.25 * ripple) * saddleStrength;
+
+    return vec2(
+        grad.x * cos(saddleFrequency) - grad.y * sin(saddleFrequency),
+        grad.y * cos(saddleFrequency) + grad.x * sin(saddleFrequency)
+    )
 }
 
 vec2 polygonField(vec2 centered) {
