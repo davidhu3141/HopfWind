@@ -106,7 +106,7 @@ export const retroFlowProperties = [
     slider('mediapositionx', 'Media Position X', 0, 100, 50),
     slider('mediapositiony', 'Media Position Y', 0, 100, 80),
 
-    group('cycle', 'Main Feature Cycle'),
+    group('cycle', 'Main Feature Cycle 🔁'),
     slider('cycleinterval', 'Cycle Interval (sec)', 1, 60, 8, { step: 0.1, fraction: true, precision: 1 }),
     slider('cycleinterpolateduration', 'Interpolate Duration (sec)', 0, 10, 1, { step: 0.1, fraction: true, precision: 1 }),
     bool('cyclerandomcolor', 'Include Random Color', false),
