@@ -99,6 +99,12 @@ export const retroFlowProperties = [
         precision: 2,
     }),
 
+    group('media', 'Media'),
+    bool('showmedia', 'Show Media Overlay', true),
+    slider('mediasize', 'Media Size', 0.5, 4, 1, { step: 0.1, fraction: true, precision: 1 }),
+    slider('mediapositionx', 'Media Position X', 0, 100, 50),
+    slider('mediapositiony', 'Media Position Y', 0, 100, 80),
+
     group('colors', 'Colors'),
     color('backgroundcolor', 'Background Color', '0 0 0'),
     color('barcolor', 'Bar Color', '1 1 1'),

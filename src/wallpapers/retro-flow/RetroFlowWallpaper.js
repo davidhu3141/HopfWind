@@ -3,6 +3,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { applyBackground } from '../../shared/features/background.js';
 import { createClockOverlay } from '../../shared/features/clockOverlay.js';
+import { createMediaOverlay } from '../../shared/features/mediaOverlay.js';
 import { createToastOverlay } from '../../shared/features/toastOverlay.js';
 import { RetroFlowPass } from '../../shared/three/RetroFlowPass.js';
 import { RetroRadialWarpPass } from '../../shared/three/RetroRadialWarpPass.js';
@@ -115,8 +116,9 @@ function getBarsGroupRotation(currentValues, frame) {
 }
 
 export class RetroFlowWallpaper {
-    constructor({ host, audioBinCount }) {
+    constructor({ host, audioBinCount, mode }) {
         this.host = host;
+        this.mode = mode;
         this.sampleSize = audioBinCount;
         this.canvas = createThreeCanvasApp(host, {
             cameraType: 'orthographic',
@@ -127,6 +129,7 @@ export class RetroFlowWallpaper {
         this.camera = this.canvas.camera;
         this.renderer = this.canvas.renderer;
         this.clock = createClockOverlay(host);
+        this.media = createMediaOverlay(host);
         this.toast = createToastOverlay(host);
         this.composer = new EffectComposer(this.renderer);
         this.renderPass = new RenderPass(this.scene, this.camera);
@@ -148,6 +151,17 @@ export class RetroFlowWallpaper {
             targetHsl: cloneHsl(this.currentBarHsl),
             fromToken: 0,
             toToken: 0,
+        };
+        this.mediaState = {
+            enabled: false,
+            title: '',
+            artist: '',
+            thumbnail: '',
+            textColor: '#ffffff',
+            playbackState: null,
+            playbackStoppedValue: null,
+            position: null,
+            duration: null,
         };
         this.cycleState = createCycleState();
         this.resolvedCycleTypes = resolveCycleTypes({});
@@ -178,6 +192,16 @@ export class RetroFlowWallpaper {
             shadowColor: rgbTripletToCss(this.currentValues.clockshadowcolor),
             backdropColor: rgbTripletToCss(this.currentValues.clockbackdropcolor),
             backdropOpacity: this.currentValues.clockbackdropopacity,
+        });
+    }
+
+    updateMedia() {
+        this.media.update({
+            visible: this.mode === 'wpe' && this.currentValues.showmedia,
+            size: this.currentValues.mediasize,
+            positionX: this.currentValues.mediapositionx,
+            positionY: this.currentValues.mediapositiony,
+            ...this.mediaState,
         });
     }
 
@@ -448,10 +472,25 @@ export class RetroFlowWallpaper {
         ) {
             this.updateClock();
         }
+        if (
+            hasChanged(
+                'showmedia',
+                'mediasize',
+                'mediapositionx',
+                'mediapositiony',
+            )
+        ) {
+            this.updateMedia();
+        }
         if (hasChanged('pixelated', 'canvasshrink', 'offsetx', 'offsety')) {
             this.updateCanvas();
         }
         this.idleCountdown = IDLE_COUNTDOWN_FRAMES;
+    }
+
+    applyMediaState(nextState) {
+        this.mediaState = { ...this.mediaState, ...nextState };
+        this.updateMedia();
     }
 
     resize() {
@@ -537,6 +576,7 @@ export class RetroFlowWallpaper {
 
     destroy() {
         this.clock.destroy();
+        this.media.destroy();
         this.toast.destroy();
         this.composer.dispose();
         this.flowPass.dispose();

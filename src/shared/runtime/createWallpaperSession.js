@@ -79,6 +79,16 @@ export function createWallpaperSession({ definition, mountTarget, mode = 'web', 
         audioSamples = next;
     };
 
+    const setMediaState = (patchState) => {
+        try {
+            wallpaper.applyMediaState?.(patchState ?? {});
+            host.clearError();
+        } catch (error) {
+            console.error('Media update failed', error);
+            host.showError(`Media update error\n${error instanceof Error ? error.message : String(error)}`);
+        }
+    };
+
     wallpaper.applyProperties(propertyValues);
     resize();
     animationFrameId = window.requestAnimationFrame(renderLoop);
@@ -89,6 +99,7 @@ export function createWallpaperSession({ definition, mountTarget, mode = 'web', 
         setProperties,
         setWpeProperties,
         setAudioSamples,
+        setMediaState,
         getProperties() {
             return { ...propertyValues };
         },
