@@ -6,11 +6,14 @@ export function createWallpaperSession({ definition, mountTarget, mode = 'web', 
     const defaultValues = getDefaultPropertyValues(definition.properties);
     const audioBinCount = definition.audioBinCount ?? 128;
     let propertyValues = { ...defaultValues };
+    let generalValues = { fps: 0 };
     let audioSamples = Array(audioBinCount).fill(0);
     let frame = 0;
     let animationFrameId = 0;
     let destroyed = false;
     let wallpaper = null;
+    let lastTickSeconds = performance.now() / 1000;
+    let fpsAccumulator = 0;
 
     for (let attempt = 1; attempt <= maxInitAttempts; attempt += 1) {
         try {
@@ -32,6 +35,21 @@ export function createWallpaperSession({ definition, mountTarget, mode = 'web', 
     const renderLoop = () => {
         if (destroyed) {
             return;
+        }
+
+        const nowSeconds = performance.now() / 1000;
+        const dt = Math.min(nowSeconds - lastTickSeconds, 1);
+        lastTickSeconds = nowSeconds;
+
+        const fpsLimit = propertyValues.respectwpeframelimit ? Number(generalValues.fps ?? 0) : 0;
+        if (fpsLimit > 0) {
+            fpsAccumulator += dt;
+            const frameInterval = 1 / fpsLimit;
+            if (fpsAccumulator < frameInterval) {
+                animationFrameId = window.requestAnimationFrame(renderLoop);
+                return;
+            }
+            fpsAccumulator -= frameInterval;
         }
 
         try {
@@ -89,6 +107,10 @@ export function createWallpaperSession({ definition, mountTarget, mode = 'web', 
         }
     };
 
+    const setGeneralProperties = (patchValues) => {
+        generalValues = { ...generalValues, ...patchValues };
+    };
+
     wallpaper.applyProperties(propertyValues);
     resize();
     animationFrameId = window.requestAnimationFrame(renderLoop);
@@ -98,6 +120,7 @@ export function createWallpaperSession({ definition, mountTarget, mode = 'web', 
         resize,
         setProperties,
         setWpeProperties,
+        setGeneralProperties,
         setAudioSamples,
         setMediaState,
         getProperties() {

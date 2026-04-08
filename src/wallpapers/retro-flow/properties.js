@@ -73,6 +73,7 @@ const WARP_TYPE_OPTIONS = [
 export const retroFlowProperties = [
     group('general', 'General'),
     slider('overallmagnitude', 'Overall Magnitude', 0, 20, 8, { step: 0.1, fraction: true, precision: 1 }),
+    bool('respectwpeframelimit', 'Respect WPE FPS Limit', true),
     bool('reduceframerate', 'Reduce Framerate When Idle', true),
 
     group('canvas', 'Canvas'),

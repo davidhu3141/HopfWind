@@ -105,6 +105,11 @@ export function startWpeWallpaper(definition) {
         }
 
         window.wallpaperPropertyListener = {
+            applyGeneralProperties(payload) {
+                if (payload && Object.prototype.hasOwnProperty.call(payload, 'fps')) {
+                    session.setGeneralProperties({ fps: payload.fps });
+                }
+            },
             applyUserProperties(payload) {
                 session.setWpeProperties(payload);
             },
