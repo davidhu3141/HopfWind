@@ -113,21 +113,20 @@ vec2 dualCoreField(vec2 centered) {
 
 vec2 polygonField(vec2 centered) {
     float r = length(centered);
-    float theta = atan(centered.y, polygonReverseSign * centered.x);
-    float n = floor(max(1.0, polygonSides));
-    float singlePiece = TWO_PI / n;
-    float thetaPrime = mod(theta - polygonThetaShift, TWO_PI);
-    float normalizedTheta = thetaPrime / singlePiece;
-    float pieceIndex = floor(normalizedTheta);
+    float singlePiece = TWO_PI / floor(max(1.0, polygonSides));
+    float normalizedTheta = mod(
+        atan(centered.y, centered.x * polygonReverseSign) - polygonThetaShift,
+        TWO_PI
+    ) / singlePiece;
     float pieceFract = fract(normalizedTheta);
     float polygonalR = r * cos((pieceFract - 0.5) * singlePiece + stripThetaShift);
-    float fieldTheta = singlePiece * (pieceIndex + 0.5)
+    float fieldTheta = singlePiece * (floor(normalizedTheta) + 0.5)
         + 0.5 * PI
         + polygonConcaveStrength * pieceFract * (1.0 - pieceFract)
         + polygonThetaShift;
     float fieldLength = r + r * polygonTwistStrength * sin(polygonTwistFrequency * polygonalR);
     return vec2(
-        polygonReverseSign * cos(fieldTheta),
+        cos(fieldTheta) * polygonReverseSign,
         sin(fieldTheta)
     ) * fieldLength * 0.08;
 }

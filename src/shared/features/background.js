@@ -25,15 +25,7 @@ export function resolveBackgroundImage(image) {
     }
 
     const normalized = decoded.replace(/\\/g, '/');
-    if (/^\/{2}[^/]/.test(normalized)) {
-        return encodeURI(`file:${normalized}`);
-    }
-
-    if (/^(?:[a-z]:|\/[a-z]:)/i.test(normalized)) {
-        return encodeURI(`file:///${normalized.replace(/^\/+/, '')}`);
-    }
-
-    return encodeURI(normalized);
+    return encodeURI(`file:///${normalized.replace(/^\/+/, '')}`);
 }
 
 export function applyBackground(host, { color, image }) {

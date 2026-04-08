@@ -104,11 +104,11 @@ export const retroFlowProperties = [
     color('barcolor', 'Bar Color', '1 1 1'),
     slider('huechangebysound', 'Hue By Sound', -2, 2, 0, { step: 0.01, fraction: true, precision: 2 }),
     slider('saturationchangebysound', 'Saturation By Sound', -10, 10, 0, { step: 0.01, fraction: true, precision: 2 }),
-    slider('lightnesschangebysound', 'Lightness By Sound', -10, 10, 0, { step: 0.01, fraction: true, precision: 2 }),
+    slider('lightnesschangebysound', 'Lightness By Sound', -30, 30, 0, { step: 0.01, fraction: true, precision: 2 }),
     slider('opacityinitial', 'Opacity Initial', 0, 1, 1, { step: 0.01, fraction: true, precision: 2 }),
     slider('opacitychangebysound', 'Opacity By Sound', 0, 5, 1, { step: 0.01, fraction: true, precision: 2 }),
 
-    group('cycle', 'Cycle'),
+    group('cycle', 'Main Feature Cycle'),
     slider('cycleinterval', 'Cycle Interval (sec)', 1, 60, 8, { step: 0.1, fraction: true, precision: 1 }),
     slider('cycleinterpolateduration', 'Interpolate Duration (sec)', 0, 10, 1, { step: 0.1, fraction: true, precision: 1 }),
     bool('cyclerandomcolor', 'Cycle Random Color', false),
@@ -324,7 +324,7 @@ export const retroFlowProperties = [
     slider('flowfieldmix', 'Swirl Blend', 0, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
     slider('flowswirldensity', 'Swirl Density', 0, 10, 5, { step: 0.1, fraction: true, precision: 1 }),
     slider('flowswirltheta', 'Swirl Theta (deg)', -180, 180, 5.73, { step: 0.1, fraction: true, precision: 1 }),
-    slider('flowswirlstrength', 'Swirl Strength', 0, 4, 1, { step: 0.01, fraction: true, precision: 2 }),
+    slider('flowswirlstrength', 'Swirl Strength', 0, 1, 0.04, { step: 0.01, fraction: true, precision: 2 }),
 
     group('flowgrid', 'Flow: Grid'),
     slider('flowgridxfrequency', 'Grid X Frequency', 0, 8, 1.7, { step: 0.01, fraction: true, precision: 2 }),
@@ -394,15 +394,15 @@ export const retroFlowProperties = [
     slider('warptwistradialamplitude', 'Twist Radial Amplitude', 0, 1, 0.08, { step: 0.01, fraction: true, precision: 2 }),
 
     group('warpgrid', 'Warp: Grid'),
-    slider('warpgridxfrequency', 'Grid X Frequency', 0, 60, 6, { step: 0.1, fraction: true, precision: 1 }),
-    slider('warpgridyfrequency', 'Grid Y Frequency', 0, 60, 6, { step: 0.1, fraction: true, precision: 1 }),
+    slider('warpgridxfrequency', 'Grid X Frequency', 0, 80, 6, { step: 0.1, fraction: true, precision: 1 }),
+    slider('warpgridyfrequency', 'Grid Y Frequency', 0, 80, 6, { step: 0.1, fraction: true, precision: 1 }),
     slider('warpgridsharpness', 'Grid Sharpness', 0.05, 2, 0.25, { step: 0.01, fraction: true, precision: 2 }),
     slider('warpgridxamplitude', 'Grid X Amplitude', 0, 1, 0.12, { step: 0.01, fraction: true, precision: 2 }),
     slider('warpgridyamplitude', 'Grid Y Amplitude', 0, 1, 0.12, { step: 0.01, fraction: true, precision: 2 }),
 
     group('warpwave', 'Warp: Wave'),
-    slider('warpwavexfrequency', 'Wave X Frequency', 0, 20, 4, { step: 0.1, fraction: true, precision: 1 }),
-    slider('warpwaveyfrequency', 'Wave Y Frequency', 0, 20, 5, { step: 0.1, fraction: true, precision: 1 }),
+    slider('warpwavexfrequency', 'Wave X Frequency', 0, 80, 4, { step: 0.1, fraction: true, precision: 1 }),
+    slider('warpwaveyfrequency', 'Wave Y Frequency', 0, 80, 5, { step: 0.1, fraction: true, precision: 1 }),
     slider('warpwavexamplitude', 'Wave X Amplitude', 0, 1, 0.18, { step: 0.01, fraction: true, precision: 2 }),
     slider('warpwaveyamplitude', 'Wave Y Amplitude', 0, 1, 0.12, { step: 0.01, fraction: true, precision: 2 }),
 
