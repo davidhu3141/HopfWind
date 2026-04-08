@@ -72,45 +72,45 @@ const WARP_TYPE_OPTIONS = [
 
 export const retroFlowProperties = [
     group('general', 'General'),
-    slider('overallmagnitude', 'Overall Magnitude', 0, 20, 8, { step: 0.1, fraction: true, precision: 1 }),
-    bool('respectwpeframelimit', 'Respect WPE FPS Limit', true),
-    bool('reduceframerate', 'Stop Animation When Idle', true),
+    slider('overallmagnitude', 'Overall Magnitude', 0, 20, 7, { step: 0.1, fraction: true, precision: 1 }),
+    bool('respectwpeframelimit', 'Respect WPE FPS Limit', false),
+    bool('reduceframerate', 'Stop Animation When Idle', false),
 
     group('canvas', 'Canvas'),
     slider('offsetx', 'Canvas Offset X', -1, 1, 0, { step: 0.05, fraction: true, precision: 2 }),
     slider('offsety', 'Canvas Offset Y', -1, 1, 0, { step: 0.05, fraction: true, precision: 2 }),
-    slider('pixelated', 'Pixelated', 1, 8, 1),
+    slider('pixelated', 'Pixelated', 1, 8, 2),
     slider('canvasshrink', 'Canvas Shrink', 0, 4, 0, { step: 0.1, fraction: true, precision: 2 }),
     bool('usecustomimage', 'Use Custom Image', false),
     file('customimage', 'Custom Image', '', { accept: 'image/*' }),
 
     group('clock', 'Clock'),
     bool('showclock', 'Show Clock', true),
-    slider('clocksizea', 'Clock Size A', 0.5, 18, 3, { step: 0.1, fraction: true, precision: 1 }),
-    slider('clocksizeb', 'Clock Size B', 0.5, 12, 1, { step: 0.1, fraction: true, precision: 1 }),
+    slider('clocksizea', 'Clock Size A', 0.5, 18, 5.6, { step: 0.1, fraction: true, precision: 1 }),
+    slider('clocksizeb', 'Clock Size B', 0.5, 12, 2.1, { step: 0.1, fraction: true, precision: 1 }),
     slider('clockpositionx', 'Clock Position X', 0, 100, 50),
     slider('clockpositiony', 'Clock Position Y', 0, 100, 50),
-    bool('_24hourclock', '24 Hour Clock', false),
+    bool('_24hourclock', '24 Hour Clock', true),
     color('clockcolor', 'Clock Color', '1 1 1'),
     color('clockshadowcolor', 'Clock Shadow Color', '0 0 0'),
     color('clockbackdropcolor', 'Clock Backdrop Color', '0 0 0'),
-    slider('clockbackdropopacity', 'Clock Backdrop Opacity', 0, 1, 0.6, {
+    slider('clockbackdropopacity', 'Clock Backdrop Opacity', 0, 1, 0.13, {
         step: 0.01,
         fraction: true,
         precision: 2,
     }),
 
     group('media', 'Media'),
-    bool('showmedia', 'Show Media Overlay', true),
+    bool('showmedia', 'Show Media Overlay', false),
     slider('mediasize', 'Media Size', 0.5, 4, 1, { step: 0.1, fraction: true, precision: 1 }),
     slider('mediapositionx', 'Media Position X', 0, 100, 50),
     slider('mediapositiony', 'Media Position Y', 0, 100, 80),
 
     group('cycle', 'Main Feature Cycle 🔁'),
-    slider('cycleinterval', 'Cycle Interval (sec)', 1, 60, 8, { step: 0.1, fraction: true, precision: 1 }),
-    slider('cycleinterpolateduration', 'Interpolate Duration (sec)', 0, 10, 1, { step: 0.1, fraction: true, precision: 1 }),
+    slider('cycleinterval', 'Cycle Interval (sec)', 1, 60, 3, { step: 0.1, fraction: true, precision: 1 }),
+    slider('cycleinterpolateduration', 'Interpolate Duration (sec)', 0, 10, 2, { step: 0.1, fraction: true, precision: 1 }),
     bool('cyclerandomcolor', 'Include Random Color', false),
-    bool('cyclegeometryjustbars', 'Include Bar Just Bars', false),
+    bool('cyclegeometryjustbars', 'Include Bar Just Bars', true),
     bool('cyclegeometrycircle', 'Include Bar Circle', true),
     bool('cyclegeometrydoublecircle', 'Include Bar Double Circle', false),
     bool('cyclegeometryslab', 'Include Bar Slab', false),
@@ -122,41 +122,41 @@ export const retroFlowProperties = [
     bool('cycleflowpolygon', 'Include Flow Polygon', false),
     bool('cycleflowdualcore', 'Include Flow Dual Core', false),
     bool('cycleflowcustom', 'Include Flow Custom', false),
-    bool('cyclewarpnone', 'Include Warp None', false),
-    bool('cyclewarpradial', 'Include Warp Radial', true),
-    bool('cyclewarptwist', 'Include Warp Twist', false),
-    bool('cyclewarpgrid', 'Include Warp Grid', false),
-    bool('cyclewarpwave', 'Include Warp Wave', false),
+    bool('cyclewarpnone', 'Include Warp None', true),
+    bool('cyclewarpradial', 'Include Warp Radial', false),
+    bool('cyclewarptwist', 'Include Warp Twist', true),
+    bool('cyclewarpgrid', 'Include Warp Grid', true),
+    bool('cyclewarpwave', 'Include Warp Wave', true),
     bool('cyclewarpflower', 'Include Warp Flower', false),
     bool('cyclewarptriangular', 'Include Warp Triangular', false),
     bool('cyclewarpcustom', 'Include Warp Custom', false),
 
     group('colors', 'Colors'),
-    color('backgroundcolor', 'Background Color', '0 0 0'),
-    color('barcolor', 'Bar Color', '1 1 1'),
+    color('backgroundcolor', 'Background Color', '0.2 0.2 0.2'),
+    color('barcolor', 'Bar Color', '0.2235294117647059 0.5411764705882353 0.6705882352941176'),
     slider('huechangebysound', 'Hue By Sound', -2, 2, 0, { step: 0.01, fraction: true, precision: 2 }),
     slider('saturationchangebysound', 'Saturation By Sound', -10, 10, 0, { step: 0.01, fraction: true, precision: 2 }),
-    slider('lightnesschangebysound', 'Lightness By Sound', -30, 30, 0, { step: 0.01, fraction: true, precision: 2 }),
+    slider('lightnesschangebysound', 'Lightness By Sound', -30, 30, 7, { step: 0.01, fraction: true, precision: 2 }),
     slider('opacityinitial', 'Opacity Initial', 0, 1, 1, { step: 0.01, fraction: true, precision: 2 }),
-    slider('opacitychangebysound', 'Opacity By Sound', 0, 5, 1, { step: 0.01, fraction: true, precision: 2 }),
+    slider('opacitychangebysound', 'Opacity By Sound', 0, 5, 0, { step: 0.01, fraction: true, precision: 2 }),
 
     group('barsgroup', 'Bars'),
     slider('geometrythetashift', 'Theta Shift', 0, 359, 0),
-    slider('geometryrotationhz', 'Rotation Speed (Hz)', 0, 1, 0.05, { step: 0.01, fraction: true, precision: 2 }),
+    slider('geometryrotationhz', 'Rotation Speed (Hz)', 0, 1, 0.06, { step: 0.01, fraction: true, precision: 2 }),
     bool('geometryreverse', 'Reverse Rotation', false),
-    slider('geometrysizebyenergy', 'Size By Energy', -700, 700, 0, { step: 0.1, fraction: true, precision: 1 }),
+    slider('geometrysizebyenergy', 'Size By Energy', -700, 700, 200, { step: 0.1, fraction: true, precision: 1 }),
     slider('_2doffsetx', '2D Offset X', -1, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
     slider('_2doffsety', '2D Offset Y', -1, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
 
     group('justbars', 'Bars: Just Bars'),
-    combo('justbarsshape', 'Just Bars Shape', 'shapeE', [
+    combo('justbarsshape', 'Just Bars Shape', 'shapeA', [
         { label: 'Single Up / Down', value: 'shapeA' },
         { label: 'Single Down / Up', value: 'shapeB' },
         { label: 'Single Up / Up', value: 'shapeC' },
         { label: 'Single Down / Down', value: 'shapeD' },
         { label: 'Two-Sided', value: 'shapeE' },
     ]),
-    slider('justbarsdistance', 'Bar Distance', 0.05, 1.5, 0.25, {
+    slider('justbarsdistance', 'Bar Distance', 0.05, 1.5, 0.21, {
         step: 0.01,
         fraction: true,
         precision: 2,
@@ -165,7 +165,7 @@ export const retroFlowProperties = [
         step: 1,
         precision: 0,
     }),
-    slider('justbarslengthchangebysound', 'Bar Length By Sound', 0, 25, 1, {
+    slider('justbarslengthchangebysound', 'Bar Length By Sound', 0, 25, 7, {
         step: 0.1,
         fraction: true,
         precision: 2,
@@ -181,7 +181,7 @@ export const retroFlowProperties = [
         { label: 'Single-Sided', value: 'single-sided' },
         { label: 'Two-Sided', value: 'two-sided' },
     ]),
-    slider('circleradius', 'Circle Radius', 1, 40, 12, {
+    slider('circleradius', 'Circle Radius', 1, 40, 6.7, {
         step: 0.1,
         fraction: true,
         precision: 1,
@@ -190,7 +190,7 @@ export const retroFlowProperties = [
         step: 1,
         precision: 0,
     }),
-    slider('circlelengthchangebysound', 'Bar Length By Sound', 0, 25, 1, {
+    slider('circlelengthchangebysound', 'Bar Length By Sound', 0, 25, 5, {
         step: 0.1,
         fraction: true,
         precision: 2,
@@ -206,12 +206,12 @@ export const retroFlowProperties = [
         { label: 'Single-Sided', value: 'single-sided' },
         { label: 'Two-Sided', value: 'two-sided' },
     ]),
-    slider('doublecircleradius', 'Circle Radius', 1, 40, 12, {
+    slider('doublecircleradius', 'Circle Radius', 1, 40, 2, {
         step: 0.1,
         fraction: true,
         precision: 1,
     }),
-    slider('doublecirclecenterdistanceratio', 'Center Distance (x Radius)', 0, 6, 2.2, {
+    slider('doublecirclecenterdistanceratio', 'Center Distance (x Radius)', 0, 6, 4, {
         step: 0.01,
         fraction: true,
         precision: 2,
@@ -220,12 +220,12 @@ export const retroFlowProperties = [
         step: 1,
         precision: 0,
     }),
-    slider('doublecirclelengthchangebysound', 'Bar Length By Sound', 0, 25, 1, {
+    slider('doublecirclelengthchangebysound', 'Bar Length By Sound', 0, 25, 5, {
         step: 0.1,
         fraction: true,
         precision: 2,
     }),
-    slider('doublecirclelengthinitial', 'Bar Length Initial', 0, 10, 0, {
+    slider('doublecirclelengthinitial', 'Bar Length Initial', 0, 10, 0.2, {
         step: 0.1,
         fraction: true,
         precision: 2,
@@ -233,33 +233,33 @@ export const retroFlowProperties = [
     slider('doublecircleminorthetashift', 'Minor Theta Shift', 0, 359, 0),
 
     group('slab', 'Bars: Slab'),
-    combo('slabshape', 'Slab Shape', 'shapeE', [
+    combo('slabshape', 'Slab Shape', 'shapeB', [
         { label: 'Single Up / Down', value: 'shapeA' },
         { label: 'Single Down / Up', value: 'shapeB' },
         { label: 'Single Up / Up', value: 'shapeC' },
         { label: 'Single Down / Down', value: 'shapeD' },
         { label: 'Two-Sided', value: 'shapeE' },
     ]),
-    slider('slabdistance', 'Bar Distance', 0.05, 1.5, 0.25, {
+    slider('slabdistance', 'Bar Distance', 0.05, 1.5, 0.2, {
         step: 0.01,
         fraction: true,
         precision: 2,
     }),
-    slider('slabwidth', 'Bar Width', 0, 150, 100, {
+    slider('slabwidth', 'Bar Width', 0, 150, 150, {
         step: 1,
         precision: 0,
     }),
-    slider('slabheightchangebysound', 'Bar Height By Sound', 0, 25, 1, {
+    slider('slabheightchangebysound', 'Bar Height By Sound', 0, 25, 25, {
         step: 0.1,
         fraction: true,
         precision: 2,
     }),
-    slider('slabheightinitial', 'Bar Height Initial', 0, 10, 0, {
+    slider('slabheightinitial', 'Bar Height Initial', 0, 10, 2, {
         step: 0.1,
         fraction: true,
         precision: 2,
     }),
-    slider('slabthickness', 'Thickness', 0, 5, 0.2, {
+    slider('slabthickness', 'Thickness', 0, 5, 0.05, {
         step: 0.01,
         fraction: true,
         precision: 2,
@@ -270,21 +270,21 @@ export const retroFlowProperties = [
         { label: 'Single-Sided', value: 'single-sided' },
         { label: 'Two-Sided', value: 'two-sided' },
     ]),
-    slider('circleslabradius', 'Circle Radius', 1, 40, 25, {
+    slider('circleslabradius', 'Circle Radius', 1, 40, 5, {
         step: 0.1,
         fraction: true,
         precision: 1,
     }),
-    slider('circleslabbarwidth', 'Bar Width', 0, 150, 100, {
+    slider('circleslabbarwidth', 'Bar Width', 0, 150, 110, {
         step: 1,
         precision: 0,
     }),
-    slider('circleslabheightchangebysound', 'Bar Height By Sound', 0, 25, 1, {
+    slider('circleslabheightchangebysound', 'Bar Height By Sound', 0, 25, 25, {
         step: 0.1,
         fraction: true,
         precision: 2,
     }),
-    slider('circleslabthickness', 'Thickness', 0, 5, 0.2, {
+    slider('circleslabthickness', 'Thickness', 0, 5, 0.5, {
         step: 0.01,
         fraction: true,
         precision: 2,
@@ -295,12 +295,12 @@ export const retroFlowProperties = [
         { label: 'Single-Sided', value: 'single-sided' },
         { label: 'Two-Sided', value: 'two-sided' },
     ]),
-    slider('doublecircleslabradius', 'Circle Radius', 1, 40, 25, {
+    slider('doublecircleslabradius', 'Circle Radius', 1, 40, 2.5, {
         step: 0.1,
         fraction: true,
         precision: 1,
     }),
-    slider('doublecircleslabcenterdistanceratio', 'Center Distance (x Radius)', 0, 6, 2.2, {
+    slider('doublecircleslabcenterdistanceratio', 'Center Distance (x Radius)', 0, 6, 5, {
         step: 0.01,
         fraction: true,
         precision: 2,
@@ -309,73 +309,73 @@ export const retroFlowProperties = [
         step: 1,
         precision: 0,
     }),
-    slider('doublecircleslabheightchangebysound', 'Bar Height By Sound', 0, 25, 1, {
+    slider('doublecircleslabheightchangebysound', 'Bar Height By Sound', 0, 25, 2, {
         step: 0.1,
         fraction: true,
         precision: 2,
     }),
-    slider('doublecircleslabthickness', 'Thickness', 0, 5, 0.2, {
+    slider('doublecircleslabthickness', 'Thickness', 0, 5, 0.5, {
         step: 0.01,
         fraction: true,
         precision: 2,
     }),
-    slider('doublecircleslabminorthetashift', 'Minor Theta Shift', 0, 359, 0),
+    slider('doublecircleslabminorthetashift', 'Minor Theta Shift', 0, 359, 152),
 
     group('flow', 'Flow'),
-    bool('antialiasingwillcauseblur', 'Allow Blur Filter', false),
-    slider('fade', 'Trail Fade', 0, 32, 1, { step: 0.1, fraction: true, precision: 2 }),
-    slider('flowvelocity', 'Flow Velocity', 0, 100, 1, { step: 0.1, fraction: true, precision: 2 }),
-    slider('flowopacitylimit', 'Flow Opacity Limit', 0, 1, 0.9, { step: 0.01, fraction: true, precision: 2 }),
+    bool('antialiasingwillcauseblur', 'Allow Blur Filter', true),
+    slider('fade', 'Trail Fade', 0, 32, 0.9, { step: 0.1, fraction: true, precision: 2 }),
+    slider('flowvelocity', 'Flow Velocity', 0, 100, 40, { step: 0.1, fraction: true, precision: 2 }),
+    slider('flowopacitylimit', 'Flow Opacity Limit', 0, 1, 0.8, { step: 0.01, fraction: true, precision: 2 }),
 
     group('flowswirl', 'Flow: Swirl'),
-    slider('flowfieldmix', 'Swirl Blend', 0, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
-    slider('flowswirldensity', 'Swirl Density', 0, 10, 5, { step: 0.1, fraction: true, precision: 1 }),
-    slider('flowswirltheta', 'Swirl Theta (deg)', -180, 180, 5.73, { step: 0.1, fraction: true, precision: 1 }),
+    slider('flowfieldmix', 'Swirl Blend', 0, 1, 0.2, { step: 0.01, fraction: true, precision: 2 }),
+    slider('flowswirldensity', 'Swirl Density', 0, 10, 3, { step: 0.1, fraction: true, precision: 1 }),
+    slider('flowswirltheta', 'Swirl Theta (deg)', -180, 180, 66, { step: 0.1, fraction: true, precision: 1 }),
     slider('flowswirlstrength', 'Swirl Strength', 0, 1, 0.04, { step: 0.01, fraction: true, precision: 2 }),
 
     group('flowgrid', 'Flow: Grid'),
-    slider('flowgridxfrequency', 'Grid X Frequency', 0, 8, 1.7, { step: 0.01, fraction: true, precision: 2 }),
-    slider('flowgridyfrequency', 'Grid Y Frequency', 0, 8, 1.7, { step: 0.01, fraction: true, precision: 2 }),
-    slider('flowgridsharpness', 'Grid Sharpness', 0.05, 2, 0.22, { step: 0.01, fraction: true, precision: 2 }),
-    slider('flowgridstrength', 'Grid Strength', 0, 2, 0.45, { step: 0.01, fraction: true, precision: 2 }),
+    slider('flowgridxfrequency', 'Grid X Frequency', 0, 8, 8, { step: 0.01, fraction: true, precision: 2 }),
+    slider('flowgridyfrequency', 'Grid Y Frequency', 0, 8, 0.65, { step: 0.01, fraction: true, precision: 2 }),
+    slider('flowgridsharpness', 'Grid Sharpness', 0.05, 2, 2, { step: 0.01, fraction: true, precision: 2 }),
+    slider('flowgridstrength', 'Grid Strength', 0, 2, 2, { step: 0.01, fraction: true, precision: 2 }),
 
     group('flowsaddle', 'Flow: Saddle'),
-    slider('flowsaddlefrequency', 'Saddle Frequency', 0, 8, 1.6, { step: 0.01, fraction: true, precision: 2 }),
-    slider('flowsaddlestrength', 'Saddle Strength', 0, 2, 0.5, { step: 0.01, fraction: true, precision: 2 }),
+    slider('flowsaddlefrequency', 'Saddle Frequency', 0, 8, 8, { step: 0.01, fraction: true, precision: 2 }),
+    slider('flowsaddlestrength', 'Saddle Strength', 0, 2, 1.17, { step: 0.01, fraction: true, precision: 2 }),
 
     group('flowdualcore', 'Flow: Dual Core'),
-    slider('flowdualcoredirection', 'Dual Core Direction', 0, 360, 24.1, {
+    slider('flowdualcoredirection', 'Dual Core Direction', 0, 360, 261.3, {
         step: 0.1,
         fraction: true,
         precision: 1,
     }),
-    slider('flowdualcorestrength', 'Dual Core Strength', 0, 2, 0.18, {
+    slider('flowdualcorestrength', 'Dual Core Strength', 0, 2, 0.7, {
         step: 0.01,
         fraction: true,
         precision: 2,
     }),
-    slider('flowdualcoredistance', 'Dual Core Distance', 0.1, 60, 15, {
+    slider('flowdualcoredistance', 'Dual Core Distance', 0.1, 60, 18, {
         step: 0.1,
         fraction: true,
         precision: 1,
     }),
 
     group('flowpolygon', 'Flow: Polygon'),
-    slider('flowpolygonsides', 'Polygon Sides', 1, 64, 6, { step: 1, precision: 0 }),
-    slider('flowpolygonthetashift', 'Polygon Theta Shift', 0, 360, 0, { step: 1, precision: 0 }),
-    slider('flowpolygonstripthetashift', 'Strip Theta Shift', 0, 360, 0, { step: 1, precision: 0 }),
+    slider('flowpolygonsides', 'Polygon Sides', 1, 64, 5, { step: 1, precision: 0 }),
+    slider('flowpolygonthetashift', 'Polygon Theta Shift', 0, 360, 54, { step: 1, precision: 0 }),
+    slider('flowpolygonstripthetashift', 'Strip Theta Shift', 0, 360, 110, { step: 1, precision: 0 }),
     bool('flowpolygonreverse', 'Reverse Polygon Flow', false),
-    slider('flowpolygontwiststrength', 'Polygon Twist Strength', -2, 2, 0.4, {
+    slider('flowpolygontwiststrength', 'Polygon Twist Strength', -2, 2, 0.8, {
         step: 0.01,
         fraction: true,
         precision: 2,
     }),
-    slider('flowpolygontwistfrequency', 'Polygon Twist Frequency', 0, 10, 1, {
+    slider('flowpolygontwistfrequency', 'Polygon Twist Frequency', 0, 10, 3, {
         step: 0.01,
         fraction: true,
         precision: 2,
     }),
-    slider('flowpolygonconcavestrength', 'Flow Inward Strength', -5, 5, 0.4, {
+    slider('flowpolygonconcavestrength', 'Flow Inward Strength', -5, 5, -2.08, {
         step: 0.01,
         fraction: true,
         precision: 2,
@@ -384,39 +384,39 @@ export const retroFlowProperties = [
     group('flowcustom', 'Flow: Custom'),
     combo('flowcustomfromtype', 'From Type', 'swirl', FLOW_TYPE_OPTIONS),
     combo('flowcustomtotype', 'To Type', 'grid', FLOW_TYPE_OPTIONS),
-    slider('flowcustommix', 'Mix', 0, 1, 0.5, {
+    slider('flowcustommix', 'Mix', 0, 1, 0.3, {
         step: 0.01,
         fraction: true,
         precision: 2,
     }),
 
     group('warpradial', 'Warp: Radial'),
-    slider('warpradialfrequency', 'Radial Frequency', 0, 40, 27, { step: 0.1, fraction: true, precision: 1 }),
-    slider('warpthetafrequency', 'Theta Frequency', 0, 40, 27, { step: 0.1, fraction: true, precision: 1 }),
+    slider('warpradialfrequency', 'Radial Frequency', 0, 40, 26.5, { step: 0.1, fraction: true, precision: 1 }),
+    slider('warpthetafrequency', 'Theta Frequency', 0, 40, 33, { step: 0.1, fraction: true, precision: 1 }),
 
     group('warptwist', 'Warp: Twist'),
-    slider('warptwistamount', 'Twist Amount', 0, 3, 0.9, { step: 0.01, fraction: true, precision: 2 }),
-    slider('warptwistdecay', 'Twist Decay', 0, 5, 1.8, { step: 0.01, fraction: true, precision: 2 }),
-    slider('warptwistradialfrequency', 'Twist Radial Frequency', 0, 20, 8, { step: 0.1, fraction: true, precision: 1 }),
-    slider('warptwistradialamplitude', 'Twist Radial Amplitude', 0, 1, 0.08, { step: 0.01, fraction: true, precision: 2 }),
+    slider('warptwistamount', 'Twist Amount', 0, 3, 2.34, { step: 0.01, fraction: true, precision: 2 }),
+    slider('warptwistdecay', 'Twist Decay', 0, 5, 1.53, { step: 0.01, fraction: true, precision: 2 }),
+    slider('warptwistradialfrequency', 'Twist Radial Frequency', 0, 20, 20, { step: 0.1, fraction: true, precision: 1 }),
+    slider('warptwistradialamplitude', 'Twist Radial Amplitude', 0, 1, 0.12, { step: 0.01, fraction: true, precision: 2 }),
 
     group('warpgrid', 'Warp: Grid'),
-    slider('warpgridxfrequency', 'Grid X Frequency', 0, 80, 6, { step: 0.1, fraction: true, precision: 1 }),
-    slider('warpgridyfrequency', 'Grid Y Frequency', 0, 80, 6, { step: 0.1, fraction: true, precision: 1 }),
-    slider('warpgridsharpness', 'Grid Sharpness', 0.05, 2, 0.25, { step: 0.01, fraction: true, precision: 2 }),
-    slider('warpgridxamplitude', 'Grid X Amplitude', 0, 1, 0.12, { step: 0.01, fraction: true, precision: 2 }),
-    slider('warpgridyamplitude', 'Grid Y Amplitude', 0, 1, 0.12, { step: 0.01, fraction: true, precision: 2 }),
+    slider('warpgridxfrequency', 'Grid X Frequency', 0, 80, 60, { step: 0.1, fraction: true, precision: 1 }),
+    slider('warpgridyfrequency', 'Grid Y Frequency', 0, 80, 60, { step: 0.1, fraction: true, precision: 1 }),
+    slider('warpgridsharpness', 'Grid Sharpness', 0.05, 2, 2, { step: 0.01, fraction: true, precision: 2 }),
+    slider('warpgridxamplitude', 'Grid X Amplitude', 0, 1, 0.05, { step: 0.01, fraction: true, precision: 2 }),
+    slider('warpgridyamplitude', 'Grid Y Amplitude', 0, 1, 0.05, { step: 0.01, fraction: true, precision: 2 }),
 
     group('warpwave', 'Warp: Wave'),
-    slider('warpwavexfrequency', 'Wave X Frequency', 0, 80, 4, { step: 0.1, fraction: true, precision: 1 }),
-    slider('warpwaveyfrequency', 'Wave Y Frequency', 0, 80, 5, { step: 0.1, fraction: true, precision: 1 }),
-    slider('warpwavexamplitude', 'Wave X Amplitude', 0, 1, 0.18, { step: 0.01, fraction: true, precision: 2 }),
-    slider('warpwaveyamplitude', 'Wave Y Amplitude', 0, 1, 0.12, { step: 0.01, fraction: true, precision: 2 }),
+    slider('warpwavexfrequency', 'Wave X Frequency', 0, 80, 20, { step: 0.1, fraction: true, precision: 1 }),
+    slider('warpwaveyfrequency', 'Wave Y Frequency', 0, 80, 20, { step: 0.1, fraction: true, precision: 1 }),
+    slider('warpwavexamplitude', 'Wave X Amplitude', 0, 1, 0.07, { step: 0.01, fraction: true, precision: 2 }),
+    slider('warpwaveyamplitude', 'Wave Y Amplitude', 0, 1, 0.07, { step: 0.01, fraction: true, precision: 2 }),
 
     group('warpflower', 'Warp: Flower'),
-    slider('warpflowerpetals', 'Flower Petals', 0, 20, 6, { step: 0.1, fraction: true, precision: 1 }),
-    slider('warpfloweramplitude', 'Flower Amplitude', 0, 1, 0.22, { step: 0.01, fraction: true, precision: 2 }),
-    slider('warpflowerdecay', 'Flower Decay', 0, 5, 0.9, { step: 0.01, fraction: true, precision: 2 }),
+    slider('warpflowerpetals', 'Flower Petals', 0, 20, 20, { step: 0.1, fraction: true, precision: 1 }),
+    slider('warpfloweramplitude', 'Flower Amplitude', 0, 1, 0.07, { step: 0.01, fraction: true, precision: 2 }),
+    slider('warpflowerdecay', 'Flower Decay', 0, 5, 5, { step: 0.01, fraction: true, precision: 2 }),
 
     group('warptriangular', 'Warp: Triangular'),
     slider('warptriangularwidth', 'Triangle Width', 0.001, 0.5, 0.04, {
@@ -431,9 +431,9 @@ export const retroFlowProperties = [
     }),
 
     group('warpcustom', 'Warp: Custom'),
-    combo('warpcustomfromtype', 'From Type', 'radial', WARP_TYPE_OPTIONS),
+    combo('warpcustomfromtype', 'From Type', 'grid', WARP_TYPE_OPTIONS),
     combo('warpcustomtotype', 'To Type', 'twist', WARP_TYPE_OPTIONS),
-    slider('warpcustommix', 'Mix', 0, 1, 0.5, {
+    slider('warpcustommix', 'Mix', 0, 1, 0.6, {
         step: 0.01,
         fraction: true,
         precision: 2,
