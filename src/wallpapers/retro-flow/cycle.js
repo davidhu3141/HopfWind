@@ -31,6 +31,9 @@ function createDomainState(defaultType) {
         targetType: defaultType,
         transitionFromType: defaultType,
         fallbackUsed: false,
+        lastSelectedAt: {
+            [defaultType]: 0,
+        },
     };
 }
 
@@ -43,12 +46,29 @@ function buildCycleStateSignature(resolved) {
     ].join('::');
 }
 
-function chooseNextType(enabledTypes, currentType) {
+function chooseNextType(enabledTypes, currentType, lastSelectedAt, nowSeconds, normalizationScale) {
     const candidates = enabledTypes.filter((type) => type !== currentType);
     if (candidates.length === 0) {
         return currentType;
     }
-    return candidates[Math.floor(Math.random() * candidates.length)];
+
+    const safeScale = Math.max(0.001, normalizationScale);
+    const weights = candidates.map((type) => {
+        const lastPickedAt = lastSelectedAt[type] ?? 0;
+        const idleTime = Math.max(0, nowSeconds - lastPickedAt);
+        return 1 + idleTime / safeScale;
+    });
+    const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+    let randomWeight = Math.random() * totalWeight;
+
+    for (let index = 0; index < candidates.length; index += 1) {
+        randomWeight -= weights[index];
+        if (randomWeight <= 0) {
+            return candidates[index];
+        }
+    }
+
+    return candidates[candidates.length - 1];
 }
 
 function createStaticPhase(state) {
@@ -195,6 +215,7 @@ export function resetCycleState(state, resolved, intervalSeconds, nowSeconds) {
     for (const domainName of ['geometry', 'flow', 'warp']) {
         const domain = state[domainName];
         const resolvedDomain = resolved[domainName];
+        domain.lastSelectedAt = domain.lastSelectedAt ?? {};
         const nextType = resolvedDomain.enabledTypes.includes(domain.currentType)
             ? domain.currentType
             : resolvedDomain.enabledTypes[0];
@@ -202,6 +223,12 @@ export function resetCycleState(state, resolved, intervalSeconds, nowSeconds) {
         domain.targetType = nextType;
         domain.transitionFromType = nextType;
         domain.fallbackUsed = resolvedDomain.fallbackUsed;
+        for (const type of resolvedDomain.enabledTypes) {
+            if (!Number.isFinite(domain.lastSelectedAt[type])) {
+                domain.lastSelectedAt[type] = nowSeconds;
+            }
+        }
+        domain.lastSelectedAt[nextType] = nowSeconds;
     }
 
     state.color.currentToken = 0;
@@ -308,7 +335,13 @@ export function updateCycleState(state, resolved, currentValues, frame) {
     }
 
     const enabledTypes = resolved[domainName].enabledTypes;
-    const nextType = chooseNextType(enabledTypes, domain.currentType);
+    const nextType = chooseNextType(
+        enabledTypes,
+        domain.currentType,
+        domain.lastSelectedAt,
+        nowSeconds,
+        intervalSeconds + durationSeconds,
+    );
 
     if (nextType === domain.currentType) {
         state.nextSwitchSeconds = nowSeconds + intervalSeconds;
@@ -317,6 +350,7 @@ export function updateCycleState(state, resolved, currentValues, frame) {
 
     domain.transitionFromType = domain.currentType;
     domain.targetType = nextType;
+    domain.lastSelectedAt[nextType] = nowSeconds;
     state.activeDomain = domainName;
     state.transitionStartSeconds = nowSeconds;
 
