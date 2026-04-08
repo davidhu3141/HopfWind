@@ -75,6 +75,7 @@ export function startWpeWallpaper(definition) {
         window.wallpaperRegisterMediaPlaybackListener((event) => {
             applyMedia({
                 playbackState: event?.state ?? null,
+                playbackPlayingValue: window.wallpaperMediaIntegration?.PLAYBACK_PLAYING ?? null,
                 playbackStoppedValue: window.wallpaperMediaIntegration?.PLAYBACK_STOPPED ?? null,
             });
         });

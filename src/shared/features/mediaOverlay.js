@@ -4,6 +4,8 @@ export function createMediaOverlay(host) {
     let titleElement = null;
     let artistElement = null;
     let timelineElement = null;
+    let timelineIntervalId = 0;
+    let displayPosition = null;
     let currentState = {
         visible: true,
         size: 1,
@@ -16,6 +18,7 @@ export function createMediaOverlay(host) {
         backgroundColor: '',
         textColor: '#111111',
         playbackState: null,
+        playbackPlayingValue: null,
         position: null,
         duration: null,
         playbackStoppedValue: null,
@@ -132,11 +135,66 @@ export function createMediaOverlay(host) {
         return currentState.visible && hasContent && !isStopped;
     };
 
+    const stopTimelineTimer = () => {
+        if (timelineIntervalId) {
+            window.clearInterval(timelineIntervalId);
+            timelineIntervalId = 0;
+        }
+    };
+
+    const shouldAdvanceTimeline = () => (
+        currentState.playbackPlayingValue != null
+        && currentState.playbackState === currentState.playbackPlayingValue
+        && Number.isFinite(displayPosition)
+        && Number.isFinite(currentState.duration)
+    );
+
+    const updateTimelineText = () => {
+        if (!timelineElement) {
+            return;
+        }
+
+        const hasTimeline = Number.isFinite(displayPosition) && Number.isFinite(currentState.duration);
+        timelineElement.textContent = hasTimeline
+            ? `${formatTime(displayPosition)} / ${formatTime(currentState.duration)}`
+            : '';
+        timelineElement.style.display = hasTimeline ? '' : 'none';
+    };
+
+    const startTimelineTimer = () => {
+        if (timelineIntervalId || !shouldAdvanceTimeline()) {
+            return;
+        }
+
+        timelineIntervalId = window.setInterval(() => {
+            if (!shouldAdvanceTimeline()) {
+                stopTimelineTimer();
+                return;
+            }
+
+            displayPosition = Math.min(displayPosition + 1, currentState.duration);
+            updateTimelineText();
+        }, 1000);
+    };
+
+    const syncTimelineTimer = () => {
+        if (shouldAdvanceTimeline()) {
+            startTimelineTimer();
+            return;
+        }
+        stopTimelineTimer();
+    };
+
     return {
         update(nextState) {
             currentState = { ...currentState, ...nextState };
+            if (Object.prototype.hasOwnProperty.call(nextState, 'position')) {
+                displayPosition = Number.isFinite(nextState.position) ? nextState.position : null;
+            }
+            syncTimelineTimer();
 
             if (!shouldShow()) {
+                stopTimelineTimer();
                 element?.remove();
                 element = null;
                 artElement = null;
@@ -164,20 +222,17 @@ export function createMediaOverlay(host) {
             titleElement.textContent = currentState.title || 'Unknown Title';
             artistElement.textContent = currentState.artist || '';
             artistElement.style.display = currentState.artist ? '' : 'none';
-
-            const hasTimeline = Number.isFinite(currentState.position) && Number.isFinite(currentState.duration);
-            timelineElement.textContent = hasTimeline
-                ? `${formatTime(currentState.position)} / ${formatTime(currentState.duration)}`
-                : '';
-            timelineElement.style.display = hasTimeline ? '' : 'none';
+            updateTimelineText();
         },
         destroy() {
+            stopTimelineTimer();
             element?.remove();
             element = null;
             artElement = null;
             titleElement = null;
             artistElement = null;
             timelineElement = null;
+            displayPosition = null;
         },
     };
 }
