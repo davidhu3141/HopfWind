@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { MathUtils } from 'three';
 import {
     CIRCLE_SLAB_TYPE,
     CIRCLE_TYPE,
@@ -257,7 +257,7 @@ export function updateCycleState(state, resolved, currentValues, frame) {
         const domain = state[state.activeDomain];
         const mix = durationSeconds <= 0
             ? 1
-            : THREE.MathUtils.clamp((nowSeconds - state.transitionStartSeconds) / durationSeconds, 0, 1);
+            : MathUtils.clamp((nowSeconds - state.transitionStartSeconds) / durationSeconds, 0, 1);
 
         if (mix >= 1) {
             if (state.activeDomain === 'color') {

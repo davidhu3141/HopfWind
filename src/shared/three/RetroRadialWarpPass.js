@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { MathUtils, ShaderMaterial, Vector2 } from 'three';
 import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass.js';
 import {
     WARP_CUSTOM_TYPE,
@@ -200,7 +200,7 @@ export class RetroRadialWarpPass extends Pass {
         this.uniforms = {
             tDiffuse: { value: null },
             aspect: { value: 1 },
-            center: { value: new THREE.Vector2(0.5, 0.5) },
+            center: { value: new Vector2(0.5, 0.5) },
             warpFromType: { value: 0 },
             warpToType: { value: 0 },
             warpTypeMix: { value: 0 },
@@ -228,7 +228,7 @@ export class RetroRadialWarpPass extends Pass {
             triangularWidth: { value: 0.04 },
             triangularHeight: { value: 0.04 },
         };
-        this.material = new THREE.ShaderMaterial({
+        this.material = new ShaderMaterial({
             uniforms: this.uniforms,
             vertexShader: makeVertexShader(),
             fragmentShader: makeFragmentShader(),
@@ -256,7 +256,7 @@ export class RetroRadialWarpPass extends Pass {
     setCustomWarp(fromType, toType, mix) {
         this.uniforms.customWarpFromType.value = getConcreteWarpTypeId(fromType);
         this.uniforms.customWarpToType.value = getConcreteWarpTypeId(toType);
-        this.uniforms.customWarpMix.value = THREE.MathUtils.clamp(Number.isFinite(mix) ? mix : 0.5, 0, 1);
+        this.uniforms.customWarpMix.value = MathUtils.clamp(Number.isFinite(mix) ? mix : 0.5, 0, 1);
     }
 
     setRadialFrequency(value) {

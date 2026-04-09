@@ -1,4 +1,4 @@
-﻿import * as THREE from 'three';
+﻿import { MathUtils, OrthographicCamera, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 
 function applyCanvasStyle(canvas, metrics) {
     canvas.style.position = 'absolute';
@@ -30,7 +30,7 @@ function computeRenderMetrics(host, pixelated, canvasScale, offsetX, offsetY) {
 function updateOrthographicCamera(camera, viewZ, viewport, viewAngle, showHalf) {
     const aspect = viewport.width / viewport.height;
     const referenceFov = 30;
-    const halfHeight = viewZ * Math.tan(THREE.MathUtils.degToRad(referenceFov / 2));
+    const halfHeight = viewZ * Math.tan(MathUtils.degToRad(referenceFov / 2));
     const halfWidth = halfHeight * aspect;
 
     camera.left = -halfWidth;
@@ -67,12 +67,12 @@ export function createThreeCanvasApp(host, options = {}) {
         sortObjects = false,
     } = options;
 
-    const scene = new THREE.Scene();
+    const scene = new Scene();
     const camera = cameraType === 'orthographic'
-        ? new THREE.OrthographicCamera(-1, 1, 1, -1, 1, initialViewZ * 2)
-        : new THREE.PerspectiveCamera(initialFov, 1, 1, initialViewZ * 2);
+        ? new OrthographicCamera(-1, 1, 1, -1, 1, initialViewZ * 2)
+        : new PerspectiveCamera(initialFov, 1, 1, initialViewZ * 2);
 
-    const renderer = new THREE.WebGLRenderer({
+    const renderer = new WebGLRenderer({
         alpha,
         antialias,
         sortObjects,

@@ -1,4 +1,4 @@
-﻿import * as THREE from 'three';
+﻿import { Color, DoubleSide, HemisphereLight, LinearFilter, Mesh, MeshBasicMaterial, NearestFilter, PlaneGeometry } from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { applyBackground } from '../../shared/features/background.js';
@@ -37,15 +37,15 @@ export class SpecEntityWallpaper {
         this.currentValues = {};
         this.idleCountdown = IDLE_COUNTDOWN_FRAMES;
         this.textArray = rasterizeTextToTransposedMatrix(' ');
-        this.currentColor = new THREE.Color(1, 1, 1);
+        this.currentColor = new Color(1, 1, 1);
         this.bars = [];
-        this.light = new THREE.HemisphereLight(0xffffff, 0x080808, 1);
+        this.light = new HemisphereLight(0xffffff, 0x080808, 1);
         this.scene.add(this.light);
 
         for (let index = 0; index < this.sampleSize; index += 1) {
-            const geometry = new THREE.PlaneGeometry(0.4, 0.03, 1, 1);
-            const material = new THREE.MeshBasicMaterial({ transparent: true, side: THREE.DoubleSide });
-            const mesh = new THREE.Mesh(geometry, material);
+            const geometry = new PlaneGeometry(0.4, 0.03, 1, 1);
+            const material = new MeshBasicMaterial({ transparent: true, side: DoubleSide });
+            const mesh = new Mesh(geometry, material);
             mesh.matrixAutoUpdate = false;
             mesh.matrix.setPosition((40 * index) / this.sampleSize - 20, 0, 0);
             this.scene.add(mesh);
@@ -77,7 +77,7 @@ export class SpecEntityWallpaper {
         this.bars.forEach((bar, index) => {
             const previousHeight = bar.geometry.parameters.height;
             bar.geometry.dispose();
-            bar.geometry = new THREE.PlaneGeometry(this.currentValues.barwidth, previousHeight, 1, 1);
+            bar.geometry = new PlaneGeometry(this.currentValues.barwidth, previousHeight, 1, 1);
             bar.matrix.setPosition(this.currentValues.bardistance * (index - this.sampleSize / 2), 0, 0);
         });
     }
@@ -90,7 +90,7 @@ export class SpecEntityWallpaper {
     }
 
     updateFlowSettings() {
-        this.flowPass.setFilter(this.currentValues.antialiasingwillcauseblur ? THREE.LinearFilter : THREE.NearestFilter);
+        this.flowPass.setFilter(this.currentValues.antialiasingwillcauseblur ? LinearFilter : NearestFilter);
         this.flowPass.setApplyFadingPerNFrames(this.currentValues.applyfadingpernframes);
         this.flowPass.setFadeAmount(this.currentValues.fade / 255);
         this.flowPass.setMoveDir((this.currentValues.flowdirection / 180) * Math.PI + Math.PI / 2);
@@ -122,7 +122,7 @@ export class SpecEntityWallpaper {
 
         this.currentValues = { ...nextValues };
         if (hasChanged('barcolor')) {
-            this.currentColor = new THREE.Color(rgbTripletToCss(this.currentValues.barcolor));
+            this.currentColor = new Color(rgbTripletToCss(this.currentValues.barcolor));
         }
 
         if (hasChanged('barcolor', 'usesinglecolor') && this.currentValues.usesinglecolor) {
@@ -233,7 +233,7 @@ export class SpecEntityWallpaper {
             const material = bar.material;
 
             if (!this.currentValues.usesinglecolor) {
-                material.color = new THREE.Color(this.colorForBar(sample, frame));
+                material.color = new Color(this.colorForBar(sample, frame));
             }
             material.opacity = this.currentValues.opacityinitial + sample * 100 * this.currentValues.opacitychangebysound;
             material.needsUpdate = true;

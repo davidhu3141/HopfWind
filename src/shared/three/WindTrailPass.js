@@ -1,4 +1,4 @@
-﻿import * as THREE from 'three';
+﻿import { ShaderMaterial, WebGLRenderTarget } from 'three';
 import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass.js';
 
 function makeVertexShader() {
@@ -53,7 +53,7 @@ export class WindTrailPass extends Pass {
             brightDecay: { value: 0.7 },
         };
 
-        this.material = new THREE.ShaderMaterial({
+        this.material = new ShaderMaterial({
             uniforms: this.uniforms,
             vertexShader: makeVertexShader(),
             fragmentShader: makeFragmentShader(),
@@ -65,8 +65,8 @@ export class WindTrailPass extends Pass {
     createRenderTargets() {
         this.remember?.dispose();
         this.remember2?.dispose();
-        this.remember = new THREE.WebGLRenderTarget(this.width, this.height);
-        this.remember2 = new THREE.WebGLRenderTarget(this.width, this.height);
+        this.remember = new WebGLRenderTarget(this.width, this.height);
+        this.remember2 = new WebGLRenderTarget(this.width, this.height);
     }
 
     setSize(width, height) {

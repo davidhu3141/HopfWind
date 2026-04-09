@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { Color, Group, HemisphereLight, LinearFilter, MathUtils, NearestFilter } from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { applyBackground } from '../../shared/features/background.js';
@@ -19,7 +19,7 @@ function parseRgbTriplet(value) {
         .trim()
         .split(/\s+/)
         .map((channel) => Number.parseFloat(channel))
-        .map((channel) => (Number.isFinite(channel) ? THREE.MathUtils.clamp(channel, 0, 1) : 1));
+        .map((channel) => (Number.isFinite(channel) ? MathUtils.clamp(channel, 0, 1) : 1));
     const [r = 1, g = 1, b = 1] = channels;
     return { r, g, b };
 }
@@ -85,8 +85,8 @@ function interpolateCycleHsl(fromHsl, toHsl, mix) {
     if (getHueDiff(fromHsl.h, toHsl.h) <= LARGE_HUE_DIFF_THRESHOLD) {
         return {
             h: lerpHue(fromHsl.h, toHsl.h, mix),
-            s: THREE.MathUtils.lerp(fromHsl.s, toHsl.s, mix),
-            l: THREE.MathUtils.lerp(fromHsl.l, toHsl.l, mix),
+            s: MathUtils.lerp(fromHsl.s, toHsl.s, mix),
+            l: MathUtils.lerp(fromHsl.l, toHsl.l, mix),
         };
     }
 
@@ -95,23 +95,23 @@ function interpolateCycleHsl(fromHsl, toHsl, mix) {
         const localMix = mix / 0.5;
         return {
             h: fromHsl.h,
-            s: THREE.MathUtils.lerp(fromHsl.s, 0, localMix),
-            l: THREE.MathUtils.lerp(fromHsl.l, pivotLightness, localMix),
+            s: MathUtils.lerp(fromHsl.s, 0, localMix),
+            l: MathUtils.lerp(fromHsl.l, pivotLightness, localMix),
         };
     }
 
     const localMix = (mix - 0.5) / 0.5;
     return {
         h: toHsl.h,
-        s: THREE.MathUtils.lerp(0, toHsl.s, localMix),
-        l: THREE.MathUtils.lerp(pivotLightness, toHsl.l, localMix),
+        s: MathUtils.lerp(0, toHsl.s, localMix),
+        l: MathUtils.lerp(pivotLightness, toHsl.l, localMix),
     };
 }
 
 function getBarsGroupRotation(currentValues, frame) {
     const direction = currentValues.geometryreverse ? -1 : 1;
     const spin = direction * frame * ((2 * Math.PI * currentValues.geometryrotationhz) / 60);
-    const thetaShift = THREE.MathUtils.degToRad(currentValues.geometrythetashift ?? 0);
+    const thetaShift = MathUtils.degToRad(currentValues.geometrythetashift ?? 0);
     return spin + thetaShift;
 }
 
@@ -143,7 +143,7 @@ export class RetroFlowWallpaper {
         this.idleCountdown = IDLE_COUNTDOWN_FRAMES;
         this.energyBands = { all: 0 };
         this.selectedEnergy = 0;
-        this.currentBarColor = new THREE.Color(1, 1, 1);
+        this.currentBarColor = new Color(1, 1, 1);
         this.currentBarHsl = { h: 0, s: 0, l: 1 };
         this.colorCycle = {
             currentHsl: cloneHsl(this.currentBarHsl),
@@ -167,8 +167,8 @@ export class RetroFlowWallpaper {
         this.resolvedCycleTypes = resolveCycleTypes({});
         this.lastFrame = 0;
         this.bars = [];
-        this.barsGroup = new THREE.Group();
-        this.light = new THREE.HemisphereLight(0xffffff, 0x080808, 1);
+        this.barsGroup = new Group();
+        this.light = new HemisphereLight(0xffffff, 0x080808, 1);
         this.scene.add(this.light);
         this.scene.add(this.barsGroup);
 
@@ -221,21 +221,21 @@ export class RetroFlowWallpaper {
     updatePassCenters() {
         const cameraWidth = this.camera.right - this.camera.left;
         const cameraHeight = this.camera.top - this.camera.bottom;
-        const centerX = THREE.MathUtils.clamp(0.5 + this.barsGroup.position.x / cameraWidth, 0, 1);
-        const centerY = THREE.MathUtils.clamp(0.5 + this.barsGroup.position.y / cameraHeight, 0, 1);
+        const centerX = MathUtils.clamp(0.5 + this.barsGroup.position.x / cameraWidth, 0, 1);
+        const centerY = MathUtils.clamp(0.5 + this.barsGroup.position.y / cameraHeight, 0, 1);
         this.flowPass.setCenter(centerX, centerY);
         this.postWarpPass.setCenter(centerX, centerY);
     }
 
     updateFlowSettings() {
-        this.flowPass.setFilter(this.currentValues.antialiasingwillcauseblur ? THREE.LinearFilter : THREE.NearestFilter);
+        this.flowPass.setFilter(this.currentValues.antialiasingwillcauseblur ? LinearFilter : NearestFilter);
         this.flowPass.setFadeAmount(this.currentValues.fade / 255);
         this.flowPass.setMoveVelocity(this.currentValues.flowvelocity / 5);
         this.flowPass.setFlowOpacityLimit(this.currentValues.flowopacitylimit);
         this.flowPass.setShadeFront(false);
         this.flowPass.setSwirlBlend(this.currentValues.flowfieldmix);
         this.flowPass.setSwirlDensity(this.currentValues.flowswirldensity);
-        this.flowPass.setSwirlTheta(THREE.MathUtils.degToRad(this.currentValues.flowswirltheta));
+        this.flowPass.setSwirlTheta(MathUtils.degToRad(this.currentValues.flowswirltheta));
         this.flowPass.setSwirlStrength(this.currentValues.flowswirlstrength);
         this.flowPass.setGridXFrequency(this.currentValues.flowgridxfrequency);
         this.flowPass.setGridYFrequency(this.currentValues.flowgridyfrequency);
@@ -243,12 +243,12 @@ export class RetroFlowWallpaper {
         this.flowPass.setGridStrength(this.currentValues.flowgridstrength);
         this.flowPass.setSaddleFrequency(this.currentValues.flowsaddlefrequency);
         this.flowPass.setSaddleStrength(this.currentValues.flowsaddlestrength);
-        this.flowPass.setDualCoreDirection(THREE.MathUtils.degToRad(this.currentValues.flowdualcoredirection));
+        this.flowPass.setDualCoreDirection(MathUtils.degToRad(this.currentValues.flowdualcoredirection));
         this.flowPass.setDualCoreStrength(this.currentValues.flowdualcorestrength);
         this.flowPass.setDualCoreDistance(this.currentValues.flowdualcoredistance);
         this.flowPass.setPolygonSides(this.currentValues.flowpolygonsides);
-        this.flowPass.setPolygonThetaShift(THREE.MathUtils.degToRad(this.currentValues.flowpolygonthetashift));
-        this.flowPass.setStripThetaShift(THREE.MathUtils.degToRad(this.currentValues.flowpolygonstripthetashift));
+        this.flowPass.setPolygonThetaShift(MathUtils.degToRad(this.currentValues.flowpolygonthetashift));
+        this.flowPass.setStripThetaShift(MathUtils.degToRad(this.currentValues.flowpolygonstripthetashift));
         this.flowPass.setPolygonReverse(this.currentValues.flowpolygonreverse);
         this.flowPass.setPolygonTwistStrength(this.currentValues.flowpolygontwiststrength);
         this.flowPass.setPolygonTwistFrequency(this.currentValues.flowpolygontwistfrequency);
@@ -384,7 +384,7 @@ export class RetroFlowWallpaper {
         }
         if (hasChanged('barcolor')) {
             const { r, g, b } = parseRgbTriplet(this.currentValues.barcolor);
-            this.currentBarColor = new THREE.Color().setRGB(r, g, b);
+            this.currentBarColor = new Color().setRGB(r, g, b);
             const nextHsl = { h: 0, s: 0, l: 0 };
             this.currentBarColor.getHSL(nextHsl);
             this.currentBarHsl = nextHsl;
@@ -499,18 +499,18 @@ export class RetroFlowWallpaper {
 
     colorForBar(baseHsl, value) {
         const hue = (baseHsl.h * 360 + value * 9000 * this.currentValues.huechangebysound) % 360;
-        const saturation = THREE.MathUtils.clamp(
+        const saturation = MathUtils.clamp(
             baseHsl.s * 100 + value * 100 * this.currentValues.saturationchangebysound,
             0,
             100,
         );
-        const lightness = THREE.MathUtils.clamp(
+        const lightness = MathUtils.clamp(
             baseHsl.l * 100 + value * 100 * this.currentValues.lightnesschangebysound,
             0,
             100,
         );
         const wrappedHue = ((hue % 360) + 360) % 360;
-        return new THREE.Color().setHSL(wrappedHue / 360, saturation / 100, lightness / 100);
+        return new Color().setHSL(wrappedHue / 360, saturation / 100, lightness / 100);
     }
 
     render(frame, incomingAudioSamples) {
@@ -551,7 +551,7 @@ export class RetroFlowWallpaper {
             const nextColor = this.colorForBar(activeBaseHsl, sample);
             primaryMaterial.color.copy(nextColor);
             secondaryMaterial.color.copy(nextColor);
-            const opacity = THREE.MathUtils.clamp(
+            const opacity = MathUtils.clamp(
                 this.currentValues.opacityinitial + sample * 100 * this.currentValues.opacitychangebysound,
                 0,
                 1,

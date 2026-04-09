@@ -1,4 +1,4 @@
-﻿import * as THREE from 'three';
+﻿import { BufferGeometry, Color, HemisphereLight, Line, LineBasicMaterial, Path } from 'three';
 import { createThreeCanvasApp } from '../../shared/three/createThreeCanvasApp.js';
 
 function resolveBackgroundImage(image) {
@@ -30,7 +30,7 @@ export class HopfWindWallpaper {
 
         this.objectPool = [];
         this.currentValues = {};
-        this.currentColor = new THREE.Color(1, 1, 1);
+        this.currentColor = new Color(1, 1, 1);
 
         this.magfy = 8;
         this.rot_is = 1;
@@ -61,7 +61,7 @@ export class HopfWindWallpaper {
         this.overallMagnitude = 8;
         this.generateFibers();
 
-        const light = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
+        const light = new HemisphereLight(0xffffbb, 0x080820, 1);
         this.scene.add(light);
     }
 
@@ -81,14 +81,14 @@ export class HopfWindWallpaper {
         this.objectPool = [];
 
         for (let index = 0; index < this.sampleSize; index += 1) {
-            const geometry = new THREE.BufferGeometry().setFromPoints(this.arbitraryPath());
-            const material = new THREE.LineBasicMaterial({
+            const geometry = new BufferGeometry().setFromPoints(this.arbitraryPath());
+            const material = new LineBasicMaterial({
                 color: this.currentColor,
                 transparent: true,
                 opacity: 1,
                 depthWrite: false,
             });
-            const fiber = new THREE.Line(geometry, material);
+            const fiber = new Line(geometry, material);
             this.scene.add(fiber);
             this.objectPool.push(fiber);
         }
@@ -137,7 +137,7 @@ export class HopfWindWallpaper {
 
         if (hasChanged('toruscolor')) {
             const [r = 1, g = 1, b = 1] = String(nextValues.toruscolor).split(/\s+/).map((value) => Number(value) || 0);
-            this.currentColor = new THREE.Color(r, g, b);
+            this.currentColor = new Color(r, g, b);
             if (!this.toriparty) {
                 this.objectPool.forEach((fiber) => {
                     fiber.material.color = this.currentColor;
@@ -214,7 +214,7 @@ export class HopfWindWallpaper {
 
             if (this.toriparty) {
                 const hue = (audioSamples[index] * 120 + Math.max(time, this.lq_angle * 18)) % 270 + 120;
-                material.color = new THREE.Color(`hsl(${hue}, 100%, 50%)`);
+                material.color = new Color(`hsl(${hue}, 100%, 50%)`);
             }
 
             let lp = -(this.hopf_lat + Math.min(audioSamples[index], this.sm_cap) * this.sm_fac + this.magall);
@@ -298,7 +298,7 @@ export class HopfWindWallpaper {
     }
 
     arbitraryPath() {
-        const path = new THREE.Path();
+        const path = new Path();
         path.moveTo(0, 0, 0);
         for (let index = 1; index <= this.circres; index += 1) {
             path.lineTo((index % 2) / 100, 0, 0);

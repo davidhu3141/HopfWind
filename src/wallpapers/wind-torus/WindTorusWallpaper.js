@@ -1,4 +1,4 @@
-﻿import * as THREE from 'three';
+﻿import { BufferGeometry, Color, HemisphereLight, Line, LineBasicMaterial, Path } from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { createThreeCanvasApp } from '../../shared/three/createThreeCanvasApp.js';
@@ -9,7 +9,7 @@ export class WindTorusWallpaper {
         this.host = host;
         this.sampleSize = audioBinCount;
         this.currentValues = {};
-        this.currentColor = new THREE.Color(0.9, 0.9, 0.9);
+        this.currentColor = new Color(0.9, 0.9, 0.9);
         this.cirRes = 17;
         this.lastR = 0;
         this.majorRadiusBase = 7;
@@ -27,19 +27,19 @@ export class WindTorusWallpaper {
 
         this.objectPool = [];
         for (let index = 0; index < this.sampleSize; index += 1) {
-            const geometry = new THREE.BufferGeometry().setFromPoints(this.arbitraryPath());
-            const material = new THREE.LineBasicMaterial({
+            const geometry = new BufferGeometry().setFromPoints(this.arbitraryPath());
+            const material = new LineBasicMaterial({
                 color: this.currentColor,
                 transparent: true,
                 opacity: 1,
                 depthWrite: false,
             });
-            const fiber = new THREE.Line(geometry, material);
+            const fiber = new Line(geometry, material);
             this.scene.add(fiber);
             this.objectPool.push(fiber);
         }
 
-        const light = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
+        const light = new HemisphereLight(0xffffbb, 0x080820, 1);
         this.scene.add(light);
 
         this.composer = new EffectComposer(this.renderer);
@@ -108,7 +108,7 @@ export class WindTorusWallpaper {
     }
 
     arbitraryPath() {
-        const path = new THREE.Path();
+        const path = new Path();
         path.moveTo(0, 0, 0);
         for (let index = 1; index <= this.cirRes; index += 1) {
             path.lineTo((index % 2) / 100, 0, 0);

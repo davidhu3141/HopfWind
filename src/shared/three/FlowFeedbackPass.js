@@ -1,4 +1,4 @@
-﻿import * as THREE from 'three';
+﻿import { NearestFilter, RGBAFormat, ShaderMaterial, UniformsUtils, WebGLRenderTarget } from 'three';
 import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass.js';
 
 function makeVertexShader() {
@@ -58,11 +58,11 @@ export class FlowFeedbackPass extends Pass {
         this._velocity = 1 / 255;
         this._moveDir = 0.7;
         this._applyFadingPerNFrames = 1;
-        this._filter = THREE.NearestFilter;
+        this._filter = NearestFilter;
         this._shadeFront = false;
         this._waterfall = false;
 
-        this.uniforms = THREE.UniformsUtils.clone({
+        this.uniforms = UniformsUtils.clone({
             tDiffuse: { value: null },
             tDiffuse2: { value: null },
             width: { value: width },
@@ -77,7 +77,7 @@ export class FlowFeedbackPass extends Pass {
             whitePxDrop: { value: 0 },
         });
 
-        this.material = new THREE.ShaderMaterial({
+        this.material = new ShaderMaterial({
             transparent: true,
             uniforms: this.uniforms,
             vertexShader: makeVertexShader(),
@@ -96,16 +96,16 @@ export class FlowFeedbackPass extends Pass {
     createRenderTargets(filter) {
         this.remember?.dispose();
         this.remember2?.dispose();
-        this.remember = new THREE.WebGLRenderTarget(this.width, this.height, {
+        this.remember = new WebGLRenderTarget(this.width, this.height, {
             minFilter: filter,
             magFilter: filter,
-            format: THREE.RGBAFormat,
+            format: RGBAFormat,
             stencilBuffer: false,
         });
-        this.remember2 = new THREE.WebGLRenderTarget(this.width, this.height, {
+        this.remember2 = new WebGLRenderTarget(this.width, this.height, {
             minFilter: filter,
             magFilter: filter,
-            format: THREE.RGBAFormat,
+            format: RGBAFormat,
             stencilBuffer: false,
         });
     }

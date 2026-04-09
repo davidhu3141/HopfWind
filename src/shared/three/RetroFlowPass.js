@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { MathUtils, NearestFilter, RGBAFormat, ShaderMaterial, UniformsUtils, Vector2, WebGLRenderTarget } from 'three';
 import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass.js';
 import {
     FLOW_CUSTOM_TYPE,
@@ -210,13 +210,13 @@ export class RetroFlowPass extends Pass {
         this.count = 0;
         this._velocity = 1 / 255;
         this._moveDir = 0.7;
-        this._filter = THREE.NearestFilter;
+        this._filter = NearestFilter;
         this._shadeFront = false;
 
-        this.uniforms = THREE.UniformsUtils.clone({
+        this.uniforms = UniformsUtils.clone({
             tDiffuse: { value: null },
             tDiffuse2: { value: null },
-            center: { value: new THREE.Vector2(0.5, 0.5) },
+            center: { value: new Vector2(0.5, 0.5) },
             width: { value: width },
             height: { value: height },
             moveVelocityX: { value: 0 },
@@ -250,7 +250,7 @@ export class RetroFlowPass extends Pass {
             polygonConcaveStrength: { value: 0.4 },
         });
 
-        this.material = new THREE.ShaderMaterial({
+        this.material = new ShaderMaterial({
             transparent: true,
             uniforms: this.uniforms,
             vertexShader: makeVertexShader(),
@@ -269,16 +269,16 @@ export class RetroFlowPass extends Pass {
     createRenderTargets(filter) {
         this.remember?.dispose();
         this.remember2?.dispose();
-        this.remember = new THREE.WebGLRenderTarget(this.width, this.height, {
+        this.remember = new WebGLRenderTarget(this.width, this.height, {
             minFilter: filter,
             magFilter: filter,
-            format: THREE.RGBAFormat,
+            format: RGBAFormat,
             stencilBuffer: false,
         });
-        this.remember2 = new THREE.WebGLRenderTarget(this.width, this.height, {
+        this.remember2 = new WebGLRenderTarget(this.width, this.height, {
             minFilter: filter,
             magFilter: filter,
-            format: THREE.RGBAFormat,
+            format: RGBAFormat,
             stencilBuffer: false,
         });
     }
@@ -327,7 +327,7 @@ export class RetroFlowPass extends Pass {
     setCustomFlow(fromType, toType, mix) {
         this.uniforms.customFlowFromType.value = getConcreteFlowTypeId(fromType);
         this.uniforms.customFlowToType.value = getConcreteFlowTypeId(toType);
-        this.uniforms.customFlowMix.value = THREE.MathUtils.clamp(Number.isFinite(mix) ? mix : 0.5, 0, 1);
+        this.uniforms.customFlowMix.value = MathUtils.clamp(Number.isFinite(mix) ? mix : 0.5, 0, 1);
     }
 
     setSwirlBlend(value) {

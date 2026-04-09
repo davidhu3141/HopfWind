@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { BufferAttribute, BufferGeometry, DoubleSide, MathUtils, Mesh, MeshBasicMaterial, Vector2 } from 'three';
 import {
     CIRCLE_SLAB_TYPE,
     CIRCLE_TYPE,
@@ -11,11 +11,11 @@ import {
 
 export function createBarEntry() {
     const createBarMesh = () => {
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(12), 3));
+        const geometry = new BufferGeometry();
+        geometry.setAttribute('position', new BufferAttribute(new Float32Array(12), 3));
         geometry.setIndex([0, 1, 2, 0, 2, 3]);
-        const material = new THREE.MeshBasicMaterial({ transparent: true, side: THREE.DoubleSide });
-        const mesh = new THREE.Mesh(geometry, material);
+        const material = new MeshBasicMaterial({ transparent: true, side: DoubleSide });
+        const mesh = new Mesh(geometry, material);
         mesh.frustumCulled = false;
         return mesh;
     };
@@ -93,10 +93,10 @@ function buildJustBarsPoints(currentValues, index, sample) {
     }
 
     return [
-        new THREE.Vector2(centerX - halfWidth, p),
-        new THREE.Vector2(centerX + halfWidth, p),
-        new THREE.Vector2(centerX + halfWidth, q),
-        new THREE.Vector2(centerX - halfWidth, q),
+        new Vector2(centerX - halfWidth, p),
+        new Vector2(centerX + halfWidth, p),
+        new Vector2(centerX + halfWidth, q),
+        new Vector2(centerX - halfWidth, q),
     ];
 }
 
@@ -114,10 +114,10 @@ function buildCirclePoints(currentValues, sampleSize, index, sample) {
     const outerRadius = radius + height;
 
     return [
-        new THREE.Vector2(Math.cos(theta0) * innerRadius, Math.sin(theta0) * innerRadius),
-        new THREE.Vector2(Math.cos(theta1) * innerRadius, Math.sin(theta1) * innerRadius),
-        new THREE.Vector2(Math.cos(theta1) * outerRadius, Math.sin(theta1) * outerRadius),
-        new THREE.Vector2(Math.cos(theta0) * outerRadius, Math.sin(theta0) * outerRadius),
+        new Vector2(Math.cos(theta0) * innerRadius, Math.sin(theta0) * innerRadius),
+        new Vector2(Math.cos(theta1) * innerRadius, Math.sin(theta1) * innerRadius),
+        new Vector2(Math.cos(theta1) * outerRadius, Math.sin(theta1) * outerRadius),
+        new Vector2(Math.cos(theta0) * outerRadius, Math.sin(theta0) * outerRadius),
     ];
 }
 
@@ -127,7 +127,7 @@ function buildDoubleCirclePoints(currentValues, index, sample) {
     const angularDirection = isLeftChannel ? 1 : -1;
     const height = currentValues.doublecirclelengthinitial / 30 + currentValues.doublecirclelengthchangebysound * sample;
     const radius = currentValues.doublecircleradius;
-    const minorThetaShift = THREE.MathUtils.degToRad(currentValues.doublecircleminorthetashift);
+    const minorThetaShift = MathUtils.degToRad(currentValues.doublecircleminorthetashift);
     const thetaStep = (2 * Math.PI) / SAMPLE_SIZE_HALF;
     const thetaCenter = Math.PI / 2 + angularDirection * (minorThetaShift + thetaStep * (localIndex + 0.5));
     const thetaHalfWidth = (thetaStep * getDoubleCircleWidthRatio(currentValues)) / 2;
@@ -141,10 +141,10 @@ function buildDoubleCirclePoints(currentValues, index, sample) {
     const centerOffsetX = isLeftChannel ? -halfCenterDistance : halfCenterDistance;
 
     return [
-        new THREE.Vector2(Math.cos(thetaStart) * innerRadius + centerOffsetX, Math.sin(thetaStart) * innerRadius),
-        new THREE.Vector2(Math.cos(thetaEnd) * innerRadius + centerOffsetX, Math.sin(thetaEnd) * innerRadius),
-        new THREE.Vector2(Math.cos(thetaEnd) * outerRadius + centerOffsetX, Math.sin(thetaEnd) * outerRadius),
-        new THREE.Vector2(Math.cos(thetaStart) * outerRadius + centerOffsetX, Math.sin(thetaStart) * outerRadius),
+        new Vector2(Math.cos(thetaStart) * innerRadius + centerOffsetX, Math.sin(thetaStart) * innerRadius),
+        new Vector2(Math.cos(thetaEnd) * innerRadius + centerOffsetX, Math.sin(thetaEnd) * innerRadius),
+        new Vector2(Math.cos(thetaEnd) * outerRadius + centerOffsetX, Math.sin(thetaEnd) * outerRadius),
+        new Vector2(Math.cos(thetaStart) * outerRadius + centerOffsetX, Math.sin(thetaStart) * outerRadius),
     ];
 }
 
@@ -155,10 +155,10 @@ function buildSlabQuad(currentValues, index, shape, height, thickness) {
     const minY = shape === 'up' ? height : -height - thickness;
     const maxY = shape === 'up' ? height + thickness : -height;
     return [
-        new THREE.Vector2(centerX - halfWidth, minY),
-        new THREE.Vector2(centerX + halfWidth, minY),
-        new THREE.Vector2(centerX + halfWidth, maxY),
-        new THREE.Vector2(centerX - halfWidth, maxY),
+        new Vector2(centerX - halfWidth, minY),
+        new Vector2(centerX + halfWidth, minY),
+        new Vector2(centerX + halfWidth, maxY),
+        new Vector2(centerX - halfWidth, maxY),
     ];
 }
 
@@ -184,10 +184,10 @@ function buildSlabGeometry(currentValues, index, sample) {
 function buildCircleSlabSegment(theta0, theta1, innerRadius, thickness) {
     const outerRadius = innerRadius + thickness;
     return [
-        new THREE.Vector2(Math.cos(theta0) * innerRadius, Math.sin(theta0) * innerRadius),
-        new THREE.Vector2(Math.cos(theta1) * innerRadius, Math.sin(theta1) * innerRadius),
-        new THREE.Vector2(Math.cos(theta1) * outerRadius, Math.sin(theta1) * outerRadius),
-        new THREE.Vector2(Math.cos(theta0) * outerRadius, Math.sin(theta0) * outerRadius),
+        new Vector2(Math.cos(theta0) * innerRadius, Math.sin(theta0) * innerRadius),
+        new Vector2(Math.cos(theta1) * innerRadius, Math.sin(theta1) * innerRadius),
+        new Vector2(Math.cos(theta1) * outerRadius, Math.sin(theta1) * outerRadius),
+        new Vector2(Math.cos(theta0) * outerRadius, Math.sin(theta0) * outerRadius),
     ];
 }
 
@@ -218,10 +218,10 @@ function buildCircleSlabGeometry(currentValues, sampleSize, index, sample) {
 function buildDoubleCircleSlabSegment(theta0, theta1, innerRadius, thickness, centerOffsetX) {
     const outerRadius = innerRadius + thickness;
     return [
-        new THREE.Vector2(Math.cos(theta0) * innerRadius + centerOffsetX, Math.sin(theta0) * innerRadius),
-        new THREE.Vector2(Math.cos(theta1) * innerRadius + centerOffsetX, Math.sin(theta1) * innerRadius),
-        new THREE.Vector2(Math.cos(theta1) * outerRadius + centerOffsetX, Math.sin(theta1) * outerRadius),
-        new THREE.Vector2(Math.cos(theta0) * outerRadius + centerOffsetX, Math.sin(theta0) * outerRadius),
+        new Vector2(Math.cos(theta0) * innerRadius + centerOffsetX, Math.sin(theta0) * innerRadius),
+        new Vector2(Math.cos(theta1) * innerRadius + centerOffsetX, Math.sin(theta1) * innerRadius),
+        new Vector2(Math.cos(theta1) * outerRadius + centerOffsetX, Math.sin(theta1) * outerRadius),
+        new Vector2(Math.cos(theta0) * outerRadius + centerOffsetX, Math.sin(theta0) * outerRadius),
     ];
 }
 
@@ -232,7 +232,7 @@ function buildDoubleCircleSlabGeometry(currentValues, index, sample) {
     const height = currentValues.doublecircleslabheightchangebysound * sample;
     const radius = currentValues.doublecircleslabradius;
     const thickness = Math.max(0, currentValues.doublecircleslabthickness);
-    const minorThetaShift = THREE.MathUtils.degToRad(currentValues.doublecircleslabminorthetashift);
+    const minorThetaShift = MathUtils.degToRad(currentValues.doublecircleslabminorthetashift);
     const thetaStep = (2 * Math.PI) / SAMPLE_SIZE_HALF;
     const thetaCenter = Math.PI / 2 + angularDirection * (minorThetaShift + thetaStep * (localIndex + 0.5));
     const thetaHalfWidth = (thetaStep * getDoubleCircleSlabWidthRatio(currentValues)) / 2;
@@ -292,7 +292,7 @@ export function getSampleForGeometryPhase(audioSamples, index, geometryPhase, cu
     }
 
     const toSample = getSampleForGeometryType(audioSamples, index, geometryPhase.toType, currentValues);
-    return THREE.MathUtils.lerp(fromSample, toSample, geometryPhase.mix);
+    return MathUtils.lerp(fromSample, toSample, geometryPhase.mix);
 }
 
 export function buildGeometryForType(currentValues, sampleSize, index, audioSamples, geometryType) {
@@ -320,7 +320,7 @@ export function buildGeometryForPhase(currentValues, sampleSize, index, audioSam
 function createCollapsedPoints(points) {
     const centroid = points.reduce(
         (sum, point) => sum.add(point),
-        new THREE.Vector2(0, 0),
+        new Vector2(0, 0),
     ).multiplyScalar(1 / points.length);
     return Array.from({ length: 4 }, () => centroid.clone());
 }
