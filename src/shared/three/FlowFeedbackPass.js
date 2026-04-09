@@ -1,52 +1,7 @@
 ﻿import { NearestFilter, RGBAFormat, ShaderMaterial, UniformsUtils, WebGLRenderTarget } from 'three';
 import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass.js';
-
-function makeVertexShader() {
-    return /* glsl */`
-varying vec2 vUV;
-void main() {
-    vUV = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}`;
-}
-
-function makeFragmentShader(shadeFront = false, waterfall = false) {
-    const defineTex0 = waterfall ? 'vec4 tex0 = texture2D(tDiffuse2, vUV);' : '';
-    const moveDir = waterfall
-        ? `moveVelocityX * (1.0 + max(0.0, tex0.r + tex0.g - tex0.b) * nonBlueShift),
-           moveVelocityY * (1.2 - tex0.a * whitePxDrop + (1.0 - vUV[1]) * waterfallGravity)`
-        : 'moveVelocityX, moveVelocityY';
-    const frontJudge = shadeFront ? 'tex2.a <= 0.0' : 'tex1.a >= tex2.a';
-
-    return /* glsl */`
-#define ETH 0.0025
-
-varying vec2 vUV;
-uniform sampler2D tDiffuse;
-uniform sampler2D tDiffuse2;
-uniform float moveVelocityX;
-uniform float moveVelocityY;
-uniform float shouldDecline;
-uniform float fadeAmount;
-uniform float flowOpacityLimit;
-uniform float waterfallGravity;
-uniform float nonBlueShift;
-uniform float whitePxDrop;
-
-void main() {
-    ${defineTex0}
-    vec2 vUV2 = vUV - vec2(${moveDir});
-    vec4 tex1 = texture2D(tDiffuse, vUV);
-    vec4 tex2 = texture2D(tDiffuse2, vUV2);
-    tex2.rgb /= max(tex2.a, 0.0001);
-    tex2.a = min(tex2.a, flowOpacityLimit) - (shouldDecline > 0.0 ? fadeAmount : 0.0);
-    gl_FragColor = ${frontJudge}
-        || min(vUV[0], vUV[1]) < ETH
-        || max(vUV[0], vUV[1]) > 1.0 - ETH
-            ? tex1
-            : tex2;
-}`;
-}
+import fullscreenQuadVertexShader from './shaders/fullscreenQuad.vert.glsl';
+import flowFeedbackFragmentShader from './shaders/flowFeedback.frag.glsl';
 
 export class FlowFeedbackPass extends Pass {
     constructor(width, height, params = {}) {
@@ -75,14 +30,18 @@ export class FlowFeedbackPass extends Pass {
             waterfallGravity: { value: 0 },
             nonBlueShift: { value: 0 },
             whitePxDrop: { value: 0 },
+            shadeFront: { value: 0 },
+            waterfall: { value: 0 },
         });
 
         this.material = new ShaderMaterial({
             transparent: true,
             uniforms: this.uniforms,
-            vertexShader: makeVertexShader(),
-            fragmentShader: makeFragmentShader(this._shadeFront, this._waterfall),
+            vertexShader: fullscreenQuadVertexShader,
+            fragmentShader: flowFeedbackFragmentShader,
         });
+        this.uniforms.shadeFront.value = this._shadeFront ? 1 : 0;
+        this.uniforms.waterfall.value = this._waterfall ? 1 : 0;
         this.fsQuad = new FullScreenQuad(this.material);
         this.createRenderTargets(this._filter);
 
@@ -123,8 +82,7 @@ export class FlowFeedbackPass extends Pass {
             return;
         }
         this._shadeFront = value;
-        this.material.fragmentShader = makeFragmentShader(this._shadeFront, this._waterfall);
-        this.material.needsUpdate = true;
+        this.uniforms.shadeFront.value = value ? 1 : 0;
     }
 
     setWaterfall(value) {
@@ -132,8 +90,7 @@ export class FlowFeedbackPass extends Pass {
             return;
         }
         this._waterfall = value;
-        this.material.fragmentShader = makeFragmentShader(this._shadeFront, this._waterfall);
-        this.material.needsUpdate = true;
+        this.uniforms.waterfall.value = value ? 1 : 0;
     }
 
     setWaterfallGravity(value) {

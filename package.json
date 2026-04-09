@@ -9,12 +9,18 @@
     "build:wallpaper": "node scripts/build-wallpaper.mjs",
     "sync:project": "node scripts/sync-project-json.mjs"
   },
+  "packageManager": "npm@10.8.3",
+  "engines": {
+    "node": ">=20.19.0 <21 || >=22.12.0",
+    "npm": ">=10.8.3"
+  },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@vitejs/plugin-react": "^6.0.1",
     "esbuild": "^0.27.5",
-    "vite": "^8.0.3"
+    "vite": "^8.0.7",
+    "vite-plugin-glsl": "^1.6.0"
   },
   "dependencies": {
     "react": "^19.2.4",

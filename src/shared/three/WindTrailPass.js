@@ -1,42 +1,7 @@
 ﻿import { ShaderMaterial, WebGLRenderTarget } from 'three';
 import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass.js';
-
-function makeVertexShader() {
-    return /* glsl */`
-varying vec2 vUV;
-void main() {
-    vUV = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}`;
-}
-
-function makeFragmentShader() {
-    return /* glsl */`
-varying vec2 vUV;
-uniform sampler2D tDiffuse;
-uniform sampler2D tDiffuse2;
-uniform float trailShiftY;
-uniform float brightClamp;
-uniform float brightDecay;
-
-void main() {
-    vec2 rememberedUv = vUV;
-    rememberedUv.y -= trailShiftY;
-
-    if (vUV.y < 0.01) {
-        gl_FragColor = vec4(0.0);
-        return;
-    }
-
-    vec4 currentColor = texture2D(tDiffuse, vUV);
-    vec4 rememberedColor = texture2D(tDiffuse2, rememberedUv);
-    if (rememberedColor.r > brightClamp) {
-        rememberedColor *= brightDecay;
-    }
-
-    gl_FragColor = max(currentColor, rememberedColor);
-}`;
-}
+import fullscreenQuadVertexShader from './shaders/fullscreenQuad.vert.glsl';
+import windTrailFragmentShader from './shaders/windTrail.frag.glsl';
 
 export class WindTrailPass extends Pass {
     constructor(width, height) {
@@ -55,8 +20,8 @@ export class WindTrailPass extends Pass {
 
         this.material = new ShaderMaterial({
             uniforms: this.uniforms,
-            vertexShader: makeVertexShader(),
-            fragmentShader: makeFragmentShader(),
+            vertexShader: fullscreenQuadVertexShader,
+            fragmentShader: windTrailFragmentShader,
         });
         this.fsQuad = new FullScreenQuad(this.material);
         this.createRenderTargets();
