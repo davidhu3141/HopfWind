@@ -105,6 +105,11 @@ export const retroFlowProperties = [
     slider('mediasize', 'Media Size', 0.5, 4, 1, { step: 0.1, fraction: true, precision: 1 }),
     slider('mediapositionx', 'Media Position X', 0, 100, 50),
     slider('mediapositiony', 'Media Position Y', 0, 100, 80),
+    slider('mediabackdropopacity', 'Media Backdrop Opacity', 0, 1, 0.84, {
+        step: 0.01,
+        fraction: true,
+        precision: 2,
+    }),
 
     group('cycle', 'Main Feature Cycle 🔁'),
     slider('cycleinterval', 'Cycle Interval (sec)', 1, 60, 3, { step: 0.1, fraction: true, precision: 1 }),

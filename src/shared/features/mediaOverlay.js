@@ -11,6 +11,7 @@ export function createMediaOverlay(host) {
         size: 1,
         positionX: 50,
         positionY: 50,
+        backdropOpacity: 0.84,
         enabled: true,
         title: '',
         artist: '',
@@ -209,7 +210,14 @@ export function createMediaOverlay(host) {
             element.style.top = `${currentState.positionY}%`;
             element.style.fontSize = `${currentState.size}em`;
             element.style.color = currentState.textColor || '#111111';
-            element.style.background = toRgba(currentState.backgroundColor, 0.84, 'rgba(255, 255, 255, 0.84)');
+            const backdropOpacity = Number.isFinite(currentState.backdropOpacity)
+                ? Math.max(0, Math.min(1, currentState.backdropOpacity))
+                : 0.84;
+            element.style.background = toRgba(
+                currentState.backgroundColor,
+                backdropOpacity,
+                `rgba(255, 255, 255, ${backdropOpacity})`
+            );
 
             if (currentState.thumbnail) {
                 artElement.src = currentState.thumbnail;

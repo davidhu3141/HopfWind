@@ -201,6 +201,7 @@ export class RetroFlowWallpaper {
             size: this.currentValues.mediasize,
             positionX: this.currentValues.mediapositionx,
             positionY: this.currentValues.mediapositiony,
+            backdropOpacity: this.currentValues.mediabackdropopacity,
             ...this.mediaState,
         });
     }
@@ -486,6 +487,7 @@ export class RetroFlowWallpaper {
                 'mediasize',
                 'mediapositionx',
                 'mediapositiony',
+                'mediabackdropopacity',
             )
         ) {
             this.updateMedia();
