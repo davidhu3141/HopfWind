@@ -262,6 +262,7 @@ export class RetroFlowWallpaper {
         this.postWarpPass.setRadialFrequency(this.currentValues.warpradialfrequency);
         this.postWarpPass.setThetaFrequency(this.currentValues.warpthetafrequency);
         this.postWarpPass.setRadialSharpness(this.currentValues.warpradialsharpness);
+        this.postWarpPass.setThetaSharpness(this.currentValues.warpthetasharpness);
         this.postWarpPass.setRadialAmplitude(this.currentValues.warpradialamplitude);
         this.postWarpPass.setThetaAmplitude(this.currentValues.warpthetaamplitude);
         this.postWarpPass.setTwistAmount(this.currentValues.warptwistamount);
@@ -435,6 +436,7 @@ export class RetroFlowWallpaper {
                 'warpradialfrequency',
                 'warpthetafrequency',
                 'warpradialsharpness',
+                'warpthetasharpness',
                 'warpradialamplitude',
                 'warpthetaamplitude',
                 'warptwistamount',

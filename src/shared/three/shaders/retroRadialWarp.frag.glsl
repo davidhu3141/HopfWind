@@ -11,6 +11,7 @@ uniform float customWarpMix;
 uniform float radialFrequency;
 uniform float thetaFrequency;
 uniform float radialSharpness;
+uniform float thetaSharpness;
 uniform float radialAmplitude;
 uniform float thetaAmplitude;
 uniform float twistAmount;
@@ -42,7 +43,7 @@ vec2 radialWarp(vec2 centered) {
     float r = length(centered);
     float theta = atan(centered.y, centered.x);
     float radialLane = gridLane(r, radialFrequency, radialSharpness);
-    float thetaLane = gridLane(theta, thetaFrequency, radialSharpness);
+    float thetaLane = gridLane(theta, thetaFrequency, thetaSharpness);
     float sampleR = max(0.0, r + radialLane * radialAmplitude);
     float sampleTheta = theta + thetaLane * thetaAmplitude;
     return vec2(cos(sampleTheta), sin(sampleTheta)) * sampleR;

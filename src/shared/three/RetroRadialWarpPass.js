@@ -60,6 +60,7 @@ export class RetroRadialWarpPass extends Pass {
             radialFrequency: { value: 27 },
             thetaFrequency: { value: 27 },
             radialSharpness: { value: 0.25 },
+            thetaSharpness: { value: 0.25 },
             radialAmplitude: { value: 0.12 },
             thetaAmplitude: { value: 0.12 },
             twistAmount: { value: 0.9 },
@@ -122,6 +123,10 @@ export class RetroRadialWarpPass extends Pass {
 
     setRadialSharpness(value) {
         this.uniforms.radialSharpness.value = value;
+    }
+
+    setThetaSharpness(value) {
+        this.uniforms.thetaSharpness.value = value;
     }
 
     setRadialAmplitude(value) {
