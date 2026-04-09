@@ -10,6 +10,9 @@ uniform float customWarpToType;
 uniform float customWarpMix;
 uniform float radialFrequency;
 uniform float thetaFrequency;
+uniform float radialSharpness;
+uniform float radialAmplitude;
+uniform float thetaAmplitude;
 uniform float twistAmount;
 uniform float twistDecay;
 uniform float twistRadialFrequency;
@@ -29,15 +32,19 @@ uniform float flowerDecay;
 uniform float triangularWidth;
 uniform float triangularHeight;
 
-float safeWave(float x, float k) {
-    return abs(k) < 0.0001 ? 0.0 : sin(k * x) / k;
+float gridLane(float value, float frequency, float sharpness) {
+    float wave = sin(value * frequency);
+    float magnitude = pow(abs(wave), max(sharpness, 0.0001));
+    return sign(wave) * magnitude;
 }
 
 vec2 radialWarp(vec2 centered) {
     float r = length(centered);
     float theta = atan(centered.y, centered.x);
-    float sampleR = r + safeWave(r, radialFrequency);
-    float sampleTheta = theta + safeWave(theta, thetaFrequency);
+    float radialLane = gridLane(r, radialFrequency, radialSharpness);
+    float thetaLane = gridLane(theta, thetaFrequency, radialSharpness);
+    float sampleR = max(0.0, r + radialLane * radialAmplitude);
+    float sampleTheta = theta + thetaLane * thetaAmplitude;
     return vec2(cos(sampleTheta), sin(sampleTheta)) * sampleR;
 }
 
@@ -47,12 +54,6 @@ vec2 twistWarp(vec2 centered) {
     float sampleTheta = theta + twistAmount * exp(-twistDecay * r * r);
     float sampleR = r + sin(twistRadialFrequency * r) * twistRadialAmplitude;
     return vec2(cos(sampleTheta), sin(sampleTheta)) * sampleR;
-}
-
-float gridLane(float value, float frequency, float sharpness) {
-    float wave = sin(value * frequency);
-    float magnitude = pow(abs(wave), max(sharpness, 0.0001));
-    return sign(wave) * magnitude;
 }
 
 vec2 gridWarp(vec2 centered) {

@@ -393,6 +393,9 @@ export const retroFlowProperties = [
     group('warpradial', 'Warp: Radial'),
     slider('warpradialfrequency', 'Radial Frequency', 0, 40, 26.5, { step: 0.1, fraction: true, precision: 1 }),
     slider('warpthetafrequency', 'Theta Frequency', 0, 40, 33, { step: 0.1, fraction: true, precision: 1 }),
+    slider('warpradialsharpness', 'Radial Sharpness', 0.05, 2, 0.25, { step: 0.01, fraction: true, precision: 2 }),
+    slider('warpradialamplitude', 'Radial Amplitude', 0, 1, 0.12, { step: 0.01, fraction: true, precision: 2 }),
+    slider('warpthetaamplitude', 'Theta Amplitude', 0, 1, 0.12, { step: 0.01, fraction: true, precision: 2 }),
 
     group('warptwist', 'Warp: Twist'),
     slider('warptwistamount', 'Twist Amount', 0, 3, 2.34, { step: 0.01, fraction: true, precision: 2 }),
