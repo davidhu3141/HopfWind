@@ -1,19 +1,21 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { build } from 'vite';
-import { getWallpaperDefinition } from '../src/wallpapers/registry.js';
 
 const [, , wallpaperId, destinationArg] = process.argv;
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, '..');
+const tempDir = path.resolve(repoRoot, '.tmp');
 
 if (!wallpaperId) {
     console.error('Usage: npm run build:wallpaper -- <wallpaper-id> [destination]');
     process.exit(1);
 }
 
-const definition = getWallpaperDefinition(wallpaperId);
+const definitionModulePath = path.resolve(repoRoot, 'src', 'wallpapers', wallpaperId, 'definition.js');
+const definitionModule = await loadDefinitionModule(definitionModulePath, wallpaperId);
+const { exportName, definition } = findDefinitionExport(definitionModule, wallpaperId);
 const configPath = path.resolve(repoRoot, 'wallpaper-configs', wallpaperId, 'config.json');
 let buildDestination = destinationArg;
 
@@ -30,27 +32,94 @@ const outDir = buildDestination
     : path.resolve(repoRoot, 'dist', 'wallpapers', wallpaperId);
 await fs.mkdir(outDir, { recursive: true });
 await fs.mkdir(path.join(outDir, 'dist'), { recursive: true });
+await fs.mkdir(tempDir, { recursive: true });
 
-await build({
-    configFile: false,
-    define: {
-        __WALLPAPER_ID__: JSON.stringify(definition.id),
-    },
-    build: {
-        emptyOutDir: false,
-        outDir: path.join(outDir, 'dist'),
-        sourcemap: false,
-        minify: 'esbuild',
-        lib: {
-            entry: path.resolve(repoRoot, 'src/entries/wallpaper.js'),
-            formats: ['es'],
-            fileName: () => 'main.js',
-        },
-        modulePreload: false,
-        rollupOptions: {},
-    },
+const entryPath = await createTempWallpaperEntry({
+    definitionModulePath,
+    exportName,
+    outputDir: tempDir,
 });
+
+try {
+    await build({
+        configFile: false,
+        build: {
+            emptyOutDir: false,
+            outDir: path.join(outDir, 'dist'),
+            sourcemap: false,
+            minify: 'esbuild',
+            lib: {
+                entry: entryPath,
+                formats: ['es'],
+                fileName: () => 'main.js',
+            },
+            modulePreload: false,
+            rollupOptions: {},
+        },
+    });
+} finally {
+    await fs.rm(entryPath, { force: true });
+}
 
 await fs.copyFile(path.resolve(repoRoot, 'templates/wallpaper-index.html'), path.join(outDir, 'index.html'));
 console.log(`Wallpaper built: ${definition.id}`);
 console.log(`Output: ${outDir}`);
+
+function isWallpaperDefinition(value) {
+    return Boolean(
+        value
+            && typeof value === 'object'
+            && typeof value.id === 'string'
+            && typeof value.createWallpaper === 'function'
+    );
+}
+
+function toImportPath(fromDir, targetPath) {
+    let relativePath = path.relative(fromDir, targetPath);
+    relativePath = relativePath.split(path.sep).join('/');
+    if (!relativePath.startsWith('.')) {
+        relativePath = `./${relativePath}`;
+    }
+    return relativePath;
+}
+
+async function loadDefinitionModule(modulePath, requestedWallpaperId) {
+    try {
+        return await import(pathToFileURL(modulePath).href);
+    } catch (error) {
+        console.error(`Unable to load wallpaper definition for "${requestedWallpaperId}" from: ${modulePath}`);
+        throw error;
+    }
+}
+
+function findDefinitionExport(moduleExports, requestedWallpaperId) {
+    const matchingEntry = Object.entries(moduleExports).find(([, value]) => {
+        return isWallpaperDefinition(value) && value.id === requestedWallpaperId;
+    });
+
+    if (!matchingEntry) {
+        throw new Error(`Wallpaper definition export not found for id: ${requestedWallpaperId}`);
+    }
+
+    const [exportName, definition] = matchingEntry;
+    return { exportName, definition };
+}
+
+async function createTempWallpaperEntry({ definitionModulePath, exportName, outputDir }) {
+    const entryPath = path.join(outputDir, `wallpaper-entry-${wallpaperId}-${Date.now()}.mjs`);
+    const entryDir = path.dirname(entryPath);
+    const definitionImportPath = toImportPath(entryDir, definitionModulePath);
+    const runtimeImportPath = toImportPath(
+        entryDir,
+        path.resolve(repoRoot, 'src', 'shared', 'runtime', 'startWpeWallpaper.js')
+    );
+    const entrySource = [
+        `import { ${exportName} as wallpaperDefinition } from '${definitionImportPath}';`,
+        `import { startWpeWallpaper } from '${runtimeImportPath}';`,
+        '',
+        'startWpeWallpaper(wallpaperDefinition);',
+        '',
+    ].join('\n');
+    await fs.writeFile(entryPath, entrySource, 'utf8');
+    return entryPath;
+}
