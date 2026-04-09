@@ -47,14 +47,17 @@ try {
             emptyOutDir: false,
             outDir: path.join(outDir, 'dist'),
             sourcemap: false,
-            minify: 'esbuild',
-            lib: {
-                entry: entryPath,
-                formats: ['es'],
-                fileName: () => 'main.js',
-            },
+            minify: 'oxc',
             modulePreload: false,
-            rollupOptions: {},
+            rollupOptions: {
+                input: entryPath,
+                output: {
+                    format: 'es',
+                    entryFileNames: 'main.js',
+                    chunkFileNames: 'chunks/[name]-[hash].js',
+                    assetFileNames: 'assets/[name]-[hash][extname]',
+                },
+            },
         },
     });
 } finally {
