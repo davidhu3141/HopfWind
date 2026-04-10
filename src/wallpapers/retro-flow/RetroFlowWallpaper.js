@@ -230,8 +230,6 @@ export class RetroFlowWallpaper {
 
     updateFlowSettings() {
         this.flowPass.setFilter(this.currentValues.antialiasingwillcauseblur ? LinearFilter : NearestFilter);
-        this.flowPass.setFadeAmount(this.currentValues.fade / 255);
-        this.flowPass.setMoveVelocity(this.currentValues.flowvelocity / 5);
         this.flowPass.setFlowOpacityLimit(this.currentValues.flowopacitylimit);
         this.flowPass.setShadeFront(false);
         this.flowPass.setSwirlBlend(this.currentValues.flowfieldmix);
@@ -289,6 +287,11 @@ export class RetroFlowWallpaper {
             this.currentValues.warpcustomtotype,
             this.currentValues.warpcustommix,
         );
+    }
+
+    updateFrameCompensatedFlow(deltaFrames) {
+        this.flowPass.setFadeAmount((this.currentValues.fade / 255) * deltaFrames);
+        this.flowPass.setMoveVelocity((this.currentValues.flowvelocity / 5) * deltaFrames);
     }
 
     resetColorCycle() {
@@ -523,7 +526,7 @@ export class RetroFlowWallpaper {
         return new Color().setHSL(wrappedHue / 360, saturation / 100, lightness / 100);
     }
 
-    render(frame, incomingAudioSamples) {
+    render(frame, incomingAudioSamples, deltaFrames = 1) {
         this.lastFrame = frame;
         this.scene.rotation.z = 0;
 
@@ -536,7 +539,7 @@ export class RetroFlowWallpaper {
             if (this.idleCountdown === 0) {
                 return;
             }
-            this.idleCountdown -= 1;
+            this.idleCountdown = Math.max(0, this.idleCountdown - deltaFrames);
         } else {
             audioSamples = audioSamples.map((value) => value * this.currentValues.overallmagnitude);
         }
@@ -549,6 +552,7 @@ export class RetroFlowWallpaper {
         this.barsGroup.rotation.z = getBarsGroupRotation(this.currentValues, frame);
         const cyclePhases = updateCycleState(this.cycleState, this.resolvedCycleTypes, this.currentValues, frame);
         const activeBaseHsl = this.getActiveBaseHsl(cyclePhases.color);
+        this.updateFrameCompensatedFlow(deltaFrames);
         this.flowPass.setFlowInterpolation(cyclePhases.flow.fromType, cyclePhases.flow.toType, cyclePhases.flow.mix);
         this.postWarpPass.setWarpInterpolation(cyclePhases.warp.fromType, cyclePhases.warp.toType, cyclePhases.warp.mix);
 

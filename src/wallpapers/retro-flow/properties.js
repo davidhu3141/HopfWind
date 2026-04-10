@@ -78,7 +78,7 @@ export const retroFlowProperties = [
     group('canvas', 'Canvas'),
     slider('offsetx', 'Canvas Offset X', -1, 1, 0, { step: 0.05, fraction: true, precision: 2 }),
     slider('offsety', 'Canvas Offset Y', -1, 1, 0, { step: 0.05, fraction: true, precision: 2 }),
-    slider('pixelated', 'Pixelated', 1, 16, 1),
+    slider('pixelated', 'Pixelated', 1, 16, 4),
     slider('canvasshrink', 'Canvas Shrink', 0, 4, 0, { step: 0.1, fraction: true, precision: 2 }),
     bool('usecustomimage', 'Use Custom Image', false),
     file('customimage', 'Custom Image', '', { accept: 'image/*' }),

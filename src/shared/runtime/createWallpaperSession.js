@@ -14,6 +14,7 @@ export function createWallpaperSession({ definition, mountTarget, mode = 'web', 
     let wallpaper = null;
     let lastTickSeconds = performance.now() / 1000;
     let fpsAccumulator = 0;
+    let pendingDeltaFrames = 0;
 
     for (let attempt = 1; attempt <= maxInitAttempts; attempt += 1) {
         try {
@@ -40,6 +41,7 @@ export function createWallpaperSession({ definition, mountTarget, mode = 'web', 
         const nowSeconds = performance.now() / 1000;
         const dt = Math.min(nowSeconds - lastTickSeconds, 1);
         lastTickSeconds = nowSeconds;
+        pendingDeltaFrames += dt * 60;
 
         const fpsLimit = propertyValues.respectwpeframelimit ? Number(generalValues.fps ?? 0) : 0;
         if (fpsLimit > 0) {
@@ -53,14 +55,15 @@ export function createWallpaperSession({ definition, mountTarget, mode = 'web', 
         }
 
         try {
-            wallpaper.render(frame, audioSamples);
+            const deltaFrames = Math.max(0.0001, pendingDeltaFrames);
+            pendingDeltaFrames = 0;
+            wallpaper.render(frame, audioSamples, deltaFrames);
             host.clearError();
+            frame += deltaFrames;
         } catch (error) {
             console.error('Wallpaper render failed', error);
             host.showError(`Render error\n${error instanceof Error ? error.message : String(error)}`);
         }
-
-        frame += 1;
         animationFrameId = window.requestAnimationFrame(renderLoop);
     };
 
