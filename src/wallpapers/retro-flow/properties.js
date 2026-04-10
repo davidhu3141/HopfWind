@@ -93,7 +93,7 @@ export const retroFlowProperties = [
     color('clockcolor', 'Clock Color', '1 1 1'),
     color('clockshadowcolor', 'Clock Shadow Color', '0 0 0'),
     color('clockbackdropcolor', 'Clock Backdrop Color', '0 0 0'),
-    slider('clockbackdropopacity', 'Clock Backdrop Opacity', 0, 1, 0.13, {
+    slider('clockbackdropopacity', 'Clock Backdrop Opacity', 0, 1, 0.12, {
         step: 0.01,
         fraction: true,
         precision: 2,
