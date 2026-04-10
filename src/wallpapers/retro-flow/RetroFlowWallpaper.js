@@ -333,7 +333,7 @@ export class RetroFlowWallpaper {
 
     updateCanvas() {
         const metrics = this.canvas.resize({
-            pixelated: this.currentValues.pixelated * 2,
+            pixelated: this.currentValues.pixelated,
             canvasScale: this.currentValues.canvasshrink + 1,
             offsetX: this.currentValues.offsetx,
             offsetY: this.currentValues.offsety,
