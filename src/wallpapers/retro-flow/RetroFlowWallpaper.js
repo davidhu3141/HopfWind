@@ -11,7 +11,7 @@ import { createThreeCanvasApp } from '../../shared/three/createThreeCanvasApp.js
 import { rgbTripletToCss } from '../../shared/utils/color.js';
 import { createCycleState, resetCycleState, resolveCycleTypes, updateCycleState } from './cycle.js';
 import { IDLE_COUNTDOWN_FRAMES } from './constants.js';
-import { computeEnergyBands, computeSelectedEnergy, getGeometryScale } from './energy.js';
+import { computeSelectedEnergy, getGeometryScale } from './energy.js';
 import { buildGeometryForPhase, createBarEntry, getSampleForGeometryPhase, setBarGeometry } from './geometry.js';
 
 function parseRgbTriplet(value) {
@@ -141,7 +141,6 @@ export class RetroFlowWallpaper {
 
         this.currentValues = {};
         this.idleCountdown = IDLE_COUNTDOWN_FRAMES;
-        this.energyBands = { all: 0 };
         this.selectedEnergy = 0;
         this.currentBarColor = new Color(1, 1, 1);
         this.currentBarHsl = { h: 0, s: 0, l: 1 };
@@ -532,8 +531,6 @@ export class RetroFlowWallpaper {
 
         const allZero = incomingAudioSamples.every((value) => value === 0);
         let audioSamples = incomingAudioSamples;
-        this.energyBands = computeEnergyBands(incomingAudioSamples);
-        this.selectedEnergy = computeSelectedEnergy(this.currentValues, this.energyBands);
 
         if (allZero && this.currentValues.reduceframerate) {
             if (this.idleCountdown === 0) {
@@ -543,6 +540,8 @@ export class RetroFlowWallpaper {
         } else {
             audioSamples = audioSamples.map((value) => value * this.currentValues.overallmagnitude);
         }
+
+        this.selectedEnergy = computeSelectedEnergy(this.currentValues, audioSamples);
 
         if (!allZero) {
             this.idleCountdown = IDLE_COUNTDOWN_FRAMES;

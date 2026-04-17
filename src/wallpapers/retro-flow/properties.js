@@ -71,8 +71,8 @@ const WARP_TYPE_OPTIONS = [
 ];
 
 export const retroFlowProperties = [
-    slider('overallmagnitude', 'Overall Magnitude', 0, 30, 1, { step: 0.001, fraction: true, precision: 4 }),
-    bool('respectwpeframelimit', 'Respect WPE FPS Limit', false),
+    slider('overallmagnitude', 'Overall Magnitude', 0, 30, 0.1, { step: 0.0001, fraction: true, precision: 5 }),
+    bool('respectwpeframelimit', 'FPS Limit', false),
     bool('reduceframerate', 'Stop Animation When Idle', false),
 
     group('canvas', 'Canvas'),
@@ -148,7 +148,7 @@ export const retroFlowProperties = [
     slider('geometrythetashift', 'Theta Shift', 0, 359, 0),
     slider('geometryrotationhz', 'Rotation Speed (Hz)', 0, 1, 0.06, { step: 0.01, fraction: true, precision: 2 }),
     bool('geometryreverse', 'Reverse Rotation', false),
-    slider('geometrysizebyenergy', 'Size By Energy', -700, 700, 200, { step: 0.1, fraction: true, precision: 1 }),
+    slider('geometrysizebyenergy', 'Size By Energy', -700, 700, 12, { step: 0.1, fraction: true, precision: 1 }),
     slider('_2doffsetx', '2D Offset X', -1, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
     slider('_2doffsety', '2D Offset Y', -1, 1, 0, { step: 0.01, fraction: true, precision: 2 }),
 
