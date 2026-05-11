@@ -71,7 +71,7 @@ const WARP_TYPE_OPTIONS = [
 ];
 
 export const retroFlowProperties = [
-    slider('overallmagnitude', 'Overall Magnitude', 0, 30, 0.1, { step: 0.0001, fraction: true, precision: 5 }),
+    slider('overallmagnitude', 'Overall Magnitude', 0, 30, 0.06, { step: 0.0001, fraction: true, precision: 5 }),
     bool('respectwpeframelimit', 'FPS Limit', false),
     bool('reduceframerate', 'Stop Animation When Idle', false),
 

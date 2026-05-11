@@ -1,0 +1,6 @@
+- (web) include ncs
+- (doc) requirements / build commands
+- (web) learn github action, publish site
+- then (web) include github link
+- then (doc) include ghpage link
+- (doc) include steam content link
