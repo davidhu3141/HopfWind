@@ -9,7 +9,7 @@ This repo contains:
 - shared wallpaper logic used by both shells
 - a few wallpapers that I have either released or used as experiments
 
-The most popular wallpaper here is probably `spec-entity`, which is the wallpaper I published as Spectrum City. Its main visual idea is a ping-pong shader feedback pipeline.
+The most popular wallpaper here is probably `spec-entity`, which is the wallpaper I published as *Spectrum City*. Its main visual idea is a ping-pong shader feedback pipeline.
 
 ## Wallpapers
 
@@ -18,7 +18,7 @@ Current wallpapers in this repo:
 - `spec-entity` - Spectrum City in this codebase
 - `retro-flow`
 - `hopf-wind`
-- `wind-torus`
+- `wind-torus` - just an old experiment
 
 Published Wallpaper Engine workshop pages:
 
@@ -128,9 +128,3 @@ The default web preview audio track is:
 Thanks to Tanner Helland for publishing the track and allowing reuse under `CC BY 4.0`.
 
 See [THIRD_PARTY_ASSETS.md](./THIRD_PARTY_ASSETS.md) for attribution and license details.
-
-## Published wallpapers in Steam WPE workshop
-
-- `retro-flow`: <https://steamcommunity.com/sharedfiles/filedetails/?id=3703420894>
-- `spec-entity` / Spectrum City: <https://steamcommunity.com/sharedfiles/filedetails/?id=3551997868>
-- `hopf-wind`: <https://steamcommunity.com/sharedfiles/filedetails/?id=2798645065>
