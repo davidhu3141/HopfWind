@@ -4,6 +4,7 @@ import glsl from 'vite-plugin-glsl';
 import path from 'node:path';
 
 export default defineConfig({
+    base: '/HopfWind/',
     plugins: [react(), glsl({ compress: true })],
     build: {
         outDir: 'dist/web',
