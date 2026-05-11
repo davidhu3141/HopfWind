@@ -1,7 +1,7 @@
 {
   "name": "hopfwind",
   "version": "1.0.0",
-  "description": "HopfWind\r ========",
+  "description": "HopfWind, a wallpaper engine web wallpaper",
   "type": "module",
   "scripts": {
     "dev": "vite",
