@@ -4,11 +4,16 @@ import { createWallpaperSession } from '../shared/runtime/createWallpaperSession
 import { getDefaultPropertyValues, mergePropertyValues } from '../shared/utils/propertySchema.js';
 import { listWallpaperDefinitions } from '../wallpapers/registry.js';
 import { PropertyField } from './components/PropertyField.jsx';
+import defaultAudioUrl from './assets/audio/a-memory-away.mp3';
 
 const definitions = listWallpaperDefinitions();
 const SELECTED_WALLPAPER_STORAGE_KEY = 'hopfwind:selected-wallpaper';
 const PROPERTY_STORAGE_KEY_PREFIX = 'hopfwind:properties:';
 const AUDIO_VOLUME_STORAGE_KEY = 'hopfwind:audio-volume';
+
+function isBlobUrl(url) {
+    return typeof url === 'string' && url.startsWith('blob:');
+}
 
 function getPropertyStorageKey(wallpaperId) {
     return `${PROPERTY_STORAGE_KEY_PREFIX}${wallpaperId}`;
@@ -112,7 +117,7 @@ export function App() {
     );
     const [properties, setProperties] = useState(() => loadPersistedProperties(definition));
     const [audioInfo, setAudioInfo] = useState({ currentTime: 0, duration: 0, paused: true, hasFile: false });
-    const [audioSourceUrl, setAudioSourceUrl] = useState('');
+    const [audioSourceUrl, setAudioSourceUrl] = useState(defaultAudioUrl);
     const [audioVolume, setAudioVolume] = useState(() => getPersistedAudioVolume());
     const previewRef = useRef(null);
     const audioRef = useRef(null);
@@ -221,7 +226,7 @@ export function App() {
     }, [audioVolume]);
 
     useEffect(() => () => {
-        if (audioSourceUrl) {
+        if (isBlobUrl(audioSourceUrl)) {
             URL.revokeObjectURL(audioSourceUrl);
         }
     }, [audioSourceUrl]);
@@ -243,7 +248,7 @@ export function App() {
             return;
         }
 
-        if (audioSourceUrl) {
+        if (isBlobUrl(audioSourceUrl)) {
             URL.revokeObjectURL(audioSourceUrl);
         }
 
@@ -361,7 +366,7 @@ export function App() {
                             onChange={handleVolumeChange}
                         />
                     </label>
-                    <audio ref={audioRef} preload="auto" />
+                    <audio ref={audioRef} preload="auto" src={audioSourceUrl} />
                 </div>
 
                 <div className="panel-block panel-block-grow">

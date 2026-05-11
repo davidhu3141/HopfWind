@@ -49,6 +49,8 @@ Start the preview app:
 npm run dev
 ```
 
+The web preview ships with a default bundled music track so the audio-reactive wallpapers have something to play immediately. Browser autoplay restrictions may still require a manual click on `Play`.
+
 ## Build For Wallpaper Engine
 
 This section is for exporting a wallpaper into an existing WPE project folder. The following instructions use the `retro-flow` wallpaper as an example.
@@ -110,3 +112,11 @@ provided that `wallpaper-configs/<wallpaper-id>/config.json` is set.
 - Spectrum City is named `spec-entity` in this repo.
 - The web shell is for development convenience. The WPE shell is the actual target runtime.
 - If you use an AI agent to add or edit WPE properties, have it inspect a real `project.json` format first. The files in `old_documents/` are useful reference material for that.
+
+## Third-Party Assets
+
+The default web preview audio track is:
+
+- *A Memory Away* by Tanner Helland [(github)](https://github.com/tannerhelland/free-music/tree/master)
+
+It is included under `CC BY 4.0`. See [THIRD_PARTY_ASSETS.md](./THIRD_PARTY_ASSETS.md) for attribution and license details.
