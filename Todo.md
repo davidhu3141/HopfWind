@@ -1,6 +1,6 @@
 - [x] (web) include ncs
 - [x] (doc) requirements / build commands
 - (web) learn github action, publish site
-- then (web) include gh repo link
+- [x] then (web) include gh repo link
 - then (doc) include gh page link
 - [x] (doc) include steam content link

@@ -5,6 +5,7 @@ import { getDefaultPropertyValues, mergePropertyValues } from '../shared/utils/p
 import { listWallpaperDefinitions } from '../wallpapers/registry.js';
 import { PropertyField } from './components/PropertyField.jsx';
 import defaultAudioUrl from './assets/audio/a-memory-away.mp3';
+import githubMarkUrl from '../../github-mark-white.svg';
 
 const definitions = listWallpaperDefinitions();
 const DEFAULT_WALLPAPER_ID = 'spec-entity';
@@ -321,6 +322,15 @@ export function App() {
             <aside className="control-panel">
                 <div className="panel-block panel-block-hero">
                     <h1>HopfWind Preview</h1>
+                    <a
+                        className="hero-link"
+                        href="https://github.com/davidhu3141/HopfWind"
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        <img src={githubMarkUrl} alt="" aria-hidden="true" />
+                        <span>View source on GitHub</span>
+                    </a>
                 </div>
 
                 <div className="panel-block">
