@@ -2,6 +2,10 @@
 
 HopfWind is a small framework for developing Wallpaper Engine web wallpapers.
 
+Try it out:
+
+- <https://davidhu3141.github.io/HopfWind/>
+
 This repo contains:
 
 - a web shell for local preview and tweaking
