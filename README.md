@@ -1,96 +1,112 @@
+# HopfWind
 
-readme rewrite:
+HopfWind is a small framework for developing Wallpaper Engine web wallpapers.
 
-- 簡短為主, 使用英文
-- 要說這專案是一種開發 WPE web 版桌布的框架 含有一些我已發布或實驗過的桌布
-    - 大家來看專案應該是為了最受好評的 spectrum city (in this proj: spec-entity) 來的，這個桌布的效果重點是 shader 的 ping-pong 算法
-- 要說此專案分成網頁版與 WPE (Wallpaper engine) 版
-    - 所以有兩種殼 但共用桌布邏輯
-- "設定輸出路徑" 那段可保留
-- misc
-    - 要說 spectrum city 在此專案中名為 spec-entity
-    - 要說可以請 ai agent 參考 project.json 格式
+This repo contains:
 
+- a web shell for local preview and tweaking
+- a Wallpaper Engine shell for actual WPE projects
+- shared wallpaper logic used by both shells
+- a few wallpapers that I have either released or used as experiments
 
+The most popular wallpaper here is probably `spec-entity`, which is the wallpaper I published as Spectrum City. Its main visual idea is a ping-pong shader feedback pipeline.
 
+## Wallpapers
 
+Current wallpapers in this repo:
 
+- `spec-entity` - Spectrum City in this codebase
+- `retro-flow`
+- `hopf-wind`
+- `wind-torus`
 
+## Project Structure
 
+- `src/wallpapers/` - wallpaper definitions, properties, and render logic
+- `src/web/` - React-based preview shell
+- `src/shared/` - runtime adapters, shared DOM features, shared Three.js helpers
+- `wallpaper-configs/` - local per-wallpaper build config
+- `old_documents/` - old notes and sample WPE project files kept as reference
 
+The project has two shells:
 
+1. Web preview
+2. Wallpaper Engine runtime
 
+They share the same wallpaper logic. The shell is different, the wallpaper implementation is not.
 
+## Web Preview
 
+Install dependencies:
 
-# Build
+```bash
+npm install
+```
 
-這份說明是 WPE 專案輸出流程。要使用網頁版 (mock) 的話就 npm run dev 或 npm run build:web 就好
+Start the preview app:
 
-## 1. 設定輸出路徑
+```bash
+npm run dev
+```
 
-在 `wallpaper-configs/retro-flow/` 底下建立 `config.json`。
+## Build For Wallpaper Engine
 
-可以直接參考 wallpaper-configs\retro-flow\config.example.json：
+This section is for exporting a wallpaper into an existing WPE project folder. The following instructions use the `retro-flow` wallpaper as an example.
 
-以我的電腦為例是
+### 1. Configure the output path
+
+Create:
+
+```text
+wallpaper-configs/<wallpaper-id>/config.json
+```
+
+My personal example for `retro-flow`:
 
 ```json
 {
-    "buildDestination": "C:/Program Files (x86)/Steam/steamapps/common/wallpaper_engine/projects/myprojects/retro-flow"
+  "buildDestination": "C:/Program Files (x86)/Steam/steamapps/common/wallpaper_engine/projects/myprojects/retro_flow"
 }
 ```
 
-`buildDestination` 應該指到你在 Wallpaper Engine 裡建立好的 `retro-flow` 專案資料夾。
+`buildDestination` should point to a Wallpaper Engine project directory that already exists. It should contain at least a `project.json`.
 
-這個資料夾裡至少要有 `project.json`
-
-## 2. Build wallpaper 檔案
-
-在 repo 根目錄執行：
+### 2. Build the wallpaper files
 
 ```bash
 npm run build:wallpaper -- retro-flow
 ```
 
-這個指令會：
+This command reads `wallpaper-configs/retro-flow/config.json` and writes the built wallpaper files into `buildDestination`.
 
-- 讀取 `wallpaper-configs/retro-flow/config.json`
-- 把 `index.html` 和 `dist/main.js` 輸出到 `buildDestination`
+### 3. Sync `project.json`
 
-如果你不想用 `config.json`，也可以直接指定輸出路徑：
-
-```bash
-npm run build:wallpaper -- retro-flow "C:/.../your/project/path"
-```
-
-## 3. 同步 WPE 的 `project.json`
-
-build 完之後，還要把目前 schema 寫進 WPE 專案的 `project.json`：
+After building, sync the current property schema into the WPE project:
 
 ```bash
 npm run sync:project -- retro-flow
 ```
 
-這個指令會更新 `<buildDestination>/project.json` 的
+This updates the target `project.json`, mainly:
 
 - `project.general.properties`
 - `project.general.supportsaudioprocessing`
 
+### 4. Normal update flow
 
-## 4. 完整流程
-
-平常更新 `retro-flow` (或其他 wallpaper) 的 code 之後，通常就是跑這兩個：
+Therefore, when you change wallpaper code, the normal WPE update flow is:
 
 ```bash
 npm run build:wallpaper -- retro-flow
 npm run sync:project -- retro-flow
 ```
 
-以更新到 WPE 中
+provided that `wallpaper-configs/<wallpaper-id>/config.json` is set.
 
-## 5. 補充
+`build:wallpaper` and `sync:project` do different jobs. In practice you usually need both.
 
-- `build:wallpaper` 只負責輸出網頁檔案
-- `sync:project` 只負責更新 `project.json`
-- 兩個都要跑，WPE 專案才會完整對齊目前程式碼
+## Notes
+
+- Spectrum City is named `spec-entity` in this repo.
+- The web shell is for development convenience. The WPE shell is the actual target runtime.
+- If you use an AI agent to add or edit WPE properties, have it inspect a real `project.json` format first. The files in `old_documents/` are useful reference material for that.
