@@ -196,13 +196,14 @@ export class SpecEntityWallpaper {
         const allZero = incomingAudioSamples.every((value) => value === 0);
         let audioSamples = incomingAudioSamples;
         const useText = this.currentValues.showtext && allZero;
+        const discreteFrame = Math.max(0, Math.floor(frame));
 
         if (useText) {
             audioSamples = audioSamples.map((_, index) => {
                 const canvasHeight = this.textArray[0]?.length ?? 0;
                 const shift = Math.max(0, Math.floor((this.sampleSize - canvasHeight) / 2));
                 return index >= shift && index - shift <= canvasHeight - 1
-                    ? this.textArray[frame % this.textArray.length][canvasHeight - 1 - (index - shift)] * (this.currentValues.textmagnitude / 24)
+                    ? this.textArray[discreteFrame % this.textArray.length][canvasHeight - 1 - (index - shift)] * (this.currentValues.textmagnitude / 24)
                     : 0;
             });
         } else if (allZero && this.currentValues.reduceframerate) {

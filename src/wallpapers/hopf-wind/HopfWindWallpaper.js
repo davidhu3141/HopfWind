@@ -35,8 +35,8 @@ export class HopfWindWallpaper {
         this.magfy = 8;
         this.rot_is = 1;
         this.rot_sg = 1;
-        this.opa_def = 0.01;
-        this.opa_gbs = 0.5;
+        this.opa_def = Math.pow(0.6, 2);
+        this.opa_gbs = 1.7;
         this.opa_sc = 1;
         this.hopf_lat = 0.55;
         this.hopf_lc = 1.57;
@@ -58,7 +58,7 @@ export class HopfWindWallpaper {
         this.circres = 150;
         this.rotation4dSpeed = 0;
         this.rotation3dSpeed = 0;
-        this.overallMagnitude = 8;
+        this.overallMagnitude = 9;
         this.generateFibers();
 
         const light = new HemisphereLight(0xffffbb, 0x080820, 1);

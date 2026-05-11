@@ -20,6 +20,12 @@ Current wallpapers in this repo:
 - `hopf-wind`
 - `wind-torus`
 
+Published Wallpaper Engine workshop pages:
+
+- `spec-entity` / Spectrum City: <https://steamcommunity.com/sharedfiles/filedetails/?id=3551997868>
+- `retro-flow`: <https://steamcommunity.com/sharedfiles/filedetails/?id=3703420894>
+- `hopf-wind`: <https://steamcommunity.com/sharedfiles/filedetails/?id=2798645065>
+
 ## Project Structure
 
 - `src/wallpapers/` - wallpaper definitions, properties, and render logic
@@ -119,4 +125,12 @@ The default web preview audio track is:
 
 - *A Memory Away* by Tanner Helland [(github)](https://github.com/tannerhelland/free-music/tree/master)
 
-It is included under `CC BY 4.0`. See [THIRD_PARTY_ASSETS.md](./THIRD_PARTY_ASSETS.md) for attribution and license details.
+Thanks to Tanner Helland for publishing the track and allowing reuse under `CC BY 4.0`.
+
+See [THIRD_PARTY_ASSETS.md](./THIRD_PARTY_ASSETS.md) for attribution and license details.
+
+## Published wallpapers in Steam WPE workshop
+
+- `retro-flow`: <https://steamcommunity.com/sharedfiles/filedetails/?id=3703420894>
+- `spec-entity` / Spectrum City: <https://steamcommunity.com/sharedfiles/filedetails/?id=3551997868>
+- `hopf-wind`: <https://steamcommunity.com/sharedfiles/filedetails/?id=2798645065>

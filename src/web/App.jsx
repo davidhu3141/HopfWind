@@ -7,6 +7,7 @@ import { PropertyField } from './components/PropertyField.jsx';
 import defaultAudioUrl from './assets/audio/a-memory-away.mp3';
 
 const definitions = listWallpaperDefinitions();
+const DEFAULT_WALLPAPER_ID = 'spec-entity';
 const SELECTED_WALLPAPER_STORAGE_KEY = 'hopfwind:selected-wallpaper';
 const PROPERTY_STORAGE_KEY_PREFIX = 'hopfwind:properties:';
 const AUDIO_VOLUME_STORAGE_KEY = 'hopfwind:audio-volume';
@@ -19,14 +20,20 @@ function getPropertyStorageKey(wallpaperId) {
     return `${PROPERTY_STORAGE_KEY_PREFIX}${wallpaperId}`;
 }
 
+function getDefaultWallpaperId() {
+    return definitions.some((definition) => definition.id === DEFAULT_WALLPAPER_ID)
+        ? DEFAULT_WALLPAPER_ID
+        : definitions[0]?.id ?? '';
+}
+
 function getPersistedWallpaperId() {
     try {
         const wallpaperId = window.localStorage.getItem(SELECTED_WALLPAPER_STORAGE_KEY);
         return definitions.some((definition) => definition.id === wallpaperId)
             ? wallpaperId
-            : definitions[0]?.id ?? '';
+            : getDefaultWallpaperId();
     } catch {
-        return definitions[0]?.id ?? '';
+        return getDefaultWallpaperId();
     }
 }
 
@@ -36,10 +43,15 @@ function getPersistedAudioVolume() {
         const volume = Number.parseFloat(raw ?? '');
         return Number.isFinite(volume)
             ? Math.min(1, Math.max(0, volume))
-            : 1;
+            : 0.15;
     } catch {
-        return 1;
+        return 0.15;
     }
+}
+
+function getPlaybackLabel(paused, audioSourceUrl) {
+    const sourceLabel = audioSourceUrl === defaultAudioUrl ? 'Default Music' : 'Selected Music';
+    return paused ? `Play ${sourceLabel}` : 'Pause';
 }
 
 function loadPersistedProperties(definition) {
@@ -308,11 +320,7 @@ export function App() {
         <div className="app-shell">
             <aside className="control-panel">
                 <div className="panel-block panel-block-hero">
-                    <p className="eyebrow">Wallpaper Studio</p>
-                    <h1>HopfWind Refactor Preview</h1>
-                    <p className="panel-copy">
-                        React 只負責控制台。桌布本體仍然是純 Three.js runtime，這裡只是 web 模擬層。
-                    </p>
+                    <h1>HopfWind Preview</h1>
                 </div>
 
                 <div className="panel-block">
@@ -339,7 +347,7 @@ export function App() {
                     </label>
                     <div className="transport-row">
                         <button type="button" onClick={togglePlayback} disabled={!audioInfo.hasFile}>
-                            {audioInfo.paused ? 'Play' : 'Pause'}
+                            {getPlaybackLabel(audioInfo.paused, audioSourceUrl)}
                         </button>
                         <button type="button" onClick={restartAudio} disabled={!audioInfo.hasFile}>Restart</button>
                     </div>
